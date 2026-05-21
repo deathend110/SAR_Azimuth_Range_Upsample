@@ -4,20 +4,22 @@ clear;clc;close all;
 %% ==================== 参数加载 ====================
 S60 = load("FS60_params.mat");
 % RT / mixed 参数
+seed = 42;
+rng(seed);
 Azimuth_q_m     = 2;       % 混合AR上采样的单独方位向上采样倍率
 Range_q_m       = 2;       % 混合AR上采样的单独方位向上采样倍率
 q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 
 Azimuth_q       = q;       % 方位向上采样倍率
 Range_q         = q;       % 方位向上采样倍率
-As              = 0.6;     % RT 阈值系数
+As              = 0;     % RT 阈值系数
 
 %% 加载回波数据和成像参数
 data_figure = "SAR_Dataset_city2_histeq";
 data_folder = replace("G:\MATLAB-G\SAR Full PSF\temp\", "temp", data_figure);
 data_name = "rstart 2401.mat";
 data = load(data_folder+data_name).channel_1;
-c_start = 2100;
+c_start = 6500;
 channel_1 = data(:, c_start:c_start+S60.nrn-1);
 signal60_input = channel_1(1:3:end, :);
 
@@ -37,7 +39,7 @@ IMG_gt  = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tna
 roi_gt = abs(IMG_gt(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
 % img_gt = single(minmaxnormalize_image(roi_gt, Azimuth_Meta.V_MAX_GT_L, Azimuth_Meta.V_MIN_GT_L));
 img_gt = normalize_image(roi_gt);
-subplot(221);imagesc(img_gt);axis image;colorbar;title("GT");
+subplot(221);imagesc(img_gt);axis image;colorbar;title("GT As: "+num2str(As));
 
 %% Azimuth Upsample
 % 生成RT噪声
@@ -98,7 +100,7 @@ subplot(223);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
 
 %% Azimuth-Range MixUpsample
 % 生成2D RT阈值
-[U_master_patch, sigma, A_rt] = Build_2D_RT(signal60_input, Azimuth_q_m, Range_q_m, As);
+[U_master_patch, sigma, A_rt] = Build_2D_SplitRT(signal60_input, Azimuth_q_m, Range_q_m, As);
 
 % 上采样
 signal60_patch_high = two_dim_upsample_fft(signal60_input, Azimuth_q_m, Range_q_m);
@@ -188,7 +190,7 @@ function S_down = two_dim_downsample_fft(S, q_azimuth, q_range, meta)
     
 end
 
-% 生成二维 full RT 阈值场
+% 一次生成二维 full RT 阈值场
 function [U, sigma, A_rt] = Build_2D_RT(input60, Azimuth_q, Range_q, As)
     signal_up = two_dim_upsample_fft(input60, Azimuth_q, Range_q);
 
@@ -198,6 +200,22 @@ function [U, sigma, A_rt] = Build_2D_RT(input60, Azimuth_q, Range_q, As)
     phi = 2 * pi * rand(size(signal_up));
     U = A_rt * exp(1i * phi);
 end
+
+% 生成可分离的二维 RT 阈值场
+% 先构造一个距离向列相位向量，再构造一个方位向行相位向量，然后按点组合成 2D 相位场
+function [U, sigma, A_rt] = Build_2D_SplitRT(input60, Azimuth_q, Range_q, As)
+    signal_up_2d = two_dim_upsample_fft(input60, Azimuth_q, Range_q);
+    [Nr_up, Na_up] = size(signal_up_2d);
+
+    phi_r = 2 * pi * rand(Nr_up, 1);
+    phi_a = 2 * pi * rand(1, Na_up);
+
+    sigma = sqrt(2 / pi) * mean(abs(signal_up_2d(:)));
+    A_rt = As * sigma;
+
+    U = A_rt * exp(1i * (phi_r + phi_a));
+end
+
 
 
 % 附带RT阈值的1bit量化
