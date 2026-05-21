@@ -414,7 +414,7 @@ end
 
 
 % 能量对齐并返回对齐拼接后的RC,要考虑1.不同混合率,2.不同混合方向
-function [RC, info] = energy_crop(RC_up, RC_down, mode_mask_1200, buffer, q)
+function [RC, info] = energy_crop(RC_up, RC_down, mode_mask_1200, buffer)
 % ENERGY_CROP
 % 根据 mode_mask_1200 自动判断 0/1 区域和边界，
 % 将 mask==1 对应的数据 RC_up 能量对齐到 mask==0 对应的数据 RC_down，
@@ -425,7 +425,6 @@ function [RC, info] = energy_crop(RC_up, RC_down, mode_mask_1200, buffer, q)
 %   RC_down         : mask==0 对应的数据, size = [Nr, Na]
 %   mode_mask_1200  : 1 x Na 或 Na x 1, 只包含 0 和 1
 %   buffer          : 边界两侧用于估计能量的宽度
-%   q               : 根据实际上采样率估计能量差值
 %
 % 输出:
 %   RC              : 拼接后的数据
