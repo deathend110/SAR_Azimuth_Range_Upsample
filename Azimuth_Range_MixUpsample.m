@@ -17,7 +17,7 @@ data_figure = "SAR_Dataset_city2_histeq";
 data_folder = replace("G:\MATLAB-G\SAR Full PSF\temp\", "temp", data_figure);
 data_name = "rstart 2401.mat";
 data = load(data_folder+data_name).channel_1;
-c_start = 2200;
+c_start = 2100;
 channel_1 = data(:, c_start:c_start+S60.nrn-1);
 signal60_input = channel_1(1:3:end, :);
 
@@ -35,7 +35,8 @@ RC_gt   = Range_Compress(signal60_input, S60.fc, S60.tnrn, S60.gama, S60.R0, S60
 RCMC_gt = RCMC(RC_gt, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_gt  = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_gt = abs(IMG_gt(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
-img_gt = single(minmaxnormalize_image(roi_gt, Azimuth_Meta.V_MAX_GT_L, Azimuth_Meta.V_MIN_GT_L));
+% img_gt = single(minmaxnormalize_image(roi_gt, Azimuth_Meta.V_MAX_GT_L, Azimuth_Meta.V_MIN_GT_L));
+img_gt = normalize_image(roi_gt);
 subplot(221);imagesc(img_gt);axis image;colorbar;title("GT");
 
 %% Azimuth Upsample
@@ -54,10 +55,11 @@ RC_crop = crop_azimuth_doppler_to_width(RC_high, S60.nan);
 RCMC_crop = RCMC(RC_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_high  = SAR_Imaging(RCMC_crop, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_crop = abs(IMG_high(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
-Azimuth_Upsample = single(minmaxnormalize_image(roi_crop, Azimuth_Meta.V_MAX_Q_L, Azimuth_Meta.V_MIN_Q_L));
+% Azimuth_Upsample = single(minmaxnormalize_image(roi_crop, Azimuth_Meta.V_MAX_Q_L, Azimuth_Meta.V_MIN_Q_L));
+Azimuth_Upsample = normalize_image(roi_crop);
 Azimuth_title = [
     "Azimuth Upsample q" + num2str(Azimuth_q) + " 1bit"; 
-    "SSIM: " + num2str(ssim(Azimuth_Upsample, img_gt))
+    "SSIM: " + num2str(ssim(Azimuth_Upsample, img_gt))+"   PSNR: " + num2str(psnr(Azimuth_Upsample, img_gt))
 ];
 subplot(222);imagesc(Azimuth_Upsample);axis image;colorbar;title(Azimuth_title);
 
@@ -86,13 +88,13 @@ RC_crop = crop_range_doppler_to_width(RC_high, S60.nrn);
 RCMC_crop = RCMC(RC_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_high  = SAR_Imaging(RCMC_crop, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_crop = abs(IMG_high(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
-Range_Upsample = single(minmaxnormalize_image(roi_crop, Range_Meta.V_MAX_Q_L, Range_Meta.V_MIN_Q_L));
+% Range_Upsample = single(minmaxnormalize_image(roi_crop, Range_Meta.V_MAX_Q_L, Range_Meta.V_MIN_Q_L));
+Range_Upsample = normalize_image(roi_crop);
 Range_title = [
     "Range Upsample q" + num2str(Range_q) + " 1bit"; 
-    "SSIM: " + num2str(ssim(Range_Upsample, img_gt))
+    "SSIM: " + num2str(ssim(Range_Upsample, img_gt))+"   PSNR: " + num2str(psnr(Range_Upsample, img_gt))
 ];
 subplot(223);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
-movegui('center');
 
 %% Azimuth-Range MixUpsample
 % 生成2D RT阈值
@@ -122,10 +124,11 @@ RC_crop = two_dim_downsample_fft(RC_high, Azimuth_q_m, Range_q_m, S60);
 RCMC_crop = RCMC(RC_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_high  = SAR_Imaging(RCMC_crop, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_crop = abs(IMG_high(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
-Azimuth_Range_Upsample = single(minmaxnormalize_image(roi_crop, Range_Meta.V_MAX_Q_L, Range_Meta.V_MIN_Q_L));
+% Azimuth_Range_Upsample = single(minmaxnormalize_image(roi_crop, Range_Meta.V_MAX_Q_L, Range_Meta.V_MIN_Q_L));
+Azimuth_Range_Upsample = normalize_image(roi_crop);
 Azimuth_Range_title = [
     "Azimuth-Range MixUpsample q" + num2str(q) + " 1bit"; 
-    "SSIM: " + num2str(ssim(Azimuth_Range_Upsample, img_gt))
+    "SSIM: " + num2str(ssim(Azimuth_Range_Upsample, img_gt))+"   PSNR: " + num2str(psnr(Azimuth_Range_Upsample, img_gt))
 ];
 subplot(224);imagesc(Azimuth_Range_Upsample);axis image;colorbar;title(Azimuth_Range_title);
 movegui('center');
@@ -187,7 +190,7 @@ end
 
 % 生成二维 full RT 阈值场
 function [U, sigma, A_rt] = Build_2D_RT(input60, Azimuth_q, Range_q, As)
-    signal_up = two_dim_upsample_fft(input60, Range_q, Azimuth_q);
+    signal_up = two_dim_upsample_fft(input60, Azimuth_q, Range_q);
 
     sigma = sqrt(2 / pi) * mean(abs(signal_up(:)));
     A_rt = As * sigma;
