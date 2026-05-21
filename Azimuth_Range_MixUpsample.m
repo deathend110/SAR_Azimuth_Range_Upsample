@@ -13,7 +13,7 @@ q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 
 Azimuth_q       = q;       % 方位向上采样倍率
 Range_q         = q;       % 方位向上采样倍率
-As              = 0;     % RT 阈值系数
+As              = 0.6;     % RT 阈值系数
 
 %% 加载回波数据和成像参数
 data_figure = "SAR_Dataset_city2_histeq";
@@ -101,7 +101,7 @@ subplot(223);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
 
 %% Azimuth-Range MixUpsample
 % 生成2D RT阈值
-[U_master_patch, sigma, A_rt] = Build_2D_SplitRT(signal60_input, Azimuth_q_m, Range_q_m, As);
+[U_master_patch, sigma, A_rt] = Build_2D_RT(signal60_input, Azimuth_q_m, Range_q_m, As);
 
 % 上采样
 signal60_patch_high = two_dim_upsample_fft(signal60_input, Azimuth_q_m, Range_q_m);
