@@ -28,9 +28,7 @@ Azimuth_Meta = load(Azimuth_THpath);
 % 全距离向
 Range_THpath = fullfile(data_folder, data_figure + "_rangeq"+ num2str(Range_q) + ".mat");
 Range_Meta = load(Range_THpath);
-% 整体上采样
-Range_THpath = fullfile(data_folder, data_figure + "_rangeq"+ num2str(Range_q) + ".mat");
-Range_Meta = load(Range_THpath);
+
 
 %% GT
 RC_gt   = Range_Compress(signal60_input, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
@@ -38,7 +36,7 @@ RCMC_gt = RCMC(RC_gt, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_gt  = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_gt = abs(IMG_gt(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
 img_gt = single(minmaxnormalize_image(roi_gt, Azimuth_Meta.V_MAX_GT_L, Azimuth_Meta.V_MIN_GT_L));
-subplot(131);imagesc(img_gt);axis image;colorbar;title("GT");
+subplot(221);imagesc(img_gt);axis image;colorbar;title("GT");
 
 %% Azimuth Upsample
 % 生成RT噪声
@@ -61,7 +59,7 @@ Azimuth_title = [
     "Azimuth Upsample q" + num2str(Azimuth_q) + " 1bit"; 
     "SSIM: " + num2str(ssim(Azimuth_Upsample, img_gt))
 ];
-subplot(132);imagesc(Azimuth_Upsample);axis image;colorbar;title(Azimuth_title);
+subplot(222);imagesc(Azimuth_Upsample);axis image;colorbar;title(Azimuth_title);
 
 %% Range Upsample
 % 生成RT噪声
@@ -93,7 +91,43 @@ Range_title = [
     "Range Upsample q" + num2str(Range_q) + " 1bit"; 
     "SSIM: " + num2str(ssim(Range_Upsample, img_gt))
 ];
-subplot(133);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
+subplot(223);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
+movegui('center');
+
+%% Azimuth-Range MixUpsample
+% 生成2D RT阈值
+[U_master_patch, sigma, A_rt] = Build_2D_RT(signal60_input, Azimuth_q_m, Range_q_m, As);
+
+% 上采样
+signal60_patch_high = two_dim_upsample_fft(signal60_input, Azimuth_q_m, Range_q_m);
+% ==================================================================================================
+% 构造距离上采样后对应的RD参数 
+nrn_up = size(signal60_patch_high, 1);
+Fs_up  = Range_q_m * S60.Fs;
+Tnrn_up   = 1 / Fs_up;
+Tstart_up = 2 * S60.R0 / S60.C - nrn_up / 2 / Fs_up;
+Tend_up   = 2 * S60.R0 / S60.C + (nrn_up / 2 - 1) / Fs_up;
+tnrn_up   = (Tstart_up : Tnrn_up : Tend_up).';
+% ==================================================================================================
+
+% RT阈值1bit量化
+channel_1bit_high = quantize_1bit_with_U(signal60_patch_high, U_master_patch);
+% RC
+RC_high = Range_Compress(channel_1bit_high, S60.fc, tnrn_up, S60.gama, S60.R0, S60.C, Fs_up, S60.Tp);
+
+% 下采样
+RC_crop = two_dim_downsample_fft(RC_high, Azimuth_q_m, Range_q_m, S60);
+
+% 低采样率参数下继续成像
+RCMC_crop = RCMC(RC_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
+IMG_high  = SAR_Imaging(RCMC_crop, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
+roi_crop = abs(IMG_high(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
+Azimuth_Range_Upsample = single(minmaxnormalize_image(roi_crop, Range_Meta.V_MAX_Q_L, Range_Meta.V_MIN_Q_L));
+Azimuth_Range_title = [
+    "Azimuth-Range MixUpsample q" + num2str(q) + " 1bit"; 
+    "SSIM: " + num2str(ssim(Azimuth_Range_Upsample, img_gt))
+];
+subplot(224);imagesc(Azimuth_Range_Upsample);axis image;colorbar;title(Azimuth_Range_title);
 movegui('center');
 
 
@@ -101,27 +135,67 @@ movegui('center');
 %% =================== assistant function ==================
 %% =========================================================
 % 一次生成方位向全局RT阈值
-function [U_master_seq, sigma_seq, A_rt] = Azimuth_Build_RT(seq60_input, Azimuth_q, As)
-    seq_up = azimuth_upsample_fft(seq60_input, Azimuth_q);   % [1200 x (q*2992)]
+function [U, sigma, A_rt] = Azimuth_Build_RT(input60, Azimuth_q, As)
+    signal_up = azimuth_upsample_fft(input60, Azimuth_q);   % [1200 x (q*2992)]
 
-    sigma_seq = sqrt(2 / pi) * mean(abs(seq_up(:)));
-    A_rt = As * sigma_seq;
+    sigma = sqrt(2 / pi) * mean(abs(signal_up(:)));
+    A_rt = As * sigma;
 
-    phi_seq = 2 * pi * rand(1, size(seq_up, 2));     % 序列级唯一随机相位
-    U_master_seq = A_rt * exp(1i * phi_seq);         % [1 x (q*2992)]
+    phi = 2 * pi * rand(1, size(signal_up, 2));     % 序列级唯一随机相位
+    U = A_rt * exp(1i * phi);         % [1 x (q*2992)]
 end
 
 % 一次生成距离向全局RT阈值
-function [U_master_seq, sigma_seq, A_rt] = Range_Build_RT(seq60_input, Range_q, As)
-    seq_up = range_upsample_fft(seq60_input, Range_q);   % [q*1200 x 2992]
+function [U, sigma, A_rt] = Range_Build_RT(input60, Range_q, As)
+    signal_up = range_upsample_fft(input60, Range_q);   % [q*1200 x 2992]
     
-    % 上采样后的阈值和没有上采样的阈值是一致的，这里可以统一用sigma_seq
-    sigma_seq = sqrt(2 / pi) * mean(abs(seq_up(:)));
-    A_rt = As * sigma_seq;
+    % 上采样后的阈值和没有上采样的阈值是一致的，这里可以统一用sigma
+    sigma = sqrt(2 / pi) * mean(abs(signal_up(:)));
+    A_rt = As * sigma;
 
-    phi_seq = 2 * pi * rand(size(seq_up, 1), 1);     % 序列级唯一随机相位
-    U_master_seq = A_rt * exp(1i * phi_seq);         % [q*1200 x 1]
+    phi = 2 * pi * rand(size(signal_up, 1), 1);     % 序列级唯一随机相位
+    U = A_rt * exp(1i * phi);         % [q*1200 x 1]
 end
+
+% 2维上采样，先距离再方位。
+% 理论上两者间的顺序不影响
+function S_up = two_dim_upsample_fft(S, q_azimuth, q_range)
+    S_up = S;
+
+    if q_range > 1
+        S_up = range_upsample_fft(S_up, q_range);
+    end
+
+    if q_azimuth > 1
+        S_up = azimuth_upsample_fft(S_up, q_azimuth);
+    end
+end
+
+% 2维下采样
+function S_down = two_dim_downsample_fft(S, q_azimuth, q_range, meta)
+    S_down = S;
+    if q_azimuth > 1
+        S_down = crop_azimuth_doppler_to_width(S_down, meta.nan);
+    end
+
+    if q_range > 1
+        S_down = crop_range_doppler_to_width(S_down, meta.nrn);
+    end
+    
+    
+end
+
+% 生成二维 full RT 阈值场
+function [U, sigma, A_rt] = Build_2D_RT(input60, Azimuth_q, Range_q, As)
+    signal_up = two_dim_upsample_fft(input60, Range_q, Azimuth_q);
+
+    sigma = sqrt(2 / pi) * mean(abs(signal_up(:)));
+    A_rt = As * sigma;
+
+    phi = 2 * pi * rand(size(signal_up));
+    U = A_rt * exp(1i * phi);
+end
+
 
 % 附带RT阈值的1bit量化
 function S1 = quantize_1bit_with_U(S, U)
