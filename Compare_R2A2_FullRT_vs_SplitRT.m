@@ -18,12 +18,11 @@ seed = 42;
 rng(seed);
 
 % 数据集与实验配置
-% 可选的数据集文件夹名字
+% DIR_LIST 中列出需要参与统计的底图数据集文件夹
 DIR_LIST = ["SAR_Dataset_Bangkok_1", "SAR_Dataset_city1_histeq", ...
             "SAR_Dataset_city2_histeq", "SAR_Dataset_SAR_figure", ...
             "SAR_Dataset_filed", "SAR_Dataset_port", "SAR_Dataset_suburb"];
-data_figure = "SAR_Dataset_city2_histeq";
-data_folder = replace("G:\MATLAB-G\SAR Full PSF\temp\", "temp", data_figure);
+data_root = "G:\MATLAB-G\SAR Full PSF";
 file_pattern = "rstart *.mat";
 
 % R2A2 配置：这里固定为 2x 方位 + 2x 距离
@@ -33,8 +32,8 @@ Range_q = 2;
 % As 扫描范围
 As_list = 0:0.1:1.0;
 
-% 每个 As 的分层抽样数量
-num_samples = 10;
+% 每个数据集在每个 As 下固定抽取的样本数量
+num_samples_per_dataset = 20;
 
 % 输出目录
 output_dir = fullfile(pwd, "RT_Compare_R2A2_Output");
@@ -43,23 +42,19 @@ if ~exist(output_dir, "dir")
 end
 
 %% ==================== 构建样本列表 ====================
-file_structs = dir(fullfile(data_folder, file_pattern));
-if isempty(file_structs)
-    error("未在数据目录中找到任何 rstart *.mat 文件。");
+% 对每个数据集分别做分层抽样，然后把所有样本合并到同一个评测列表中
+[sample_meta, valid_dataset_names] = build_samples_for_all_datasets( ...
+    DIR_LIST, data_root, file_pattern, S60, num_samples_per_dataset);
+num_samples = numel(sample_meta);
+
+if num_samples == 0
+    error("没有构建出任何有效样本，请检查 DIR_LIST 和数据目录。");
 end
-
-% 按文件名中的数字排序，避免字符串排序导致 1201 排在 301 前面
-file_names = {file_structs.name};
-file_order_keys = cellfun(@extract_rstart_number, file_names);
-[~, order_idx] = sort(file_order_keys);
-file_structs = file_structs(order_idx);
-
-% 先统计每个文件能提供多少个有效窗口，再在全局窗口上分层抽样
-sample_meta = build_global_stratified_samples(file_structs, data_folder, S60, num_samples);
 
 %% ==================== 预先构建固定 GT 样本 ====================
 % GT 与 As 无关，因此只需要为抽中的 10 个样本各算一次
 sample_cache = repmat(struct( ...
+    "dataset_name", "", ...
     "file_name", "", ...
     "file_path", "", ...
     "c_start", 0, ...
@@ -76,6 +71,7 @@ for sample_idx = 1:num_samples
     channel_block = raw_data(:, current_meta.c_start:current_meta.c_start + S60.nrn - 1);
     signal60_input = channel_block(1:3:end, :);
 
+    sample_cache(sample_idx).dataset_name = current_meta.dataset_name;
     sample_cache(sample_idx).file_name = current_meta.file_name;
     sample_cache(sample_idx).file_path = current_meta.file_path;
     sample_cache(sample_idx).c_start = current_meta.c_start;
@@ -151,7 +147,7 @@ save(fullfile(output_dir, "R2A2_FullRT_vs_SplitRT_metrics.mat"), ...
     "ssim_full_mean", "ssim_split_mean", ...
     "psnr_full_std", "psnr_split_std", ...
     "ssim_full_std", "ssim_split_std", ...
-    "sample_meta");
+    "sample_meta", "valid_dataset_names", "num_samples_per_dataset");
 
 %% ==================== 绘制 PSNR 曲线图 ====================
 plot_metric_curve( ...
@@ -187,6 +183,44 @@ function value = extract_rstart_number(file_name)
     value = str2double(tokens{1});
 end
 
+% 遍历 DIR_LIST 中的所有数据集，并在每个数据集内部独立做分层抽样
+function [sample_meta, valid_dataset_names] = build_samples_for_all_datasets( ...
+    dir_list, data_root, file_pattern, S60, num_samples_per_dataset)
+
+    sample_meta = struct("dataset_name", {}, "file_name", {}, "file_path", {}, "c_start", {});
+    valid_dataset_names = strings(0, 1);
+
+    for dataset_idx = 1:numel(dir_list)
+        dataset_name = dir_list(dataset_idx);
+        data_folder = fullfile(data_root, dataset_name);
+
+        if ~exist(data_folder, "dir")
+            warning("数据集文件夹不存在，已跳过：%s", data_folder);
+            continue;
+        end
+
+        file_structs = dir(fullfile(data_folder, file_pattern));
+        if isempty(file_structs)
+            warning("数据集目录中未找到任何 rstart *.mat 文件，已跳过：%s", data_folder);
+            continue;
+        end
+
+        % 按文件名中的数字排序，避免字符串排序导致时序打乱
+        file_names = {file_structs.name};
+        file_order_keys = cellfun(@extract_rstart_number, file_names);
+        [~, order_idx] = sort(file_order_keys);
+        file_structs = file_structs(order_idx);
+
+        current_meta = build_global_stratified_samples(file_structs, data_folder, S60, num_samples_per_dataset);
+        for meta_idx = 1:numel(current_meta)
+            current_meta(meta_idx).dataset_name = char(dataset_name);
+        end
+
+        sample_meta = [sample_meta; current_meta(:)]; %#ok<AGROW>
+        valid_dataset_names(end + 1, 1) = dataset_name; %#ok<AGROW>
+    end
+end
+
 % 在全局有效窗口上做分层抽样，尽量覆盖完整 SAR 回波序列
 function sample_meta = build_global_stratified_samples(file_structs, data_folder, S60, num_samples)
     num_files = numel(file_structs);
@@ -213,7 +247,7 @@ function sample_meta = build_global_stratified_samples(file_structs, data_folder
 
     total_windows = sum(window_counts);
     cumulative_counts = cumsum(window_counts);
-    sample_meta = repmat(struct("file_name", "", "file_path", "", "c_start", 0), num_samples, 1);
+    sample_meta = repmat(struct("dataset_name", "", "file_name", "", "file_path", "", "c_start", 0), num_samples, 1);
 
     for sample_idx = 1:num_samples
         % 使用每个分层区间的中心位置，保证抽样均匀分布
