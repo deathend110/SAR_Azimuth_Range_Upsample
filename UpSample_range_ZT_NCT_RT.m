@@ -2,12 +2,13 @@ clear; close all;
 
 %% ==================== 用户参数 ====================
 % 距离向上采样
-q_list = 1:10;              % q=1到q=10
-num_A = 21;                 % NCT 幅度扫描点数（分位数）
+q_list = 2:5;              % q=1到q=10
+% q_list = [2, 2.3, 2.7, 3, 3.4, 3.8, 4, 4.2, 4.6];
+num_A = 11;                 % NCT 幅度扫描点数（分位数）
 p_min = 5;
 p_max = 95;
 
-num_k = 21;                 % RT 幅度扫描点数（sigma_ref倍数）
+num_k = 11;                 % RT 幅度扫描点数（sigma_ref倍数）
 k_min = 0.1;
 k_max = 1.5;
 n_repeat_rt = 5;            % RT 每个A重复次数，取均值更稳
@@ -19,7 +20,12 @@ show_best_images = true;    % 是否展示每个方法全局最佳图像
 load("Generate_SAR.mat");
 
 % load("FS60_params.mat");
-% data = load("SAR_data/rstart 1801.mat").channel_1;
+% data_figure = "SAR_Dataset_city2_histeq";
+% data_root = "G:\MATLAB-G\SAR Full PSF";
+% data_folder = fullfile(data_root, data_figure);
+% data_name = "rstart 2401.mat";
+% data_path = fullfile(data_folder, data_name);
+% data = load(data_path).channel_1;
 % c_start = 2200;
 % channel_1 = data(:, c_start:c_start+nrn-1);
 % channel_1 = channel_1(1:3:end, :);

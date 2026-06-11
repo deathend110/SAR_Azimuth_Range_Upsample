@@ -1,13 +1,12 @@
 clear;clc;close all;
 
 %% 单次RxAx混合上采样实验代码，验证方位向和距离向的同步上采样混合策略
-%  
 %% ==================== 参数加载 ====================
 S60 = load("FS60_params.mat");
 % RT / mixed 参数
 seed = 42;
 rng(seed);
-Azimuth_q_m     = 2;       % 混合AR上采样的单独方位向上采样倍率
+Azimuth_q_m     = 1.5;       % 混合AR上采样的单独方位向上采样倍率
 Range_q_m       = 2;       % 混合AR上采样的单独方位向上采样倍率
 q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 
@@ -18,19 +17,19 @@ As              = 0.6;     % RT 阈值系数
 %% 加载回波数据和成像参数
 data_figure = "SAR_Dataset_city2_histeq";
 data_folder = replace("G:\MATLAB-G\SAR Full PSF\temp\", "temp", data_figure);
-data_name = "rstart 2401.mat";
+data_name = "rstart 301.mat";
 data = load(data_folder+data_name).channel_1;
 c_start = 6500;
 channel_1 = data(:, c_start:c_start+S60.nrn-1);
 signal60_input = channel_1(1:3:end, :);
 
 %% 载入该底图归一化参数文件
-% 全方位向
-Azimuth_THpath = fullfile(data_folder, data_figure + "_azimuthq"+ num2str(Azimuth_q) + ".mat");
-Azimuth_Meta = load(Azimuth_THpath);
-% 全距离向
-Range_THpath = fullfile(data_folder, data_figure + "_rangeq"+ num2str(Range_q) + ".mat");
-Range_Meta = load(Range_THpath);
+% % 全方位向
+% Azimuth_THpath = fullfile(data_folder, data_figure + "_azimuthq"+ num2str(Azimuth_q) + ".mat");
+% Azimuth_Meta = load(Azimuth_THpath);
+% % 全距离向
+% Range_THpath = fullfile(data_folder, data_figure + "_rangeq"+ num2str(Range_q) + ".mat");
+% Range_Meta = load(Range_THpath);
 
 
 %% GT
@@ -101,7 +100,7 @@ subplot(223);imagesc(Range_Upsample);axis image;colorbar;title(Range_title);
 
 %% Azimuth-Range MixUpsample
 % 生成2D RT阈值
-[U_master_patch, sigma, A_rt] = Build_2D_RT(signal60_input, Azimuth_q_m, Range_q_m, As);
+[U_master_patch, sigma, A_rt] = Build_2D_SplitRT(signal60_input, Azimuth_q_m, Range_q_m, As);
 
 % 上采样
 signal60_patch_high = two_dim_upsample_fft(signal60_input, Azimuth_q_m, Range_q_m);
@@ -134,7 +133,7 @@ Azimuth_Range_title = [
     "SSIM: " + num2str(ssim(Azimuth_Range_Upsample, img_gt))+"   PSNR: " + num2str(psnr(Azimuth_Range_Upsample, img_gt))
 ];
 subplot(224);imagesc(Azimuth_Range_Upsample);axis image;colorbar;title(Azimuth_Range_title);
-movegui('center');
+% movegui('center');
 
 
 %% =========================================================

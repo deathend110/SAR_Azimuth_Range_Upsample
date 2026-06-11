@@ -1,0 +1,618 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+
+<link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color: #ffffff; --text-color: #333333; --select-text-bg-color: #B5D6FC; --select-text-font-color: auto; --monospace: "Lucida Console",Consolas,"Courier",monospace; --title-bar-height: 20px; }
+.mac-os-11 { --title-bar-height: 28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, h5 { white-space: pre-wrap; }
+body { margin: 0px; padding: 0px; height: auto; inset: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; position: relative; }
+#write svg h1, #write svg h2, #write svg h3, #write svg h4, #write svg h5, #write svg h6, #write svg p { position: static; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+thead, tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-fences-adv-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+svg { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; border-color: transparent !important; padding-top: 0px !important; padding-bottom: 0px !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+  #write > p:nth-child(1) { margin-top: 0px; }
+  .typora-export-show-outline .typora-export-sidebar { display: none; }
+  figure { overflow-x: visible; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.reversefootnote { font-family: ui-monospace, sans-serif; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.6; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+.md-expand mark .md-meta { opacity: 0.3 !important; }
+mark .md-meta { color: rgb(0, 0, 0); }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-fences.md-fences-math { font-size: 1em; }
+.md-fences-advanced:not(.md-focus) { padding: 0px; white-space: nowrap; border: 0px; }
+.md-fences-advanced:not(.md-focus) { background: inherit; }
+.mermaid-svg { margin: auto; }
+.typora-export-show-outline .typora-export-content { max-width: 1440px; margin: auto; display: flex; flex-direction: row; }
+.typora-export-sidebar { width: 300px; font-size: 0.8rem; margin-top: 80px; margin-right: 18px; }
+.typora-export-show-outline #write { --webkit-flex: 2; flex: 2 1 0%; }
+.typora-export-sidebar .outline-content { position: fixed; top: 0px; max-height: 100%; overflow: hidden auto; padding-bottom: 30px; padding-top: 60px; width: 300px; }
+@media screen and (max-width: 1024px) {
+  .typora-export-sidebar, .typora-export-sidebar .outline-content { width: 240px; }
+}
+@media screen and (max-width: 800px) {
+  .typora-export-sidebar { display: none; }
+}
+.outline-content li, .outline-content ul { margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px; list-style: none; overflow-wrap: anywhere; }
+.outline-content ul { margin-top: 0px; margin-bottom: 0px; }
+.outline-content strong { font-weight: 400; }
+.outline-expander { width: 1rem; height: 1.42857rem; position: relative; display: table-cell; vertical-align: middle; cursor: pointer; padding-left: 4px; }
+.outline-expander::before { content: ""; position: relative; font-family: Ionicons; display: inline-block; font-size: 8px; vertical-align: middle; }
+.outline-item { padding-top: 3px; padding-bottom: 3px; cursor: pointer; }
+.outline-expander:hover::before { content: ""; }
+.outline-h1 > .outline-item { padding-left: 0px; }
+.outline-h2 > .outline-item { padding-left: 1em; }
+.outline-h3 > .outline-item { padding-left: 2em; }
+.outline-h4 > .outline-item { padding-left: 3em; }
+.outline-h5 > .outline-item { padding-left: 4em; }
+.outline-h6 > .outline-item { padding-left: 5em; }
+.outline-label { cursor: pointer; display: table-cell; vertical-align: middle; text-decoration: none; color: inherit; }
+.outline-label:hover { text-decoration: underline; }
+.outline-item:hover { border-color: rgb(245, 245, 245); background-color: var(--item-hover-bg-color); }
+.outline-item:hover { margin-left: -28px; margin-right: -28px; border-left: 28px solid transparent; border-right: 28px solid transparent; }
+.outline-item-single .outline-expander::before, .outline-item-single .outline-expander:hover::before { display: none; }
+.outline-item-open > .outline-item > .outline-expander::before { content: ""; }
+.outline-children { display: none; }
+.info-panel-tab-wrapper { display: none; }
+.outline-item-open > .outline-children { display: block; }
+.typora-export .outline-item { padding-top: 1px; padding-bottom: 1px; }
+.typora-export .outline-item:hover { margin-right: -8px; border-right: 8px solid transparent; }
+.typora-export .outline-expander::before { content: "+"; font-family: inherit; top: -1px; }
+.typora-export .outline-expander:hover::before, .typora-export .outline-item-open > .outline-item > .outline-expander::before { content: "−"; }
+.typora-export-collapse-outline .outline-children { display: none; }
+.typora-export-collapse-outline .outline-item-open > .outline-children, .typora-export-no-collapse-outline .outline-children { display: block; }
+.typora-export-no-collapse-outline .outline-expander::before { content: "" !important; }
+.typora-export-show-outline .outline-item-active > .outline-item .outline-label { font-weight: 700; }
+.md-inline-math-container mjx-container { zoom: 0.95; }
+mjx-container { break-inside: avoid; }
+.md-alert.md-alert-note { border-left-color: rgb(9, 105, 218); }
+.md-alert.md-alert-important { border-left-color: rgb(130, 80, 223); }
+.md-alert.md-alert-warning { border-left-color: rgb(154, 103, 0); }
+.md-alert.md-alert-tip { border-left-color: rgb(31, 136, 61); }
+.md-alert.md-alert-caution { border-left-color: rgb(207, 34, 46); }
+.md-alert { padding: 0px 1em; margin-bottom: 16px; color: inherit; border-left: 0.25em solid rgb(0, 0, 0); }
+.md-alert-text-note { color: rgb(9, 105, 218); }
+.md-alert-text-important { color: rgb(130, 80, 223); }
+.md-alert-text-warning { color: rgb(154, 103, 0); }
+.md-alert-text-tip { color: rgb(31, 136, 61); }
+.md-alert-text-caution { color: rgb(207, 34, 46); }
+.md-alert-text { font-size: 0.9rem; font-weight: 700; }
+.md-alert-text svg { fill: currentcolor; position: relative; top: 0.125em; margin-right: 1ch; overflow: visible; }
+.md-alert-text-container::after { content: attr(data-text); text-transform: capitalize; pointer-events: none; margin-right: 1ch; }
+
+
+:root {
+    --side-bar-bg-color: #fafafa;
+    --control-text-color: #777;
+}
+
+@include-when-export url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext);
+
+/* open-sans-regular - latin-ext_latin */
+  /* open-sans-italic - latin-ext_latin */
+    /* open-sans-700 - latin-ext_latin */
+    /* open-sans-700italic - latin-ext_latin */
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-family: "Open Sans","Clear Sans", "Helvetica Neue", Helvetica, Arial, 'Segoe UI Emoji', sans-serif;
+    color: rgb(51, 51, 51);
+    line-height: 1.6;
+}
+
+#write {
+    max-width: 860px;
+  	margin: 0 auto;
+  	padding: 30px;
+    padding-bottom: 100px;
+}
+
+@media only screen and (min-width: 1400px) {
+	#write {
+		max-width: 1024px;
+	}
+}
+
+@media only screen and (min-width: 1800px) {
+	#write {
+		max-width: 1200px;
+	}
+}
+
+#write > ul:first-child,
+#write > ol:first-child{
+    margin-top: 30px;
+}
+
+a {
+    color: #4183C4;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+h1 tt,
+h1 code {
+    font-size: inherit;
+}
+h2 tt,
+h2 code {
+    font-size: inherit;
+}
+h3 tt,
+h3 code {
+    font-size: inherit;
+}
+h4 tt,
+h4 code {
+    font-size: inherit;
+}
+h5 tt,
+h5 code {
+    font-size: inherit;
+}
+h6 tt,
+h6 code {
+    font-size: inherit;
+}
+h1 {
+    font-size: 2.25em;
+    line-height: 1.2;
+    border-bottom: 1px solid #eee;
+}
+h2 {
+    font-size: 1.75em;
+    line-height: 1.225;
+    border-bottom: 1px solid #eee;
+}
+
+/*@media print {
+    .typora-export h1,
+    .typora-export h2 {
+        border-bottom: none;
+        padding-bottom: initial;
+    }
+
+    .typora-export h1::after,
+    .typora-export h2::after {
+        content: "";
+        display: block;
+        height: 100px;
+        margin-top: -96px;
+        border-top: 1px solid #eee;
+    }
+}*/
+
+h3 {
+    font-size: 1.5em;
+    line-height: 1.43;
+}
+h4 {
+    font-size: 1.25em;
+}
+h5 {
+    font-size: 1em;
+}
+h6 {
+   font-size: 1em;
+    color: #777;
+}
+p,
+blockquote,
+ul,
+ol,
+dl,
+table{
+    margin: 0.8em 0;
+}
+li>ol,
+li>ul {
+    margin: 0 0;
+}
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+li p.first {
+    display: inline-block;
+}
+ul,
+ol {
+    padding-left: 30px;
+}
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding: 0 15px;
+    color: #777777;
+}
+blockquote blockquote {
+    padding-right: 0;
+}
+table {
+    padding: 0;
+    word-break: initial;
+}
+table tr {
+    border: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+table tr:nth-child(2n),
+thead {
+    background-color: #f8f8f8;
+}
+table th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    margin: 0;
+    padding: 6px 13px;
+}
+table td {
+    border: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 6px 13px;
+}
+table th:first-child,
+table td:first-child {
+    margin-top: 0;
+}
+table th:last-child,
+table td:last-child {
+    margin-bottom: 0;
+}
+
+.CodeMirror-lines {
+    padding-left: 4px;
+}
+
+.code-tooltip {
+    box-shadow: 0 1px 1px 0 rgba(0,28,36,.3);
+    border-top: 1px solid #eef2f2;
+}
+
+.md-fences,
+code,
+tt {
+    border: 1px solid #e7eaed;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    padding: 0;
+    padding: 2px 4px 0px 4px;
+    font-size: 0.9em;
+}
+
+code {
+    background-color: #f3f4f4;
+    padding: 0 2px 0 2px;
+}
+
+.md-fences {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    padding-top: 8px;
+    padding-bottom: 6px;
+}
+
+
+.md-task-list-item > input {
+  margin-left: -1.3em;
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+    pre {
+        page-break-inside: avoid;
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+	background-color: #f8f8f8;
+}
+#write pre.md-meta-block {
+	padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block>.code-tooltip {
+	bottom: .375rem;
+}
+
+.md-mathjax-midline {
+    background: #fafafa;
+}
+
+#write>h3.md-focus:before{
+	left: -1.5625rem;
+	top: .375rem;
+}
+#write>h4.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h5.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+#write>h6.md-focus:before{
+	left: -1.5625rem;
+	top: .285714286rem;
+}
+.md-image>.md-meta {
+    /*border: 1px solid #ddd;*/
+    border-radius: 3px;
+    padding: 2px 0px 0px 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: #a7a7a7;
+    opacity: 1;
+}
+
+.md-toc { 
+    margin-top:20px;
+    padding-bottom:20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+/** focus mode */
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header, .context-menu, .megamenu-content, footer{
+    font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state{
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: #fafafa;
+    background-color: var(--side-bar-bg-color);
+}
+
+.mac-os #write{
+    caret-color: AccentColor;
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+/*.html-for-mac {
+    --item-hover-bg-color: #E6F0FE;
+}*/
+
+#md-notification .btn {
+    border: 0;
+}
+
+.dropdown-menu .divider {
+    border-color: #e5e5e5;
+    opacity: 0.4;
+}
+
+.ty-preferences .window-content {
+    background-color: #fafafa;
+}
+
+.ty-preferences .nav-group-item.active {
+    color: white;
+    background: #999;
+}
+
+.menu-item-container a.menu-style-btn {
+    background-color: #f5f8fa;
+    background-image: linear-gradient( 180deg , hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0)); 
+}
+
+
+
+</style><title>阶段0：BRAU补全实验设计</title>
+</head>
+<body class='typora-export os-windows'><div class='typora-export-content'>
+<div id='write'  class=''><h1 id='阶段0brau补全实验设计'><span>阶段0：BRAU补全实验设计</span></h1><h2 id='0-目标说明'><span>0. 目标说明</span></h2><p><span>本文阶段0实验的目标，是围绕以下三个核心创新点补齐证据链，并形成可直接进入会议论文实验部分的结果材料。</span></p><h3 id='核心创新点'><span>核心创新点</span></h3><ol start='' ><li><p><span>提出一种面向 1-bit SAR 成像的距离向-方位向双向 </span><code>RxAx</code><span> 上采样框架。</span></p></li><li><p><span>揭示双向拆分整体优于单向上采样，且严格平方根均衡并非必要条件。</span></p></li><li><p><span>提出并验证一种具有鲁棒性的双向拆分设计准则，即在不同 </span><code>RT</code><span> 阈值场构造方式、不同 </span><code>As</code><span> 参数以及不同 </span><code>Q</code><span> 值下，“双向拆分优先”的规律仍然稳定成立。</span></p></li></ol><h3 id='本文档使用方式'><span>本文档使用方式</span></h3><ul><li><p><span>本文档按“先统一设置，再逐组实验，再统一整理结果”的顺序编排。</span></p></li><li><p><span>每一项任务均带有勾选框，完成后可直接勾选。</span></p></li><li><p><span>每组实验都写明了：</span></p><ul><li><p><span>实验目的</span></p></li><li><p><span>输入设置</span></p></li><li><p><span>操作步骤</span></p></li><li><p><span>必须产出</span></p></li><li><p><span>对应支撑的创新点</span></p></li></ul></li></ul><hr /><h2 id='1-当前已完成的证据'><span>1. 当前已完成的证据</span></h2><h3 id='11-已确认结论'><span>1.1 已确认结论</span></h3><ul><li class='md-task-list-item task-list-item task-list-done' ><input type='checkbox' checked/><p><span>修复 </span><code>minmax</code><span> 归一化问题，改为统一 </span><code>/max</code><span> 归一化。</span></p></li><li class='md-task-list-item task-list-item task-list-done' ><input type='checkbox' checked/><p><span>在 </span><code>R2A2</code><span> 条件下验证：修复归一化后，双向上采样优于单向上采样。</span></p></li><li class='md-task-list-item task-list-item task-list-done' ><input type='checkbox' checked/><p><span>对比 </span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span>，发现两者在 </span><code>R2A2</code><span> 下曲线基本重合，</span><code>SplitRT</code><span> 略优但差异很小。</span></p></li><li class='md-task-list-item task-list-item task-list-done' ><input type='checkbox' checked/><p><span>在多组 </span><code>Q</code><span> 和 </span><code>R×A</code><span> 组合下观察到：只要 </span><code>R &gt; 1</code><span> 且 </span><code>A &gt; 1</code><span>，双向拆分通常优于纯单向上采样。</span></p></li><li class='md-task-list-item task-list-item task-list-done' ><input type='checkbox' checked/><p><span>观察到：当 </span><code>Q</code><span> 增大后，多个双向组合会进入性能平台，是否严格接近平方根不再是决定性因素。</span></p></li></ul><h3 id='12-当前仍需补齐的证据'><span>1.2 当前仍需补齐的证据</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐统一主基线，包括“无上采样”基线。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐多随机种子、多场景、多序列的统计稳健性。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐 </span><code>As</code><span> 敏感性实验，形成推荐区间。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐机制证据，包括中间过程图、频谱图、剖面图或统计图。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐复杂度与代价分析。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>补齐失败案例和边界条件总结。</span></p></li></ul><hr /><h2 id='2-统一实验设置'><span>2. 统一实验设置</span></h2><p><span>本节必须先固定，后续所有实验均使用相同设置，避免结论被设置差异污染。</span></p><h3 id='21-数据与抽样设置'><span>2.1 数据与抽样设置</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>确定参与实验的数据集文件夹列表。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个底图文件夹固定抽取 </span><code>20</code><span> 张图像。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>所有方法使用完全相同的抽样索引。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>抽样方式统一为分层抽样或等间隔抽样，并记录规则。</span></p></li></ul><p><span>建议记录字段：</span></p><ul><li><p><span>数据集名称</span></p></li><li><p><span>总帧数</span></p></li><li><p><span>抽样帧索引</span></p></li><li><p><span>抽样数量</span></p></li></ul><h3 id='22-统一算法设置'><span>2.2 统一算法设置</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>全部方法统一使用 </span><code>/max</code><span> 归一化。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>全部方法统一使用相同成像流程和评价窗口。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>固定 </span><code>Q</code><span> 序列为：</span><code>[4, 6, 8, 9, 12, 16, 24, 36]</code><span>。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>固定 </span><code>As</code><span> 扫描范围为：</span><code>0:0.1:1</code><span>。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>固定 </span><code>RT</code><span> 类型至少包括：</span><code>NoRT(As=0)</code><span>、</span><code>FullRT</code><span>、</span><code>SplitRT</code><span>。</span></p></li></ul><h3 id='23-随机性控制'><span>2.3 随机性控制</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>固定随机种子列表，建议至少 </span><code>5</code><span> 个。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>同一组实验中，所有方法共享同一批随机种子。</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>输出结果时记录每个样本、每个随机种子的明细。</span></p></li></ul><p><span>推荐随机种子数：</span></p><ul><li><p><span>最低可投稿版本：</span><code>5</code></p></li><li><p><span>更稳妥版本：</span><code>10</code></p></li></ul><h3 id='24-评价指标'><span>2.4 评价指标</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>主指标：</span><code>PSNR</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>主指标：</span><code>SSIM</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>辅助指标：平均运行时间</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>辅助指标：峰值内存占用（若方便测量）</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>统计量：均值、标准差、显著性检验</span></p></li></ul><hr /><h2 id='3-实验一主结果实验'><span>3. 实验一：主结果实验</span></h2><h3 id='31-实验目的'><span>3.1 实验目的</span></h3><p><span>验证以下命题：</span></p><ul><li><p><span>双向 </span><code>RxAx</code><span> 上采样整体优于单向上采样。</span></p></li><li><p><span>在固定总上采样预算 </span><code>Q</code><span> 下，是否严格接近平方根均衡不是必要条件。</span></p></li></ul><h3 id='32-基线设置'><span>3.2 基线设置</span></h3><p><span>对每个 </span><code>Q</code><span>，至少包含以下四类统一对照：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NoUpsample</code><span>：无上采样基线</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RangeOnly</code><span>：纯距离向上采样，即 </span><code>R=Q, A=1</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>AzimuthOnly</code><span>：纯方位向上采样，即 </span><code>R=1, A=Q</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Bidirectional</code><span>：双向拆分上采样，即 </span><code>R&gt;1, A&gt;1</code></p></li></ul><h3 id='33-具体执行步骤'><span>3.3 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 对每个 </span><code>Q</code><span> 自动枚举所有满足 </span><code>R * A = Q</code><span> 的整数因子组合。</span></p></li><li><p><span>[ ] 固定使用 </span><code>SplitRT + As=0.6</code><span> 跑第一版主实验。</span></p></li><li><p><span>[ ] 在每个数据集、每个随机种子下，对所有组合计算 </span><code>PSNR</code><span> 和 </span><code>SSIM</code><span>。</span></p></li><li><p><span>[ ] 对每个 </span><code>Q</code><span> 统计每个 </span><code>R×A</code><span> 组合的均值和标准差。</span></p></li><li><p><span>[ ] 标记每个 </span><code>Q</code><span> 下的最佳单向组和最佳双向组。</span></p></li></ol><h3 id='34-必须产出'><span>3.4 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 一张 </span><code>PSNR</code><span> 图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 一张 </span><code>SSIM</code><span> 图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份汇总表：每个 </span><code>Q</code><span> 下所有 </span><code>R×A</code><span> 组合的均值、标准差</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份结论表：每个 </span><code>Q</code><span> 下最佳单向组、最佳双向组及其差值</span></p></li></ul><h3 id='35-需要重点观察的问题'><span>3.5 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向组是否稳定优于最佳单向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>小 </span><code>Q</code><span> 时是否“越接近平衡越好”</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>大 </span><code>Q</code><span> 时是否出现多个双向组性能接近的平台区</span></p></li></ul><h3 id='36-对应支撑的创新点'><span>3.6 对应支撑的创新点</span></h3><ul><li><p><span>创新点 1</span></p></li><li><p><span>创新点 2</span></p></li></ul><hr /><h2 id='4-实验二rt-阈值消融实验'><span>4. 实验二：RT 阈值消融实验</span></h2><h3 id='41-实验目的'><span>4.1 实验目的</span></h3><p><span>本实验不再局限于 </span><code>RT</code><span> 家族内部对比，而是扩展为“阈值量化策略泛化实验 + RT 家族内部消融实验”两层结构，目标是回答以下三个问题：</span></p><ul><li><p><span>双向 </span><code>RxAx</code><span> 上采样的优势，是否在不同 1-bit 阈值量化策略下都成立。</span></p></li><li><p><span>相比 </span><code>ZT / NCT / GT</code><span>，结构化 </span><code>RT</code><span> 是否能进一步稳定放大双向拆分的收益。</span></p></li><li><p><span>在 </span><code>RT</code><span> 家族内部，</span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 是否只影响细节，而不改变“双向拆分优先”的主趋势。</span></p></li></ul><h3 id='42-实验设置'><span>4.2 实验设置</span></h3><p><span>建议选取代表性 </span><code>Q</code><span>：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Q=4</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Q=12</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Q=24</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Q=36</code></p></li></ul><h3 id='43-阈值策略定义'><span>4.3 阈值策略定义</span></h3><p><span>本实验统一比较以下四类阈值量化策略：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>ZT</code><span>：零阈值 1-bit 量化，对应 </span><code>NoRT, As=0</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT</code><span>：全局固定阈值 1-bit 量化</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT</code><span>：全局零均值高斯随机阈值场</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span>：本文方法族，包括 </span><code>FullRT</code><span> 与 </span><code>SplitRT</code></p></li></ul><h3 id='44-各阈值策略的实验角色'><span>4.4 各阈值策略的实验角色</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>ZT</code><span> 作为最基础的 1-bit 量化基线</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT</code><span> 作为固定阈值基线，用于排除“任意非零阈值都有效”的解释</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT</code><span> 作为无结构随机阈值基线，用于排除“只要引入随机噪声阈值就足够”的解释</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span> 作为结构化随机阈值方法，用于体现本文方法的优势</span></p></li></ul><h3 id='45-参数匹配原则'><span>4.5 参数匹配原则</span></h3><p><span>为保证比较公平，不同阈值策略必须统一强度参考尺度。</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>所有阈值强度统一参考同一个全局尺度 </span><code>sigma_ref</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT</code><span> 设为 </span><code>T = c * sigma_ref</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT</code><span> 设为 </span><code>T(i,j) ~ N(0, (c * sigma_ref)^2)</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span> 设为 </span><code>A_rt = As * sigma_ref</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>ZT</code><span> 视为 </span><code>c=0</code><span> 或 </span><code>As=0</code><span> 的零阈值特例，但在实验中单独列为一类基线</span></p></li></ul><p><span>说明：</span></p><ul><li><p><code>sigma_ref</code><span> 必须来自同一套统一定义，不能每类阈值各用一套尺度。</span></p></li><li><p><code>GT</code><span> 与 </span><code>RT</code><span> 的比较重点应建立在“强度匹配”而不是“绝对数值大小不同”上。</span></p></li></ul><h3 id='46-每个-q-下建议保留的-rxax-组'><span>4.6 每个 </span><code>Q</code><span> 下建议保留的 </span><code>RxAx</code><span> 组</span></h3><p><span>为防止图过乱，每个 </span><code>Q</code><span> 下优先保留以下四类：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>最佳纯距离向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>最佳纯方位向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>近均衡双向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>非均衡双向组</span></p></li></ul><hr /><h3 id='47-子实验-2a阈值量化策略横向对比实验'><span>4.7 子实验 2A：阈值量化策略横向对比实验</span></h3><h4 id='471-子实验目的'><span>4.7.1 子实验目的</span></h4><p><span>验证“双向拆分优先”的结论是否跨阈值量化策略成立，并突出结构化 </span><code>RT</code><span> 相对于 </span><code>ZT / NCT / GT</code><span> 的优势。</span></p><h4 id='472-第一轮最小对比设置'><span>4.7.2 第一轮最小对比设置</span></h4><p><span>先使用固定代表参数做第一轮轻量实验，避免实验量过大。</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>ZT</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT(c=0.6)</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT(c=0.6)</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>SplitRT(As=0.6)</code></p></li></ul><p><span>如果第一轮结果已经清楚显示主趋势成立，再进入第二轮细化扫描。</span></p><h4 id='473-具体执行步骤'><span>4.7.3 具体执行步骤</span></h4><ol start='' ><li><p><span>[ ] 对每个代表性 </span><code>Q</code><span>，固定一组比较用的 </span><code>R×A</code><span> 组合。</span></p></li><li><p><span>[ ] 在每个 </span><code>Q</code><span> 下，对上述四类阈值策略分别运行纯距离向组、纯方位向组、近均衡双向组和非均衡双向组。</span></p></li><li><p><span>[ ] 统计各组的 </span><code>PSNR</code><span> 和 </span><code>SSIM</code><span> 均值、标准差。</span></p></li><li><p><span>[ ] 计算“最佳双向组 - 最佳单向组”的增益量，作为双向收益增量。</span></p></li><li><p><span>[ ] 比较不同阈值策略下，双向收益增量是否稳定为正。</span></p></li></ol><h4 id='474-第二轮细化扫描设置'><span>4.7.4 第二轮细化扫描设置</span></h4><p><span>当第一轮结果明确后，再做参数扫描：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT</code><span>：扫描 </span><code>c = 0:0.1:1</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT</code><span>：扫描 </span><code>c = 0:0.1:1</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span>：扫描 </span><code>As = 0:0.1:1</code></p></li></ul><p><span>说明：</span></p><ul><li><p><code>ZT</code><span> 对应于 </span><code>c=0</code><span>，可在图例中保留单独标识。</span></p></li><li><p><span>若实验量过大，可先只扫描 </span><code>GT</code><span> 与 </span><code>RT</code><span>，把 </span><code>NCT</code><span> 保留为代表参数版本。</span></p></li></ul><h4 id='475-必须产出'><span>4.7.5 必须产出</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 一张 </span><code>PSNR</code><span> 柱状图，横轴为 </span><code>RxAx</code><span> 组，组内柱子为不同阈值策略</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 一张 </span><code>SSIM</code><span> 柱状图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份双向收益增量表：记录不同阈值策略下“最佳双向组 - 最佳单向组”的差值</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份阈值策略汇总表：比较 </span><code>ZT / NCT / GT / RT</code><span> 的整体表现</span></p></li></ul><h4 id='476-需要重点观察的问题'><span>4.7.6 需要重点观察的问题</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向组是否在 </span><code>ZT / NCT / GT / RT</code><span> 下都普遍优于单向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>NCT</code><span> 是否只能提供有限改善，说明“任意非零阈值”并不足够</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>GT</code><span> 是否虽然也有效，但整体不如 </span><code>RT</code><span> 稳定</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span> 是否在不同 </span><code>Q</code><span> 下更稳定地保持双向优势</span></p></li></ul><hr /><h3 id='48-子实验-2brt-家族内部消融实验'><span>4.8 子实验 2B：RT 家族内部消融实验</span></h3><h4 id='481-子实验目的'><span>4.8.1 子实验目的</span></h4><p><span>验证在 </span><code>RT</code><span> 家族内部，</span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 是否保持一致主趋势，并分析 </span><code>As</code><span> 对性能的影响区间。</span></p><h4 id='482-建议比较的-rt-类型'><span>4.8.2 建议比较的 </span><code>RT</code><span> 类型</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>FullRT</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>SplitRT</code></p></li></ul><h4 id='483-具体执行步骤'><span>4.8.3 具体执行步骤</span></h4><ol start='' ><li><p><span>[ ] 对每个代表性 </span><code>Q</code><span>，固定一组比较用的 </span><code>R×A</code><span> 组合。</span></p></li><li><p><span>[ ] 分别对 </span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 扫描 </span><code>As = 0:0.1:1</code><span>。</span></p></li><li><p><span>[ ] 统计每个 </span><code>As</code><span> 下各方法的 </span><code>PSNR</code><span> 和 </span><code>SSIM</code><span> 均值、标准差。</span></p></li><li><p><span>[ ] 对比在 </span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 下，双向组是否仍优于单向组。</span></p></li><li><p><span>[ ] 总结哪些 </span><code>As</code><span> 区间最稳定，哪些 </span><code>As</code><span> 下方法差异最明显。</span></p></li></ol><h4 id='484-必须产出'><span>4.8.4 必须产出</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 的 </span><code>FullRT vs SplitRT</code><span> </span><code>PSNR-As</code><span> 曲线图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>每个 </span><code>Q</code><span> 的 </span><code>FullRT vs SplitRT</code><span> </span><code>SSIM-As</code><span> 曲线图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份汇总表：统计不同 </span><code>RT</code><span> 内部构造方式、不同 </span><code>As</code><span> 下双向优于单向的成立次数</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一份推荐区间表：给出 </span><code>RT</code><span> 家族的 </span><code>As</code><span> 稳定工作区间</span></p></li></ul><h4 id='485-需要重点观察的问题'><span>4.8.5 需要重点观察的问题</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 是否只影响细节，不改变主趋势</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>As=0</code><span> 是否明显弱于某个中等 </span><code>As</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>RT</code><span> 家族内部是否都支持“双向拆分优先”的设计准则</span></p></li></ul><h3 id='49-实验二的总体结论组织方式'><span>4.9 实验二的总体结论组织方式</span></h3><p><span>实验二最终建议分成两层结论：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>第一层结论：双向 </span><code>RxAx</code><span> 上采样的优势对 </span><code>ZT / NCT / GT / RT</code><span> 具有泛化性</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>第二层结论：在 </span><code>RT</code><span> 家族内部，</span><code>FullRT</code><span> 与 </span><code>SplitRT</code><span> 保持一致主趋势，说明结论不依赖某一种特定 </span><code>RT</code><span> 构造细节</span></p></li></ul><h3 id='410-对应支撑的创新点'><span>4.10 对应支撑的创新点</span></h3><ul><li><p><span>创新点 3</span></p></li></ul><hr /><h2 id='5-实验三统计稳健性实验'><span>5. 实验三：统计稳健性实验</span></h2><h3 id='51-实验目的'><span>5.1 实验目的</span></h3><p><span>将“现象观察”升级为“统计上可信的结论”。</span></p><h3 id='52-具体执行步骤'><span>5.2 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 扩大样本规模，建议至少 </span><code>5</code><span> 个底图场景。</span></p></li><li><p><span>[ ] 每个底图场景抽取 </span><code>20</code><span> 张图，共形成至少 </span><code>100</code><span> 张测试样本。</span></p></li><li><p><span>[ ] 每个方法在 </span><code>5</code><span> 个或 </span><code>10</code><span> 个随机种子下重复实验。</span></p></li><li><p><span>[ ] 输出每个方法的 </span><code>mean ± std</code><span>。</span></p></li><li><p><span>[ ] 对“最佳双向组 vs 最佳单向组”做显著性检验。</span></p></li></ol><h3 id='53-统计检验建议'><span>5.3 统计检验建议</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>首选：配对 </span><code>Wilcoxon signed-rank test</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>备选：配对 </span><code>t-test</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>若可能，补充效应量</span></p></li></ul><h3 id='54-必须产出'><span>5.4 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>显著性检验结果表</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>p-value</code><span> 汇总表</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>关键对照的 </span><code>mean ± std</code><span> 汇总表</span></p></li></ul><h3 id='55-需要重点观察的问题'><span>5.5 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向优于单向是否在统计上显著</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>改善幅度是否跨场景稳定存在</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>是否存在某些场景对随机种子更敏感</span></p></li></ul><h3 id='56-对应支撑的创新点'><span>5.6 对应支撑的创新点</span></h3><ul><li><p><span>创新点 2</span></p></li><li><p><span>创新点 3</span></p></li></ul><hr /><h2 id='6-实验四机制实验'><span>6. 实验四：机制实验</span></h2><h3 id='61-实验目的'><span>6.1 实验目的</span></h3><p><span>回答“为什么双向拆分有效”，而不只是展示最终结果更好。</span></p><h3 id='62-代表案例选择'><span>6.2 代表案例选择</span></h3><p><span>建议每个层级选一个代表性 </span><code>Q</code><span>：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>小 </span><code>Q</code><span>：如 </span><code>Q=4</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>中 </span><code>Q</code><span>：如 </span><code>Q=12</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>大 </span><code>Q</code><span>：如 </span><code>Q=36</code></p></li></ul><p><span>每个 </span><code>Q</code><span> 下建议保留以下方法：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>纯距离向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>纯方位向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>近均衡双向组</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>非均衡双向组</span></p></li></ul><h3 id='63-需要保存的中间结果'><span>6.3 需要保存的中间结果</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>距离压缩后结果</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>方位聚焦后结果</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>最终成像结果</span></p></li></ul><h3 id='64-机制图建议'><span>6.4 机制图建议</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>三阶段并排图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>二维频谱图或能量分布图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>目标点的一维距离向剖面图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>目标点的一维方位向剖面图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>若可实现，补充阈值穿越率或符号翻转率统计图</span></p></li></ul><h3 id='65-具体执行步骤'><span>6.5 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 为每个代表性 </span><code>Q</code><span> 选定固定样本。</span></p></li><li><p><span>[ ] 保存各方法的三阶段中间结果。</span></p></li><li><p><span>[ ] 对同一目标区域生成局部放大图。</span></p></li><li><p><span>[ ] 对同一亮点目标提取距离向与方位向剖面。</span></p></li><li><p><span>[ ] 对比单向与双向方法在两个维度上的差异。</span></p></li></ol><h3 id='66-必须产出'><span>6.6 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>三阶段中间图总览</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>频谱图或能量图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>剖面图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>对机制的文字解释草稿</span></p></li></ul><h3 id='67-需要重点观察的问题'><span>6.7 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向拆分是否同时改善距离向和方位向信息保留</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>单向方法是否只改善一个维度而限制了另一个维度</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>大 </span><code>Q</code><span> 下平台现象是否在中间过程上也能观察到</span></p></li></ul><h3 id='68-对应支撑的创新点'><span>6.8 对应支撑的创新点</span></h3><ul><li><p><span>创新点 1</span></p></li><li><p><span>创新点 2</span></p></li></ul><hr /><h2 id='7-实验五参数敏感性实验'><span>7. 实验五：参数敏感性实验</span></h2><h3 id='71-实验目的'><span>7.1 实验目的</span></h3><p><span>给出 </span><code>As</code><span> 的推荐区间，而不是只给一个经验最优点。</span></p><h3 id='72-具体执行步骤'><span>7.2 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 固定 </span><code>RT</code><span> 类型为 </span><code>SplitRT</code><span>。</span></p></li><li><p><span>[ ] 对每个代表性 </span><code>Q</code><span> 扫描 </span><code>As = 0:0.1:1</code><span>。</span></p></li><li><p><span>[ ] 记录最佳 </span><code>As</code><span>、次优 </span><code>As</code><span> 和稳定区间。</span></p></li><li><p><span>[ ] 比较不同 </span><code>Q</code><span> 下 </span><code>As</code><span> 最优区间是否一致。</span></p></li></ol><h3 id='73-必须产出'><span>7.3 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>As</code><span> 敏感性曲线图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>As</code><span> 推荐区间表</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>各 </span><code>Q</code><span> 下最优 </span><code>As</code><span> 汇总表</span></p></li></ul><h3 id='74-需要重点观察的问题'><span>7.4 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>是否存在统一推荐区间</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>As=0.6</code><span> 是否只是单点最好，还是一个稳定区间内的代表值</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>Q</code><span> 增大后 </span><code>As</code><span> 的敏感性是否减弱</span></p></li></ul><h3 id='75-对应支撑的创新点'><span>7.5 对应支撑的创新点</span></h3><ul><li><p><span>创新点 3</span></p></li></ul><hr /><h2 id='8-实验六复杂度与工程代价实验'><span>8. 实验六：复杂度与工程代价实验</span></h2><h3 id='81-实验目的'><span>8.1 实验目的</span></h3><p><span>回答“效果更好是否值得”这一类工程审稿问题。</span></p><h3 id='82-具体执行步骤'><span>8.2 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 记录每种方法的单样本运行时间。</span></p></li><li><p><span>[ ] 记录每种方法在每个 </span><code>Q</code><span> 下的总耗时。</span></p></li><li><p><span>[ ] 若可行，记录峰值内存占用。</span></p></li><li><p><span>[ ] 绘制性能-时间曲线。</span></p></li><li><p><span>[ ] 总结双向拆分带来的额外代价与性能收益比。</span></p></li></ol><h3 id='83-必须产出'><span>8.3 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>时间统计表</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>内存统计表（可选）</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>性能-代价曲线图</span></p></li></ul><h3 id='84-需要重点观察的问题'><span>8.4 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向拆分是否在可接受代价下获得稳定收益</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>是否存在某些 </span><code>Q</code><span> 继续增大后收益变小但代价显著增加</span></p></li></ul><h3 id='85-对应支撑的创新点'><span>8.5 对应支撑的创新点</span></h3><ul><li><p><span>创新点 1</span></p></li><li><p><span>创新点 2</span></p></li></ul><hr /><h2 id='9-实验七失败案例与边界条件'><span>9. 实验七：失败案例与边界条件</span></h2><h3 id='91-实验目的'><span>9.1 实验目的</span></h3><p><span>让论文结论更可信，避免“永远都好”的过度表述。</span></p><h3 id='92-具体执行步骤'><span>9.2 具体执行步骤</span></h3><ol start='' ><li><p><span>[ ] 找出“最佳双向组相对最佳单向组提升最小”的场景。</span></p></li><li><p><span>[ ] 找出“提升最大”的场景。</span></p></li><li><p><span>[ ] 分析这些场景在纹理、目标分布、场景复杂度上的差异。</span></p></li><li><p><span>[ ] 总结哪些 </span><code>Q</code><span> 区间改善最明显，哪些 </span><code>Q</code><span> 区间进入平台。</span></p></li></ol><h3 id='93-必须产出'><span>9.3 必须产出</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>失败案例图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>边界条件总结表</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一段限制性讨论文字</span></p></li></ul><h3 id='94-需要重点观察的问题'><span>9.4 需要重点观察的问题</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向拆分在哪些场景中优势减弱</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>提升最明显的是小 </span><code>Q</code><span>、中 </span><code>Q</code><span> 还是大 </span><code>Q</code></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>平台区出现后是否仍值得继续增大 </span><code>Q</code></p></li></ul><h3 id='95-对应支撑的创新点'><span>9.5 对应支撑的创新点</span></h3><ul><li><p><span>创新点 2</span></p></li><li><p><span>创新点 3</span></p></li></ul><hr /><h2 id='10-结果整理与论文映射'><span>10. 结果整理与论文映射</span></h2><h3 id='101-论文实验部分建议结构'><span>10.1 论文实验部分建议结构</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>板块一：主结果实验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>板块二：RT 阈值消融实验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>板块三：机制实验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>板块四：工程与边界实验</span></p></li></ul><h3 id='102-每个板块要回答的问题'><span>10.2 每个板块要回答的问题</span></h3><h4 id='板块一主结果实验'><span>板块一：主结果实验</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>双向拆分是否优于单向上采样</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>严格平方根均衡是否必要</span></p></li></ul><h4 id='板块二rt-阈值消融实验'><span>板块二：RT 阈值消融实验</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>该规律是否对 </span><code>RT</code><span> 构造方式鲁棒</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>该规律是否对 </span><code>As</code><span> 变化鲁棒</span></p></li></ul><h4 id='板块三机制实验'><span>板块三：机制实验</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>为什么双向拆分有效</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>是否同时改善了两个维度的信息保留</span></p></li></ul><h4 id='板块四工程与边界实验'><span>板块四：工程与边界实验</span></h4><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>方法代价是否可接受</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>优势在哪些条件下最明显</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>哪些场景下收益减弱</span></p></li></ul><h3 id='103-建议最终形成的图表清单'><span>10.3 建议最终形成的图表清单</span></h3><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>多 </span><code>Q</code><span> 的 </span><code>RxAx</code><span> 主结果图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>多 </span><code>Q</code><span> 的 </span><code>As</code><span> 敏感性图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>FullRT vs SplitRT</code><span> 曲线图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>三阶段中间过程图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>频谱图或剖面图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>运行时间与性能收益图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>失败案例对比图</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>总体汇总表</span></p></li></ul><hr /><h2 id='11-推荐执行顺序'><span>11. 推荐执行顺序</span></h2><p><span>为减少返工，推荐严格按以下顺序推进：</span></p><ol start='' ><li><p><span>[ ] 主结果实验</span></p></li><li><p><span>[ ] RT 阈值消融实验</span></p></li><li><p><span>[ ] 统计稳健性实验</span></p></li><li><p><span>[ ] 机制实验</span></p></li><li><p><span>[ ] 参数敏感性实验</span></p></li><li><p><span>[ ] 工程代价实验</span></p></li><li><p><span>[ ] 失败案例与边界条件总结</span></p></li></ol><hr /><h2 id='12-最小可投稿版本'><span>12. 最小可投稿版本</span></h2><p><span>如果时间有限，至少完成以下五项：</span></p><ul><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>多 </span><code>Q</code><span> 的全部 </span><code>RxAx</code><span> 组合主实验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><code>FullRT / SplitRT / As</code><span> 消融实验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>多场景、多种子均值与标准差统计</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>最佳双向组 vs 最佳单向组显著性检验</span></p></li><li class='md-task-list-item task-list-item task-list-not-done' ><input type='checkbox' /><p><span>一组高质量三阶段机制图</span></p></li></ul><p><span>完成以上五项后，即可形成一版较完整的会议论文实验骨架。</span></p></div></div>
+</body>
+</html>
