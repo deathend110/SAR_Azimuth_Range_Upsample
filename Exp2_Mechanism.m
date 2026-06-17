@@ -69,13 +69,13 @@ for case_idx = 1:numel(case_defs)
 end
 
 %% ==================== 计算机制指标 ====================
-[metric_table, metric_rows] = compute_mechanism_metrics(results, output_dir);
+[metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60, output_dir);
 
 %% ==================== 导出图表 ====================
-export_spectrum_panel(results, output_dir, "node1_channel_1bit", "Exp2_Node1_Quantized_Spectra.png", "Node-1 1-bit Spectra");
+export_spectrum_panel(results, output_dir, "node1_residual", "Exp2_Node1_Residual_Spectra.png", "Node-1 Residual Spectra");
 export_spectrum_panel(results, output_dir, "node2_rc", "Exp2_Node2_RC_Spectra.png", "Node-2 RC Spectra");
-export_center_profiles(results, output_dir, "node1_channel_1bit", "range", "Exp2_Node1_Range_Profile.png");
-export_center_profiles(results, output_dir, "node1_channel_1bit", "azimuth", "Exp2_Node1_Azimuth_Profile.png");
+export_center_profiles(results, output_dir, "node1_residual", "range", "Exp2_Node1_Residual_Range_Profile.png");
+export_center_profiles(results, output_dir, "node1_residual", "azimuth", "Exp2_Node1_Residual_Azimuth_Profile.png");
 export_stage_montage(results, output_dir);
 export_metric_table(metric_table, output_dir);
 
@@ -159,7 +159,7 @@ function [tnrn_up, Fs_up] = build_range_axis_for_upsampled_signal(nrn_up, range_
     tnrn_up = (Tstart_up : Tnrn_up : Tend_up).';
 end
 
-function [metric_table, metric_rows] = compute_mechanism_metrics(results, output_dir)
+function [metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60, output_dir)
     metric_rows = repmat(struct( ...
         "case_name", "", ...
         "node_name", "", ...
@@ -172,8 +172,9 @@ function [metric_table, metric_rows] = compute_mechanism_metrics(results, output
         for node_idx = 1:numel(tracked_nodes)
             node_name = tracked_nodes{node_idx};
             X = results(case_idx).(node_name);
-            % 采用该节点自身的频谱阈值近似有效支撑，避免不同节点尺寸不一致导致的 mask 维度冲突
-            reference_mask = estimate_support_mask(X, 0.35);
+            reference_matrix = build_reference_matrix_for_node(signal60_input, S60, ...
+                results(case_idx).range_q, results(case_idx).azimuth_q, node_name);
+            reference_mask = estimate_support_mask(reference_matrix, 0.35);
             [off_ratio, range_ratio, azimuth_ratio] = compute_leakage_metrics(X, reference_mask);
 
             row = struct();
@@ -193,6 +194,29 @@ end
 function support_mask = estimate_support_mask(reference_matrix, threshold_ratio)
     ref_spec = abs(fftshift(fft2(reference_matrix)));
     support_mask = ref_spec >= threshold_ratio * max(ref_spec(:));
+end
+
+function reference_matrix = build_reference_matrix_for_node(signal60_input, S60, range_q, azimuth_q, node_name)
+    if range_q == 1 && azimuth_q == 1
+        signal_up_ref = signal60_input;
+    else
+        signal_up_ref = two_dim_upsample_fft(signal60_input, azimuth_q, range_q);
+    end
+
+    [tnrn_up, Fs_up] = build_range_axis_for_upsampled_signal(size(signal_up_ref, 1), range_q, S60);
+    RC_ref = Range_Compress(signal_up_ref, S60.fc, tnrn_up, S60.gama, S60.R0, S60.C, Fs_up, S60.Tp);
+    RC_ref_crop = two_dim_downsample_fft(RC_ref, azimuth_q, range_q, S60);
+    RCMC_ref_crop = RCMC(RC_ref_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
+
+    if node_name == "node1_residual"
+        reference_matrix = signal_up_ref;
+    elseif node_name == "node2_rc"
+        reference_matrix = RC_ref_crop;
+    elseif node_name == "node3_rcmc"
+        reference_matrix = RCMC_ref_crop;
+    else
+        error("未知节点名：%s", node_name);
+    end
 end
 
 function [off_ratio, range_ratio, azimuth_ratio] = compute_leakage_metrics(X, support_mask)
