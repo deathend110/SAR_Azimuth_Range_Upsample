@@ -183,43 +183,57 @@ has_signrank = exist("signrank", "file") == 2 || exist("signrank", "file") == 5;
 
 gain_table_data = [];
 
+% NoUpsample的索引和结果（对所有Q相同）
+noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
+
 for q_idx = 1:numel(Q_list)
     Q = Q_list(q_idx);
-    group_mask = [group_defs.Q] == Q;
 
-    % 找最佳单向组
-    unidir_mask = group_mask & (strcmp([group_defs.group_type], "range_only") | strcmp([group_defs.group_type], "azimuth_only"));
-    if any(unidir_mask)
-        best_unidir_idx = find(unidir_mask, 1, 'first');  % 先找第一个
-        best_unidir_psnr_mean = max(psnr_mean(unidir_mask));
-        best_unidir_idx = find(unidir_mask & (psnr_mean == best_unidir_psnr_mean), 1, 'first');
+    % 找该Q下的全部组合索引（列向量）
+    q_indices = find([group_defs(:).Q]' == Q);
+
+    % 从q_indices中分类：单向 vs 双向
+    unidir_indices = [];
+    bidir_indices  = [];
+
+    for i = 1:numel(q_indices)
+        gt = group_defs(q_indices(i)).group_type;
+        if strcmp(gt, "range_only") || strcmp(gt, "azimuth_only")
+            unidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+        elseif strcmp(gt, "balanced") || strcmp(gt, "mixed")
+            bidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+        end
+    end
+
+    % 找PSNR最高的最佳单向组和最佳双向组
+    if ~isempty(unidir_indices)
+        uni_psnr_vals = psnr_mean(unidir_indices);
+        best_unidir_idx = unidir_indices(uni_psnr_vals == max(uni_psnr_vals));
+        best_unidir_idx = best_unidir_idx(1);  % 若多个并列取第一个
         best_unidir_name = group_defs(best_unidir_idx).group_name;
     else
         best_unidir_idx = 0;
         best_unidir_name = "N/A";
     end
 
-    % 找最佳双向组
-    bidir_mask = group_mask & (strcmp([group_defs.group_type], "balanced") | strcmp([group_defs.group_type], "mixed"));
-    if any(bidir_mask)
-        best_bidir_psnr_mean = max(psnr_mean(bidir_mask));
-        best_bidir_idx = find(bidir_mask & (psnr_mean == best_bidir_psnr_mean), 1, 'first');
+    if ~isempty(bidir_indices)
+        bi_psnr_vals = psnr_mean(bidir_indices);
+        best_bidir_idx = bidir_indices(bi_psnr_vals == max(bi_psnr_vals));
+        best_bidir_idx = best_bidir_idx(1);  % 若多个并列取第一个
         best_bidir_name = group_defs(best_bidir_idx).group_name;
     else
         best_bidir_idx = 0;
         best_bidir_name = "N/A";
     end
 
-    % 计算增益
+    % 计算增益和统计检验
     if best_bidir_idx > 0 && best_unidir_idx > 0
         delta_psnr = psnr_mean(best_bidir_idx) - psnr_mean(best_unidir_idx);
         delta_ssim = ssim_mean(best_bidir_idx) - ssim_mean(best_unidir_idx);
 
-        % Wilcoxon 配对检验
+        % Wilcoxon 配对检验：每个样本配对（70个观测）
         if has_signrank
-            % PSNR 配对检验
             [~, p_psnr] = signrank(psnr_all(best_bidir_idx, :), psnr_all(best_unidir_idx, :));
-            % SSIM 配对检验
             [~, p_ssim] = signrank(ssim_all(best_bidir_idx, :), ssim_all(best_unidir_idx, :));
         else
             p_psnr = NaN;
@@ -227,7 +241,7 @@ for q_idx = 1:numel(Q_list)
             fprintf("  [警告] signrank 函数不可用，跳过统计检验。需安装 Statistics and Machine Learning Toolbox。\n");
         end
 
-        fprintf("  Q=%d: 最佳双向=%s vs 最佳单向=%s → ΔPSNR=%.4f dB, ΔSSIM=%.4f, p(PSNR)=%.4f, p(SSIM)=%.4f\n", ...
+        fprintf("  Q=%d: 最佳双向=%s vs 最佳单向=%s → ΔPSNR=%.4f dB, ΔSSIM=%.4f, p(PSNR)=%.4e, p(SSIM)=%.4e\n", ...
             Q, best_bidir_name, best_unidir_name, delta_psnr, delta_ssim, p_psnr, p_ssim);
     else
         delta_psnr = NaN;
