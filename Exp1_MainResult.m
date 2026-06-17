@@ -233,9 +233,10 @@ for q_idx = 1:numel(Q_list)
         delta_ssim = ssim_mean(best_bidir_idx) - ssim_mean(best_unidir_idx);
 
         % Wilcoxon 配对检验：每个样本配对（70个观测）
+        % signrank输出顺序：[p, h, stats]，第一个输出才是p-value
         if has_signrank
-            [~, p_psnr] = signrank(psnr_all(best_bidir_idx, :), psnr_all(best_unidir_idx, :));
-            [~, p_ssim] = signrank(ssim_all(best_bidir_idx, :), ssim_all(best_unidir_idx, :));
+            p_psnr = signrank(psnr_all(best_bidir_idx, :), psnr_all(best_unidir_idx, :));
+            p_ssim = signrank(ssim_all(best_bidir_idx, :), ssim_all(best_unidir_idx, :));
         else
             p_psnr = NaN;
             p_ssim = NaN;
@@ -721,17 +722,25 @@ function plot_main_result_curves(Q_list, group_defs, psnr_mean, psnr_std, ...
         best_bi_vals  = zeros(numel(Q_list), 1);
         for q_idx = 1:numel(Q_list)
             Q = Q_list(q_idx);
-            group_mask_Q = [group_defs.Q] == Q & ~noupsample_mask;
-            current_groups = group_defs(group_mask_Q);
+            group_mask_Q = [group_defs(:).Q]' == Q;
             current_mean = metric_mean(group_mask_Q);
 
-            unidir_mask_local = strcmp({current_groups.group_type}, "range_only") | ...
-                                strcmp({current_groups.group_type}, "azimuth_only");
-            bidir_mask_local  = strcmp({current_groups.group_type}, "balanced") | ...
-                                strcmp({current_groups.group_type}, "mixed");
+            unidir_mask_local = strcmp({group_defs(group_mask_Q).group_type}, "range_only") | ...
+                                strcmp({group_defs(group_mask_Q).group_type}, "azimuth_only");
+            bidir_mask_local  = strcmp({group_defs(group_mask_Q).group_type}, "balanced") | ...
+                                strcmp({group_defs(group_mask_Q).group_type}, "mixed");
 
-            best_uni_vals(q_idx) = max(current_mean(unidir_mask_local));
-            best_bi_vals(q_idx)  = max(current_mean(bidir_mask_local));
+            if any(unidir_mask_local)
+                best_uni_vals(q_idx) = max(current_mean(unidir_mask_local));
+            else
+                best_uni_vals(q_idx) = NaN;
+            end
+
+            if any(bidir_mask_local)
+                best_bi_vals(q_idx) = max(current_mean(bidir_mask_local));
+            else
+                best_bi_vals(q_idx) = NaN;
+            end
         end
 
         plot(Q_list, best_uni_vals, "-", "Color", [0.12, 0.47, 0.71], "LineWidth", 1.8, "DisplayName", "最佳单向趋势");
