@@ -661,22 +661,61 @@ function plot_main_result_curves(Q_list, group_defs, psnr_mean, psnr_std, ...
         "balanced",      [0.20, 0.63, 0.17], ...  % 绿色
         "mixed",         [0.49, 0.18, 0.56]);     % 紫色
 
-    % NoUpsample数据（对所有Q相同）
-    noupsample_mask = strcmp([group_defs.group_type], "no_upsample");
-    noupsample_psnr = psnr_mean(noupsample_mask);
-    noupsample_ssim = ssim_mean(noupsample_mask);
+    % 预计算：每个Q下的最佳单向和最佳双向值
+    noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
+    noupsample_psnr = psnr_mean(noupsample_idx);
+    noupsample_ssim = ssim_mean(noupsample_idx);
 
+    best_uni_psnr = zeros(numel(Q_list), 1);
+    best_bi_psnr  = zeros(numel(Q_list), 1);
+    best_uni_ssim = zeros(numel(Q_list), 1);
+    best_bi_ssim  = zeros(numel(Q_list), 1);
+
+    for q_idx = 1:numel(Q_list)
+        Q = Q_list(q_idx);
+        q_indices = find([group_defs(:).Q]' == Q);
+
+        % 分类为单向和双向
+        unidir_indices = [];
+        bidir_indices  = [];
+        for i = 1:numel(q_indices)
+            gt = group_defs(q_indices(i)).group_type;
+            if strcmp(gt, "range_only") || strcmp(gt, "azimuth_only")
+                unidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+            elseif strcmp(gt, "balanced") || strcmp(gt, "mixed")
+                bidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+            end
+        end
+
+        if ~isempty(unidir_indices)
+            best_uni_psnr(q_idx) = max(psnr_mean(unidir_indices));
+            best_uni_ssim(q_idx) = max(ssim_mean(unidir_indices));
+        else
+            best_uni_psnr(q_idx) = NaN;
+            best_uni_ssim(q_idx) = NaN;
+        end
+
+        if ~isempty(bidir_indices)
+            best_bi_psnr(q_idx) = max(psnr_mean(bidir_indices));
+            best_bi_ssim(q_idx) = max(ssim_mean(bidir_indices));
+        else
+            best_bi_psnr(q_idx) = NaN;
+            best_bi_ssim(q_idx) = NaN;
+        end
+    end
+
+    % 画 PSNR 和 SSIM 两张图
     for metric_idx = 1:2
         if metric_idx == 1
-            metric_mean = psnr_mean;
-            metric_std  = psnr_std;
             noupsample_val = noupsample_psnr;
+            best_uni_vals = best_uni_psnr;
+            best_bi_vals  = best_bi_psnr;
             y_label = "PSNR (dB)";
             tag = "PSNR";
         else
-            metric_mean = ssim_mean;
-            metric_std  = ssim_std;
             noupsample_val = noupsample_ssim;
+            best_uni_vals = best_uni_ssim;
+            best_bi_vals  = best_bi_ssim;
             y_label = "SSIM";
             tag = "SSIM";
         end
@@ -684,74 +723,34 @@ function plot_main_result_curves(Q_list, group_defs, psnr_mean, psnr_std, ...
         figure("Color", "w", "Position", [100, 100, 800, 500]);
         hold on; grid on; box on;
 
-        % 画NoUpsample水平线
-        plot(Q_list, noupsample_val * ones(numel(Q_list), 1), ...
-            "--", "Color", colors.no_upsample, "LineWidth", 1.5, "DisplayName", "NoUpsample (R1A1)");
+        % 1) NoUpsample 水平虚线
+        h_noup = plot(Q_list, noupsample_val * ones(numel(Q_list), 1), ...
+            "--", "Color", colors.no_upsample, "LineWidth", 1.5, ...
+            "DisplayName", "NoUpsample (R1A1)");
 
-        % 画各类曲线
-        for q_idx = 1:numel(Q_list)
-            Q = Q_list(q_idx);
-            group_mask = [group_defs.Q] == Q & ~noupsample_mask;
+        % 2) 最佳单向：散点 + 趋势线
+        h_uni_scat = plot(Q_list, best_uni_vals, "o", ...
+            "Color", colors.range_only, "MarkerSize", 8, "LineWidth", 1.5, ...
+            "DisplayName", "最佳单向");
+        h_uni_line = plot(Q_list, best_uni_vals, "-", ...
+            "Color", colors.range_only, "LineWidth", 1.8, ...
+            "HandleVisibility", "off");
 
-            current_groups = group_defs(group_mask);
-            current_mean = metric_mean(group_mask);
-
-            % 找最佳单向和最佳双向
-            unidir_mask_local = strcmp({current_groups.group_type}, "range_only") | ...
-                                strcmp({current_groups.group_type}, "azimuth_only");
-            bidir_mask_local  = strcmp({current_groups.group_type}, "balanced") | ...
-                                strcmp({current_groups.group_type}, "mixed");
-
-            if any(unidir_mask_local)
-                best_uni_val = max(current_mean(unidir_mask_local));
-                plot(Q, best_uni_val, "o", ...
-                    "Color", [0.12, 0.47, 0.71], "MarkerSize", 8, "LineWidth", 1.5, ...
-                    "DisplayName", "最佳单向 (Q=" + num2str(Q) + ")");
-            end
-
-            if any(bidir_mask_local)
-                best_bi_val = max(current_mean(bidir_mask_local));
-                plot(Q, best_bi_val, "s", ...
-                    "Color", [0.20, 0.63, 0.17], "MarkerSize", 8, "LineWidth", 1.5, ...
-                    "DisplayName", "最佳双向 (Q=" + num2str(Q) + ")");
-            end
-        end
-
-        % 连接最佳单向点
-        best_uni_vals = zeros(numel(Q_list), 1);
-        best_bi_vals  = zeros(numel(Q_list), 1);
-        for q_idx = 1:numel(Q_list)
-            Q = Q_list(q_idx);
-            group_mask_Q = [group_defs(:).Q]' == Q;
-            current_mean = metric_mean(group_mask_Q);
-
-            unidir_mask_local = strcmp({group_defs(group_mask_Q).group_type}, "range_only") | ...
-                                strcmp({group_defs(group_mask_Q).group_type}, "azimuth_only");
-            bidir_mask_local  = strcmp({group_defs(group_mask_Q).group_type}, "balanced") | ...
-                                strcmp({group_defs(group_mask_Q).group_type}, "mixed");
-
-            if any(unidir_mask_local)
-                best_uni_vals(q_idx) = max(current_mean(unidir_mask_local));
-            else
-                best_uni_vals(q_idx) = NaN;
-            end
-
-            if any(bidir_mask_local)
-                best_bi_vals(q_idx) = max(current_mean(bidir_mask_local));
-            else
-                best_bi_vals(q_idx) = NaN;
-            end
-        end
-
-        plot(Q_list, best_uni_vals, "-", "Color", [0.12, 0.47, 0.71], "LineWidth", 1.8, "DisplayName", "最佳单向趋势");
-        plot(Q_list, best_bi_vals, "-", "Color", [0.20, 0.63, 0.17], "LineWidth", 1.8, "DisplayName", "最佳双向趋势");
+        % 3) 最佳双向：散点 + 趋势线
+        h_bi_scat = plot(Q_list, best_bi_vals, "s", ...
+            "Color", colors.balanced, "MarkerSize", 8, "LineWidth", 1.5, ...
+            "DisplayName", "最佳双向");
+        h_bi_line = plot(Q_list, best_bi_vals, "-", ...
+            "Color", colors.balanced, "LineWidth", 1.8, ...
+            "HandleVisibility", "off");
 
         xlabel("总上采样倍率 Q", "FontSize", 13);
         ylabel(y_label, "FontSize", 13);
         title(sprintf("主结果：四类对照 %s vs Q (As=%.1f, 7数据集×10帧)", tag, 0.6), ...
             "FontSize", 14);
 
-        legend("Location", "best", "FontSize", 10);
+        % 图例只保留4个干净条目
+        legend([h_noup, h_uni_scat, h_bi_scat], "Location", "best", "FontSize", 10);
         ax = gca; ax.FontSize = 12;
 
         save_name = sprintf("Exp1_MainResult_%s_curves.png", tag);
