@@ -7,7 +7,7 @@ S60 = load("FS60_params.mat");
 seed = 42;
 rng(seed);
 Azimuth_q_m     = 1.5;       % 混合AR上采样的单独方位向上采样倍率
-Range_q_m       = 2;       % 混合AR上采样的单独方位向上采样倍率
+Range_q_m       = 2;       % 混合AR上采样的单独距离向上采样倍率
 q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 
 Azimuth_q       = q;       % 方位向上采样倍率
