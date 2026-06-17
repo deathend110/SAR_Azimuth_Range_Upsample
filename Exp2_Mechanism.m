@@ -54,6 +54,7 @@ case_result = struct( ...
     "node0_signal_up", [], ...
     "node1_channel_1bit", [], ...
     "node1_residual", [], ...
+    "node2_rc_raw", [], ...
     "node2_rc", [], ...
     "node3_rcmc", [], ...
     "node4_img", [], ...
@@ -73,7 +74,7 @@ end
 
 %% ==================== 导出图表 ====================
 export_spectrum_panel(results, output_dir, "node1_residual", "Exp2_Node1_Residual_Spectra.png", "Node-1 Residual Spectra");
-export_spectrum_panel(results, output_dir, "node2_rc", "Exp2_Node2_RC_Spectra.png", "Node-2 RC Spectra");
+export_spectrum_panel(results, output_dir, "node2_rc_raw", "Exp2_Node2_RC_Spectra.png", "Node-2 RC Spectra");
 export_center_profiles(results, output_dir, "node1_residual", "range", "Exp2_Node1_Residual_Range_Profile.png");
 export_center_profiles(results, output_dir, "node1_residual", "azimuth", "Exp2_Node1_Residual_Azimuth_Profile.png");
 export_stage_montage(results, output_dir);
@@ -116,19 +117,20 @@ function result = run_mechanism_case(signal60, S60, case_def, As)
     result.azimuth_q = case_def.azimuth_q;
     result.group_type = string(case_def.group_type);
 
-    [signal_up, U, channel_1bit, RC, RCMC_out, IMG, roi] = build_forensic_nodes(signal60, S60, case_def.range_q, case_def.azimuth_q, As);
+    [signal_up, U, channel_1bit, RC_raw, RC_crop, RCMC_out, IMG, roi] = build_forensic_nodes(signal60, S60, case_def.range_q, case_def.azimuth_q, As);
 
     result.node0_signal_up = signal_up;
     result.node1_channel_1bit = channel_1bit;
     result.node1_residual = channel_1bit - signal_up;
-    result.node2_rc = RC;
+    result.node2_rc_raw = RC_raw;
+    result.node2_rc = RC_crop;
     result.node3_rcmc = RCMC_out;
     result.node4_img = IMG;
     result.node4_roi = roi;
     result.metrics = struct("U_mean_abs", mean(abs(U(:))));
 end
 
-function [signal_up, U, channel_1bit, RC_crop, RCMC_crop, IMG, roi] = build_forensic_nodes(signal60, S60, range_q, azimuth_q, As)
+function [signal_up, U, channel_1bit, RC_raw, RC_crop, RCMC_crop, IMG, roi] = build_forensic_nodes(signal60, S60, range_q, azimuth_q, As)
     if range_q == 1 && azimuth_q == 1
         signal_up = signal60;
     else
@@ -139,9 +141,9 @@ function [signal_up, U, channel_1bit, RC_crop, RCMC_crop, IMG, roi] = build_fore
     channel_1bit = quantize_1bit_with_U(signal_up, U);
 
     [tnrn_up, Fs_up] = build_range_axis_for_upsampled_signal(size(signal_up, 1), range_q, S60);
-    RC = Range_Compress(channel_1bit, S60.fc, tnrn_up, S60.gama, S60.R0, S60.C, Fs_up, S60.Tp);
+    RC_raw = Range_Compress(channel_1bit, S60.fc, tnrn_up, S60.gama, S60.R0, S60.C, Fs_up, S60.Tp);
 
-    RC_crop = two_dim_downsample_fft(RC, azimuth_q, range_q, S60);
+    RC_crop = two_dim_downsample_fft(RC_raw, azimuth_q, range_q, S60);
     RCMC_crop = RCMC(RC_crop, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
     IMG = SAR_Imaging(RCMC_crop, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 
@@ -228,14 +230,12 @@ function [off_ratio, range_ratio, azimuth_ratio] = compute_leakage_metrics(X, su
     total_energy = sum(spec(:)) + eps;
     off_ratio = sum(spec(~support_mask), "all") / total_energy;
 
-    center_row = round(size(spec, 1) / 2);
-    center_col = round(size(spec, 2) / 2);
+    % 用整轴投影代替单条中心切片，避免支撑恰好压不到中心行/列时指标退化
+    range_profile = sum(spec, 2);
+    azimuth_profile = sum(spec, 1).';
 
-    range_profile = spec(:, center_col);
-    azimuth_profile = spec(center_row, :).';
-
-    range_mask = support_mask(:, center_col);
-    azimuth_mask = support_mask(center_row, :).';
+    range_mask = any(support_mask, 2);
+    azimuth_mask = any(support_mask, 1).';
 
     range_ratio = sum(range_profile(~range_mask)) / (sum(range_profile) + eps);
     azimuth_ratio = sum(azimuth_profile(~azimuth_mask)) / (sum(azimuth_profile) + eps);
