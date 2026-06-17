@@ -181,7 +181,8 @@ fprintf("\n=== 配对 Wilcoxon signed-rank test ===\n");
 % 检查统计工具箱是否可用
 has_signrank = exist("signrank", "file") == 2 || exist("signrank", "file") == 5;
 
-gain_table_data = [];
+% 用cell数组存储增益表数据，避免double×string混合问题
+gain_cell = cell(numel(Q_list), 7);
 
 % NoUpsample的索引和结果（对所有Q相同）
 noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
@@ -248,10 +249,19 @@ for q_idx = 1:numel(Q_list)
         delta_ssim = NaN;
         p_psnr = NaN;
         p_ssim = NaN;
+        best_bidir_name = "N/A";
+        best_unidir_name = "N/A";
         fprintf("  Q=%d: 无法找到双向或单向组\n", Q);
     end
 
-    gain_table_data = [gain_table_data; Q, best_bidir_name, best_unidir_name, delta_psnr, delta_ssim, p_psnr, p_ssim];
+    % 用cell数组存储，避免double×string混合问题
+    gain_cell{q_idx, 1} = Q;
+    gain_cell{q_idx, 2} = best_bidir_name;
+    gain_cell{q_idx, 3} = best_unidir_name;
+    gain_cell{q_idx, 4} = delta_psnr;
+    gain_cell{q_idx, 5} = delta_ssim;
+    gain_cell{q_idx, 6} = p_psnr;
+    gain_cell{q_idx, 7} = p_ssim;
 end
 
 %% ==================== 保存汇总表 ====================
@@ -274,24 +284,37 @@ summary_table = table( ...
 writetable(summary_table, fullfile(output_dir, "Exp1_MainResult_Summary.csv"));
 
 %% ==================== 保存增益表 ====================
-gain_table = table( ...
-    gain_table_data(:, 1), ...
-    string(gain_table_data(:, 2)), ...
-    string(gain_table_data(:, 3)), ...
-    gain_table_data(:, 4), ...
-    gain_table_data(:, 5), ...
-    gain_table_data(:, 6), ...
-    gain_table_data(:, 7), ...
+gain_table = cell2table(gain_cell, ...
     'VariableNames', {'Q', 'BestBidir', 'BestUnidir', 'DeltaPSNR', 'DeltaSSIM', 'p_PSNR', 'p_SSIM'});
+% 将数值列从cell转为double
+gain_table.Q = double(gain_table.Q);
+gain_table.DeltaPSNR = double(gain_table.DeltaPSNR);
+gain_table.DeltaSSIM = double(gain_table.DeltaSSIM);
+gain_table.p_PSNR = double(gain_table.p_PSNR);
+gain_table.p_SSIM = double(gain_table.p_SSIM);
 
 writetable(gain_table, fullfile(output_dir, "Exp1_MainResult_Gain.csv"));
 
 %% ==================== 保存明细表 ====================
+% 构建明细数据
+detail_data = zeros(num_groups * total_samples, 7);
+detail_ds_name = strings(num_groups * total_samples, 1);
+
 % 先构建GroupName列：每个group重复total_samples次
 detail_group_names = strings(num_groups * total_samples, 1);
 row_ptr = 1;
+
 for group_idx = 1:num_groups
     for s_idx = 1:total_samples
+        detail_data(row_ptr, :) = [ ...
+            group_defs(group_idx).Q, ...
+            group_defs(group_idx).Range_q, ...
+            group_defs(group_idx).Azimuth_q, ...
+            sample_cache(s_idx).dataset_idx, ...
+            sample_cache(s_idx).c_start, ...
+            psnr_all(group_idx, s_idx), ...
+            ssim_all(group_idx, s_idx)];
+        detail_ds_name(row_ptr) = sample_cache(s_idx).dataset_name;
         detail_group_names(row_ptr) = string(group_defs(group_idx).group_name);
         row_ptr = row_ptr + 1;
     end
@@ -314,7 +337,7 @@ save(fullfile(output_dir, "Exp1_MainResult_Data.mat"), ...
     "num_samples_per_dataset", "total_samples", ...
     "group_defs", "psnr_all", "ssim_all", ...
     "psnr_mean", "psnr_std", "ssim_mean", "ssim_std", ...
-    "gain_table_data", "sample_cache");
+    "gain_cell", "sample_cache");
 
 %% ==================== 绘制主结果图 ====================
 plot_main_result_curves(Q_list, group_defs, psnr_mean, psnr_std, ...
@@ -362,8 +385,6 @@ end
 % NoUpsample（R1A1）：无上采样但有SplitRT阈值
 % pipeline: 原尺寸SplitRT → 1-bit量化 → 原参数RC → RCMC → Imaging → ROI → normalize
 function img_out = build_noupsample_image(signal60, S60, As)
-    rng_state = rng;  % 保存当前RNG状态
-
     % 在原始尺寸上构建SplitRT阈值（azimuth_q=1, range_q=1）
     signal_up = signal60;  % 无上采样，信号尺寸不变
     [Nr, Na] = size(signal60);
