@@ -185,7 +185,9 @@ has_signrank = exist("signrank", "file") == 2 || exist("signrank", "file") == 5;
 gain_cell = cell(numel(Q_list), 7);
 
 % NoUpsample的索引和结果（对所有Q相同）
-noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
+% 注意：group_type字段是string标量，不能直接放进cell后再用strcmp匹配
+group_types = string({group_defs.group_type});
+noupsample_idx = find(group_types == "no_upsample", 1);
 
 for q_idx = 1:numel(Q_list)
     Q = Q_list(q_idx);
@@ -200,9 +202,9 @@ for q_idx = 1:numel(Q_list)
     for i = 1:numel(q_indices)
         gt = group_defs(q_indices(i)).group_type;
         if strcmp(gt, "range_only") || strcmp(gt, "azimuth_only")
-            unidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+            unidir_indices(end + 1) = q_indices(i); 
         elseif strcmp(gt, "balanced") || strcmp(gt, "mixed")
-            bidir_indices(end + 1) = q_indices(i); %#ok<AGROW>
+            bidir_indices(end + 1) = q_indices(i); 
         end
     end
 
@@ -662,7 +664,11 @@ function plot_main_result_curves(Q_list, group_defs, psnr_mean, psnr_std, ...
         "mixed",         [0.49, 0.18, 0.56]);     % 紫色
 
     % 预计算：每个Q下的最佳单向和最佳双向值
-    noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
+    group_types = string({group_defs.group_type});
+    noupsample_idx = find(group_types == "no_upsample", 1);
+    if isempty(noupsample_idx)
+        error("未找到 group_type 为 no_upsample 的基线组，无法绘制主结果曲线。");
+    end
     noupsample_psnr = psnr_mean(noupsample_idx);
     noupsample_ssim = ssim_mean(noupsample_idx);
 
