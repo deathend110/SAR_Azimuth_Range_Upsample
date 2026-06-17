@@ -1,5 +1,7 @@
 clear;clc;close all;
 
+% Azimuth_Range_MixUpsample的GT更换为添加2D RT的版本
+
 %% 单次RxAx混合上采样实验代码，验证方位向和距离向的同步上采样混合策略
 %% ==================== 参数加载 ====================
 S60 = load("FS60_params.mat");
@@ -33,7 +35,9 @@ signal60_input = channel_1(1:3:end, :);
 
 
 %% GT
-RC_gt   = Range_Compress(signal60_input, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
+[U_master_patch_GT, ~, ~] = Build_2D_SplitRT(signal60_input, 1, 1, As);
+signal60_input_GT = signal60_input + U_master_patch_GT;
+RC_gt   = Range_Compress(signal60_input_GT, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
 RCMC_gt = RCMC(RC_gt, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_gt  = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_gt = abs(IMG_gt(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
