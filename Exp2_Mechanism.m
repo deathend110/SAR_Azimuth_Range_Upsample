@@ -69,7 +69,7 @@ for case_idx = 1:numel(case_defs)
 end
 
 %% ==================== 计算机制指标 ====================
-[metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60, output_dir);
+[metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60);
 
 %% ==================== 导出图表 ====================
 export_spectrum_panel(results, output_dir, "node1_residual", "Exp2_Node1_Residual_Spectra.png", "Node-1 Residual Spectra");
@@ -159,15 +159,18 @@ function [tnrn_up, Fs_up] = build_range_axis_for_upsampled_signal(nrn_up, range_
     tnrn_up = (Tstart_up : Tnrn_up : Tend_up).';
 end
 
-function [metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60, output_dir)
+function [metric_table, metric_rows] = compute_mechanism_metrics(results, signal60_input, S60)
+    tracked_nodes = {"node1_residual", "node2_rc", "node3_rcmc"};
+    num_rows = numel(results) * numel(tracked_nodes);
+
     metric_rows = repmat(struct( ...
         "case_name", "", ...
         "node_name", "", ...
         "off_support_ratio", NaN, ...
         "range_leakage_ratio", NaN, ...
-        "azimuth_leakage_ratio", NaN), 0, 1);
+        "azimuth_leakage_ratio", NaN), num_rows, 1);
 
-    tracked_nodes = {"node1_residual", "node2_rc", "node3_rcmc"};
+    row_ptr = 0;
     for case_idx = 1:numel(results)
         for node_idx = 1:numel(tracked_nodes)
             node_name = tracked_nodes{node_idx};
@@ -177,18 +180,19 @@ function [metric_table, metric_rows] = compute_mechanism_metrics(results, signal
             reference_mask = estimate_support_mask(reference_matrix, 0.35);
             [off_ratio, range_ratio, azimuth_ratio] = compute_leakage_metrics(X, reference_mask);
 
+            row_ptr = row_ptr + 1;
             row = struct();
             row.case_name = results(case_idx).case_name;
             row.node_name = string(node_name);
             row.off_support_ratio = off_ratio;
             row.range_leakage_ratio = range_ratio;
             row.azimuth_leakage_ratio = azimuth_ratio;
-            metric_rows(end + 1, 1) = row; %#ok<AGROW>
+            metric_rows(row_ptr, 1) = row;
         end
     end
 
+    metric_rows = metric_rows(1:row_ptr);
     metric_table = struct2table(metric_rows);
-    writetable(metric_table, fullfile(output_dir, "Exp2_Mechanism_Metrics.csv"));
 end
 
 function support_mask = estimate_support_mask(reference_matrix, threshold_ratio)
