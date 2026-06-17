@@ -582,7 +582,12 @@ function plot_noninteger_bars(group_defs, psnr_mean, psnr_std, ssim_mean, ssim_s
     num_sets = numel(set_ids);
 
     % NoUpsample基线值
-    noupsample_idx = find(strcmp({group_defs.group_type}, "no_upsample"), 1);
+    % 注意：group_type字段是string标量，不能直接放进cell后再用strcmp匹配
+    group_types = string({group_defs.group_type});
+    noupsample_idx = find(group_types == "no_upsample", 1);
+    if isempty(noupsample_idx)
+        error("未找到 group_type 为 no_upsample 的基线组，无法绘制非整数对比柱状图。");
+    end
     noupsample_psnr = psnr_mean(noupsample_idx);
     noupsample_ssim = ssim_mean(noupsample_idx);
 
@@ -660,7 +665,7 @@ function plot_noninteger_bars(group_defs, psnr_mean, psnr_std, ssim_mean, ssim_s
         h2 = bar(x_pos, unidir_vals, bar_width, ...
             "FaceColor", colors.range_only, "EdgeColor", "none", ...
             "DisplayName", "最佳单向");
-        h3 = bar(x_pos + bar_width, noupsample_val * ones(num_sets, 1), bar_width, ...
+        h3 = bar(x_pos + bar_width, repmat(noupsample_val, num_sets, 1), bar_width, ...
             "FaceColor", colors.no_upsample, "EdgeColor", "none", ...
             "DisplayName", "NoUpsample");
 
