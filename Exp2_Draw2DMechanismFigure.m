@@ -60,9 +60,7 @@ for panel_idx = 1:numel(panel_defs)
     draw_spectrum_panel(ax, result_struct.(panel_def.node_field), panel_def.title_text, clim_range);
 end
 
-title_text = sprintf([ ...
-    "Experiment 2: Actual 2D Spectra from Real Pipeline Data\n" ...
-    "Top row = Node-1 residual spectra; bottom row = Node-1 bidirectional + Node-2 RC comparison"]);
+title_text = build_exp2_mechanism_figure_title();
 sgtitle(t, title_text, "FontWeight", "bold", "FontSize", 15);
 
 exportgraphics(fig, output_png, "Resolution", 300);
