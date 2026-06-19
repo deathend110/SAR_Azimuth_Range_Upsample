@@ -172,6 +172,9 @@ writetable(tau_stability_table, fullfile(output_dir, "Exp2_Supp_Summary.csv"), .
     "WriteMode", "append");
 fprintf("τ稳定性子表已追加: Exp2_Supp_Summary.csv\n");
 
+%% ==================== 机制证据汇总图 ====================
+export_multi_sample_summary(summary_table, tau_list, tau_ranking, sample_configs, output_dir);
+
 %% =========================================================
 %% 局部函数区
 %% =========================================================
@@ -415,4 +418,76 @@ function img_gt = build_gt_image(signal60, S60)
         S60.nrn / 2 - S60.R_total / 2 + 1 : S60.nrn / 2 + S60.R_total / 2, ...
         S60.nan / 2 - S60.A_num / 2 : S60.nan / 2 + S60.A_num / 2 - 1));
     img_gt = normalize_image(roi_gt);
+end
+
+function export_multi_sample_summary(summary_table, tau_list, tau_ranking, sample_configs, output_dir)
+    % 只使用 τ=0.35 的数据做面板(a)多场景排名
+    ref_tau = 0.35;
+    tau_scenes = summary_table(abs(summary_table.tau - ref_tau) < 1e-6, :);
+
+    scene_labels = {sample_configs.scene_label};
+    scene_display = {"city2", "port", "suburb", "filed"};
+    scheme_labels = {"NoUp", "R4A1", "R1A4", "R2A2"};
+    colors = [0.7 0.7 0.7; 0.2 0.6 0.8; 0.8 0.4 0.2; 0.2 0.7 0.3];
+
+    fig = figure("Color", "w", "Position", [100, 100, 1400, 550], "Visible", "off");
+    cleanup_obj = onCleanup(@() close_valid_figure(fig)); %#ok<NASGU>
+
+    %% 面板(a): 多场景 Node-2 off-support 排名
+    ax1 = subplot(1, 2, 1);
+    hold(ax1, "on");
+
+    bar_width = 0.18;
+    group_positions = 1:numel(scene_display);
+
+    % 为每个场景构建数据矩阵 [NoUp, R4A1, R1A4, R2A2]
+    off_data = zeros(numel(scene_display), 4);
+    for s = 1:numel(scene_display)
+        scene_rows = tau_scenes(string(tau_scenes.scene) == string(scene_labels{s}), :);
+        if isempty(scene_rows)
+            continue;
+        end
+        off_data(s, 1) = scene_rows.NoUp_off;
+        off_data(s, 2) = scene_rows.R4A1_off;
+        off_data(s, 3) = scene_rows.R1A4_off;
+        off_data(s, 4) = scene_rows.R2A2_off;
+    end
+
+    for scheme = 1:4
+        x_pos = group_positions + (scheme - 2.5) * bar_width;
+        bar(ax1, x_pos, off_data(:, scheme), bar_width, ...
+            "FaceColor", colors(scheme, :), ...
+            "DisplayName", scheme_labels{scheme});
+    end
+
+    set(ax1, "XTick", group_positions, "XTickLabel", scene_display);
+    ylabel(ax1, "Off-Support Energy Ratio (Node-2)");
+    legend(ax1, "Location", "northeast");
+    title(ax1, "(a) Multi-Scene Node-2 Off-Support Ranking (\tau=0.35)");
+    grid(ax1, "on");
+    box(ax1, "on");
+
+    %% 面板(b): τ 敏感性 — R2A2 排名稳定性
+    ax2 = subplot(1, 2, 2);
+    plot(ax2, tau_list, tau_ranking, "o-", "LineWidth", 2, "MarkerSize", 10, ...
+        "Color", [0.2 0.6 0.3], "MarkerFaceColor", [0.2 0.6 0.3]);
+    ylim(ax2, [0, 5]);
+    yticks(ax2, 0:1:4);
+    xlabel(ax2, "Support Mask Threshold \tau");
+    ylabel(ax2, "Scenes where R2A2 ranks #1 (out of 4)");
+    title(ax2, "(b) \tau Sensitivity: Ranking Stability");
+    grid(ax2, "on");
+    box(ax2, "on");
+
+    set(findall(fig, "-property", "FontName"), "FontName", "Times New Roman");
+    set(findall(fig, "-property", "FontSize"), "FontSize", 12);
+
+    exportgraphics(fig, fullfile(output_dir, "Exp2_Supp_MultiSample_Summary.png"), "Resolution", 300);
+    fprintf("汇总图已保存: Exp2_Supp_MultiSample_Summary.png\n");
+end
+
+function close_valid_figure(fig)
+    if isgraphics(fig)
+        close(fig);
+    end
 end
