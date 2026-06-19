@@ -46,7 +46,7 @@ for s = 1:numel(sample_configs)
     data_width = size(raw, 2);
     c_start = max(1, floor(data_width / 3));
     if c_start + S60.nrn > data_width
-        c_start = data_width - S60.nrn;
+        c_start = max(1, data_width - S60.nrn);
     end
     sample_configs(s).c_start = c_start;
     fprintf("  %s: data_width=%d, auto c_start=%d\n", sample_configs(s).scene_label, data_width, c_start);
@@ -68,7 +68,6 @@ for s = 1:numel(sample_configs)
     all_signal60{s} = signal60_input;
 
     %% 对每个上采样方案跑管道（只跑一次，复用节点矩阵）
-    rng(sc.seed);
     case_results = repmat(struct( ...
         "case_name", "", "range_q", 0, "azimuth_q", 0, "group_type", "", ...
         "node0_signal_up", [], "node1_channel_1bit", [], "node1_residual", [], ...
@@ -453,16 +452,6 @@ function X_crop = crop_azimuth_doppler_to_width(X, target_width)
     end
     Xf_crop = Xf(:, idx);
     X_crop = ifft(ifftshift(Xf_crop, 2), [], 2);
-end
-
-function img_gt = build_gt_image(signal60, S60)
-    RC_gt = Range_Compress(signal60, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
-    RCMC_gt = RCMC(RC_gt, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
-    IMG_gt = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
-    roi_gt = abs(IMG_gt( ...
-        S60.nrn / 2 - S60.R_total / 2 + 1 : S60.nrn / 2 + S60.R_total / 2, ...
-        S60.nan / 2 - S60.A_num / 2 : S60.nan / 2 + S60.A_num / 2 - 1));
-    img_gt = normalize_image(roi_gt);
 end
 
 function export_multi_sample_summary(summary_table, tau_list, tau_ranking, sample_configs, output_dir)
