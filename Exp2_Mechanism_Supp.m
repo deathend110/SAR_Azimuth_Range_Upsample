@@ -205,6 +205,8 @@ end
 
 %% ==================== 导出元数据文件 ====================
 fid = fopen(fullfile(output_dir, "Exp2_Supp_Metadata.txt"), "w");
+fprintf(fid, "script=Exp2_Mechanism_Supp.m\n");
+fprintf(fid, "date=%s\n", datestr(now, "yyyy-mm-dd HH:MM:SS"));
 fprintf(fid, "As=%.3f\n", As);
 fprintf(fid, "tau_list=%s\n", mat2str(tau_list));
 for s = 1:numel(sample_configs)
