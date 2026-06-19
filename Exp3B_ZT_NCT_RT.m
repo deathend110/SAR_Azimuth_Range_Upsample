@@ -536,13 +536,10 @@ function img_out = nct_percentile_search(signal60, S60, range_q, azimuth_q, img_
     signal_up = two_dim_upsample_fft(signal60, azimuth_q, range_q);
     ref_mag = abs(signal_up(:));
 
-    % 分位数对应的A值列表
+    % 分位数对应的A值列表，去重（保留稳定顺序）
     p_list = linspace(p_min, p_max, num_A);
     A_list = prctile(ref_mag, p_list);
-
-    % 去重（保留稳定顺序）
     [A_list, uniq_idx] = unique(double(A_list(:).'), "stable");
-    p_list = p_list(uniq_idx);
 
     % 构建上采样后的RC参数
     nrn_up = size(signal_up, 1);
@@ -866,10 +863,6 @@ function plot_absolute_bars(group_defs, psnr_mean, psnr_std, Q_list, threshold_t
     group_set_ids = [group_defs(:).set_id]';
     group_thresh = string({group_defs(:).threshold_type}');
     group_types = string({group_defs(:).group_type}');
-    group_names = string({group_defs(:).group_name}');
-
-    % 为每个Q创建子图
-    colors_thresh = lines(num_thresh);
 
     for qi = 1:num_Q
         subplot(1, num_Q, qi);
@@ -878,11 +871,13 @@ function plot_absolute_bars(group_defs, psnr_mean, psnr_std, Q_list, threshold_t
         Q_val = Q_list(qi);
         si = qi;  % set_id = qi
 
-        % 每个阈值类型一组柱子：[bidir, best_uni]
+        % 每个阈值类型一组柱子：[bidir, best_uni] 及其误差
         x_centers = 1:num_thresh;
         bar_width = 0.35;
         bar_data_bidir = zeros(1, num_thresh);
         bar_data_bestuni = zeros(1, num_thresh);
+        bar_std_bidir = zeros(1, num_thresh);
+        bar_std_bestuni = zeros(1, num_thresh);
 
         for ti = 1:num_thresh
             thresh_type = threshold_types_list(ti);
@@ -906,9 +901,17 @@ function plot_absolute_bars(group_defs, psnr_mean, psnr_std, Q_list, threshold_t
 
             if ~isempty(bidir_idx)
                 bar_data_bidir(ti) = psnr_mean(bidir_idx);
+                bar_std_bidir(ti) = psnr_std(bidir_idx);
             end
             if ~isempty(range_idx) && ~isempty(az_idx)
-                bar_data_bestuni(ti) = max(psnr_mean(range_idx), psnr_mean(az_idx));
+                % 最佳单向：取PSNR更高者
+                if psnr_mean(range_idx) >= psnr_mean(az_idx)
+                    bar_data_bestuni(ti) = psnr_mean(range_idx);
+                    bar_std_bestuni(ti) = psnr_std(range_idx);
+                else
+                    bar_data_bestuni(ti) = psnr_mean(az_idx);
+                    bar_std_bestuni(ti) = psnr_std(az_idx);
+                end
             end
         end
 
@@ -916,6 +919,12 @@ function plot_absolute_bars(group_defs, psnr_mean, psnr_std, Q_list, threshold_t
             "FaceColor", [0.3, 0.6, 1.0], "DisplayName", "Bidir");
         b2 = bar(x_centers + bar_width/2, bar_data_bestuni, bar_width, ...
             "FaceColor", [1.0, 0.5, 0.3], "DisplayName", "Best Uni");
+
+        % 误差线
+        errorbar(x_centers - bar_width/2, bar_data_bidir, bar_std_bidir, ...
+            "k", "LineStyle", "none", "LineWidth", 1, "HandleVisibility", "off");
+        errorbar(x_centers + bar_width/2, bar_data_bestuni, bar_std_bestuni, ...
+            "k", "LineStyle", "none", "LineWidth", 1, "HandleVisibility", "off");
 
         set(gca, "XTick", x_centers, "XTickLabel", threshold_types_list);
         xlabel("Threshold Type", "FontSize", 11);
