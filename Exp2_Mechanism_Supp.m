@@ -52,6 +52,52 @@ for s = 1:numel(sample_configs)
     fprintf("  %s: data_width=%d, auto c_start=%d\n", sample_configs(s).scene_label, data_width, c_start);
 end
 
+%% ==================== 主循环：每个样本执行完整管道 ====================
+all_results = cell(numel(sample_configs), 1);
+all_signal60 = cell(numel(sample_configs), 1);
+
+for s = 1:numel(sample_configs)
+    sc = sample_configs(s);
+    fprintf("\n===== 样本 %d/%d: %s (seed=%d, c_start=%d) =====\n", ...
+        s, numel(sample_configs), sc.scene_label, sc.seed, sc.c_start);
+
+    %% 加载样本
+    signal60_input = load_signal60_case(data_root, sc.dataset_name, sc.file_name, sc.c_start, S60.nrn);
+    assert(size(signal60_input, 1) == S60.nrn, "signal60_input 高度不匹配 S60.nrn");
+    assert(size(signal60_input, 2) == S60.nan, "signal60_input 宽度不匹配 S60.nan");
+    all_signal60{s} = signal60_input;
+
+    %% 对每个上采样方案跑管道（只跑一次，复用节点矩阵）
+    rng(sc.seed);
+    case_results = repmat(struct( ...
+        "case_name", "", "range_q", 0, "azimuth_q", 0, "group_type", "", ...
+        "node0_signal_up", [], "node1_channel_1bit", [], "node1_residual", [], ...
+        "node2_rc_raw", [], "node2_rc", [], "node3_rcmc", [], ...
+        "node4_img", [], "node4_roi", [], "metrics", struct()), numel(case_defs), 1);
+
+    for case_idx = 1:numel(case_defs)
+        rng(sc.seed + case_idx);
+        case_results(case_idx) = run_mechanism_case(signal60_input, S60, case_defs(case_idx), As);
+        fprintf("  [%s] 管道完成 (U_mean_abs=%.4f)\n", case_defs(case_idx).case_name, ...
+            case_results(case_idx).metrics.U_mean_abs);
+    end
+    all_results{s} = case_results;
+
+    %% 对每个 τ 计算指标（复用已算好的节点矩阵）
+    for t_idx = 1:numel(tau_list)
+        tau = tau_list(t_idx);
+        [metric_table, ~] = compute_mechanism_metrics(case_results, signal60_input, S60, tau);
+        csv_path = fullfile(output_dir, sprintf("Exp2_Supp_%s_Metrics_tau%.2f.csv", sc.scene_label, tau));
+        writetable(metric_table, csv_path);
+        fprintf("  τ=%.2f 指标已保存: %s\n", tau, csv_path);
+    end
+
+    %% 保存该样本的完整管道数据
+    save(fullfile(output_dir, sprintf("Exp2_Supp_%s_Data.mat", sc.scene_label)), ...
+        "sc", "case_defs", "case_results", "As", "tau_list", "signal60_input", "-v7.3");
+    fprintf("  数据已保存: Exp2_Supp_%s_Data.mat\n", sc.scene_label);
+end
+
 %% =========================================================
 %% 局部函数区
 %% =========================================================
