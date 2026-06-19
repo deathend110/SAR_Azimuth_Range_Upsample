@@ -172,6 +172,49 @@ writetable(tau_stability_table, fullfile(output_dir, "Exp2_Supp_Summary.csv"), .
     "WriteMode", "append");
 fprintf("τ稳定性子表已追加: Exp2_Supp_Summary.csv\n");
 
+%% ==================== 可复现性检查 ====================
+fprintf("\n===== 可复现性检查 (city2, τ=0.35 vs 原始Exp2) =====\n");
+orig_metrics_path = fullfile(pwd, "Exp2_Mechanism_Output", "Exp2_Mechanism_Metrics.csv");
+supp_metrics_path = fullfile(output_dir, "Exp2_Supp_city2_Metrics_tau0.35.csv");
+
+if exist(orig_metrics_path, "file") && exist(supp_metrics_path, "file")
+    orig_table = readtable(orig_metrics_path);
+    supp_table = readtable(supp_metrics_path);
+
+    % 对齐列顺序
+    orig_table = sortrows(orig_table, ["case_name", "node_name"]);
+    supp_table = sortrows(supp_table, ["case_name", "node_name"]);
+
+    diff_off = abs(orig_table.off_support_ratio - supp_table.off_support_ratio);
+    diff_range = abs(orig_table.range_leakage_ratio - supp_table.range_leakage_ratio);
+    diff_az = abs(orig_table.azimuth_leakage_ratio - supp_table.azimuth_leakage_ratio);
+
+    tol = 1e-6;
+    max_diff = max([diff_off; diff_range; diff_az]);
+    if max_diff < tol
+        fprintf("✅ 可复现性通过：city2 τ=0.35 指标与原始 Exp2 完全一致 (max diff=%.2e)\n", max_diff);
+    else
+        fprintf("❌ 可复现性失败：max diff=%.2e > tol=%.1e\n", max_diff, tol);
+        fprintf("   off_support 差异: [%s]\n", mat2str(diff_off', 6));
+        fprintf("   range_leak   差异: [%s]\n", mat2str(diff_range', 6));
+        fprintf("   az_leak      差异: [%s]\n", mat2str(diff_az', 6));
+    end
+else
+    fprintf("⚠ 无法执行可复现性检查（缺少原始或补充指标文件）\n");
+end
+
+%% ==================== 导出元数据文件 ====================
+fid = fopen(fullfile(output_dir, "Exp2_Supp_Metadata.txt"), "w");
+fprintf(fid, "As=%.3f\n", As);
+fprintf(fid, "tau_list=%s\n", mat2str(tau_list));
+for s = 1:numel(sample_configs)
+    sc = sample_configs(s);
+    fprintf(fid, "scene_%s: dataset=%s, file=%s, c_start=%d, seed=%d\n", ...
+        sc.scene_label, sc.dataset_name, sc.file_name, sc.c_start, sc.seed);
+end
+fclose(fid);
+fprintf("元数据已保存: Exp2_Supp_Metadata.txt\n");
+
 %% ==================== 机制证据汇总图 ====================
 export_multi_sample_summary(summary_table, tau_list, tau_ranking, sample_configs, output_dir);
 
