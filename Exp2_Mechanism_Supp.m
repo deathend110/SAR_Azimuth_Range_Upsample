@@ -98,6 +98,80 @@ for s = 1:numel(sample_configs)
     fprintf("  数据已保存: Exp2_Supp_%s_Data.mat\n", sc.scene_label);
 end
 
+%% ==================== 跨样本汇总 ====================
+fprintf("\n===== 跨样本汇总 =====\n");
+
+%% 4.1 构建汇总结构体
+% 对每个 τ，汇总所有样本的 Node-2 指标
+summary_rows = {};
+for t_idx = 1:numel(tau_list)
+    tau = tau_list(t_idx);
+    for s = 1:numel(sample_configs)
+        sc = sample_configs(s);
+        metric_table = compute_mechanism_metrics(all_results{s}, all_signal60{s}, S60, tau);
+
+        % 提取 Node-2 ("node2_rc") 的各方案指标
+        node2_rows = metric_table(string(metric_table.node_name) == "node2_rc", :);
+
+        r2a2_row = node2_rows(string(node2_rows.case_name) == "R2A2", :);
+        r4a1_row = node2_rows(string(node2_rows.case_name) == "R4A1", :);
+        r1a4_row = node2_rows(string(node2_rows.case_name) == "R1A4", :);
+        noup_row = node2_rows(string(node2_rows.case_name) == "R1A1_NoUp", :);
+
+        % 确定最佳单向方案
+        if r4a1_row.off_support_ratio <= r1a4_row.off_support_ratio
+            best_uni_name = "R4A1";
+            best_uni_off = r4a1_row.off_support_ratio;
+        else
+            best_uni_name = "R1A4";
+            best_uni_off = r1a4_row.off_support_ratio;
+        end
+
+        summary_rows{end+1, 1} = struct( ...
+            "tau", tau, ...
+            "scene", sc.scene_label, ...
+            "R2A2_off", r2a2_row.off_support_ratio, ...
+            "R2A2_range_leak", r2a2_row.range_leakage_ratio, ...
+            "R2A2_az_leak", r2a2_row.azimuth_leakage_ratio, ...
+            "R4A1_off", r4a1_row.off_support_ratio, ...
+            "R1A4_off", r1a4_row.off_support_ratio, ...
+            "NoUp_off", noup_row.off_support_ratio, ...
+            "best_uni_name", best_uni_name, ...
+            "best_uni_off", best_uni_off, ...
+            "delta_off", best_uni_off - r2a2_row.off_support_ratio); %#ok<AGROW>
+    end
+end
+summary_table = struct2table(vertcat(summary_rows{:, 1}));
+
+%% 4.2 排名一致性：每个 τ 下 R2A2 排第一的场景数
+tau_ranking = zeros(numel(tau_list), 1);
+tau_avg_r2a2 = zeros(numel(tau_list), 1);
+tau_avg_bestuni = zeros(numel(tau_list), 1);
+for t_idx = 1:numel(tau_list)
+    tau = tau_list(t_idx);
+    tau_scenes = summary_table(summary_table.tau == tau, :);
+    % R2A2 排第一 = R2A2_off < R4A1_off AND R2A2_off < R1A4_off
+    r2a2_wins = (tau_scenes.R2A2_off < tau_scenes.R4A1_off) & ...
+                (tau_scenes.R2A2_off < tau_scenes.R1A4_off);
+    tau_ranking(t_idx) = sum(r2a2_wins);
+    tau_avg_r2a2(t_idx) = mean(tau_scenes.R2A2_off);
+    tau_avg_bestuni(t_idx) = mean(tau_scenes.best_uni_off);
+end
+fprintf("τ ranking counts: %s\n", mat2str(tau_ranking'));
+
+%% 4.3 导出汇总表
+writetable(summary_table, fullfile(output_dir, "Exp2_Supp_Summary.csv"));
+fprintf("汇总表已保存: Exp2_Supp_Summary.csv\n");
+
+% τ稳定性子表
+tau_stability_table = table( ...
+    tau_list(:), tau_ranking, tau_avg_r2a2, tau_avg_bestuni, ...
+    tau_avg_bestuni - tau_avg_r2a2, ...
+    "VariableNames", {'tau', 'R2A2_num1_count', 'Avg_R2A2_off', 'Avg_BestUni_off', 'Avg_Delta'});
+writetable(tau_stability_table, fullfile(output_dir, "Exp2_Supp_Summary.csv"), ...
+    "WriteMode", "append");
+fprintf("τ稳定性子表已追加: Exp2_Supp_Summary.csv\n");
+
 %% =========================================================
 %% 局部函数区
 %% =========================================================
