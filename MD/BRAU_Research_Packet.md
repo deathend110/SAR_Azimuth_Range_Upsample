@@ -42,15 +42,15 @@
 
 ## 5. Claim-Evidence Map
 
-| Claim | Evidence | Strength | Paper Use |
-|---|---|---:|---|
-| C1: 双向拆分优于单向集中上采样 | Exp1 主结果：所有整数 `Q=4,6,8,9,10` 下最佳双向均优于最佳单向，Wilcoxon 显著 | Strong | 核心贡献 |
-| C2: 优势不是整数因子组合巧合 | Exp1 非整数：`Q=3,4.5,5,7.5` 下非整数双向均优于等预算单向 | Strong | 佐证 |
-| C3: 平衡分配不是必要条件 | `R2A3/R3A2`, `R2A4/R4A2`, `R2A5/R5A2` 等非均衡双向均进入高性能平台区 | Moderate to Strong | 佐证 |
-| C4: 规律不依赖 SplitRT 内部实现 | Exp3A：SplitRT 与 FullRT 的 As 曲线基本贴合 | Strong | 鲁棒性 |
-| C5: RT 不是创造双向优势的唯一原因 | Exp3B：ZT/NCT/RT 三类阈值下双向均优于最佳单向 | Strong | 鲁棒性 |
-| C6: 双向优势可能来自更好的二维频谱泄漏抑制 | Exp2：主样本中 `R2A2` 在 RC/RCMC 后的 off-support、range leakage、azimuth leakage 均最低 | Moderate | 机制解释 |
-| C7: 单向上采样只改善对应方向这一细机制 | Exp2 当前不充分；方向性分离不干净，补充样本中存在反例 | Weak | 不建议强写 |
+| Claim                   | Evidence                                                                    |           Strength | Paper Use |
+| ----------------------- | --------------------------------------------------------------------------- | -----------------: | --------- |
+| C1: 双向拆分优于单向集中上采样       | Exp1 主结果：所有整数 `Q=4,6,8,9,10` 下最佳双向均优于最佳单向，Wilcoxon 显著                       |             Strong | 核心贡献      |
+| C2: 优势不是整数因子组合巧合        | Exp1 非整数：`Q=3,4.5,5,7.5` 下非整数双向均优于等预算单向                                     |             Strong | 佐证        |
+| C3: 平衡分配不是必要条件          | `R2A3/R3A2`, `R2A4/R4A2`, `R2A5/R5A2` 等非均衡双向均进入高性能平台区                       | Moderate to Strong | 佐证        |
+| C4: 规律不依赖 SplitRT 内部实现  | Exp3A：SplitRT 与 FullRT 的 As 曲线基本贴合                                          |             Strong | 鲁棒性       |
+| C5: RT 不是创造双向优势的唯一原因    | Exp3B：ZT/NCT/RT 三类阈值下双向均优于最佳单向                                              |             Strong | 鲁棒性       |
+| C6: 双向优势可能来自更好的二维频谱泄漏抑制 | Exp2：主样本中 `R2A2` 在 RC/RCMC 后的 off-support、range leakage、azimuth leakage 均最低 |           Moderate | 机制解释      |
+| C7: 单向上采样只改善对应方向这一细机制   | Exp2 当前不充分；方向性分离不干净，补充样本中存在反例                                               |               Weak | 不建议强写     |
 
 ## 6. Experiment Evidence Summary
 
@@ -88,6 +88,8 @@
 | 主结果 SSIM 曲线 | `Exp1_MainResult_Output/Exp1_MainResult_SSIM_curves.png` | 展示结构相似性提升 |
 | 主结果汇总表 | `Exp1_MainResult_Output/Exp1_MainResult_Summary.csv` | 论文表格或补充材料 |
 | 主结果增益表 | `Exp1_MainResult_Output/Exp1_MainResult_Gain.csv` | 核心统计证据 |
+![alt text](../Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png)
+![alt text](../Exp1_MainResult_Output/Exp1_MainResult_SSIM_curves.png)
 
 论文可写结论：
 
@@ -105,12 +107,12 @@
 
 主增益表：
 
-| Q | Best Bidir | Best Unidir | Delta PSNR | Delta SSIM | p PSNR | p SSIM |
-|---:|---|---|---:|---:|---:|---:|
-| 3 | R1.5A2 | R3A1 | 0.2723 | 0.0146 | 1.22e-09 | 1.18e-12 |
-| 4.5 | R1.5A3 | R4.5A1 | 0.3437 | 0.0172 | 1.63e-09 | 3.72e-13 |
-| 5 | R2.5A2 | R5A1 | 0.3952 | 0.0196 | 4.00e-11 | 3.56e-13 |
-| 7.5 | R2.5A3 | R1A7.5 | 0.4567 | 0.0221 | 4.23e-13 | 3.56e-13 |
+|   Q | Best Bidir | Best Unidir | Delta PSNR | Delta SSIM |   p PSNR |   p SSIM |
+| --: | ---------- | ----------- | ---------: | ---------: | -------: | -------: |
+|   3 | R1.5A2     | R3A1        |     0.2723 |     0.0146 | 1.22e-09 | 1.18e-12 |
+| 4.5 | R1.5A3     | R4.5A1      |     0.3437 |     0.0172 | 1.63e-09 | 3.72e-13 |
+|   5 | R2.5A2     | R5A1        |     0.3952 |     0.0196 | 4.00e-11 | 3.56e-13 |
+| 7.5 | R2.5A3     | R1A7.5      |     0.4567 |     0.0221 | 4.23e-13 | 3.56e-13 |
 
 可用图表：
 
@@ -119,6 +121,8 @@
 | 非整数 PSNR 柱状图 | `Exp1_NonInteger_Output/Exp1_NonInteger_PSNR_bars.png` | 支撑“非整数有效”    |
 | 非整数 SSIM 柱状图 | `Exp1_NonInteger_Output/Exp1_NonInteger_SSIM_bars.png` | 支撑“不是整数因子巧合” |
 | 非整数增益表       | `Exp1_NonInteger_Output/Exp1_NonInteger_Gain.csv`      | 补充统计证据       |
+![alt text](../Exp1_NonInteger_Output/Exp1_NonInteger_PSNR_bars.png)
+![alt text](../Exp1_NonInteger_Output/Exp1_NonInteger_SSIM_bars.png)
 
 论文可写结论：
 
@@ -142,20 +146,20 @@
 
 主样本机制指标：
 
-| Case | Node | Off-support | Range leakage | Azimuth leakage |
-|---|---|---:|---:|---:|
-| R1A1_NoUp | node1 residual | 0.817690 | 0.199773 | 0.038220 |
-| R4A1 | node1 residual | 0.817692 | 0.199893 | 0.038220 |
-| R1A4 | node1 residual | 0.817684 | 0.199774 | 0.038499 |
-| R2A2 | node1 residual | 0.817687 | 0.199847 | 0.038413 |
-| R1A1_NoUp | node2 RC | 0.926008 | 0.471044 | 0.101785 |
-| R4A1 | node2 RC | 0.893954 | 0.368013 | 0.070476 |
-| R1A4 | node2 RC | 0.901018 | 0.394427 | 0.072251 |
-| R2A2 | node2 RC | 0.892857 | 0.363750 | 0.066680 |
-| R1A1_NoUp | node3 RCMC | 0.926008 | 0.471044 | 0.101785 |
-| R4A1 | node3 RCMC | 0.893954 | 0.368013 | 0.070476 |
-| R1A4 | node3 RCMC | 0.901018 | 0.394427 | 0.072251 |
-| R2A2 | node3 RCMC | 0.892857 | 0.363750 | 0.066680 |
+| Case      | Node           | Off-support | Range leakage | Azimuth leakage |
+| --------- | -------------- | ----------: | ------------: | --------------: |
+| R1A1_NoUp | node1 residual |    0.817690 |      0.199773 |        0.038220 |
+| R4A1      | node1 residual |    0.817692 |      0.199893 |        0.038220 |
+| R1A4      | node1 residual |    0.817684 |      0.199774 |        0.038499 |
+| R2A2      | node1 residual |    0.817687 |      0.199847 |        0.038413 |
+| R1A1_NoUp | node2 RC       |    0.926008 |      0.471044 |        0.101785 |
+| R4A1      | node2 RC       |    0.893954 |      0.368013 |        0.070476 |
+| R1A4      | node2 RC       |    0.901018 |      0.394427 |        0.072251 |
+| R2A2      | node2 RC       |    0.892857 |      0.363750 |        0.066680 |
+| R1A1_NoUp | node3 RCMC     |    0.926008 |      0.471044 |        0.101785 |
+| R4A1      | node3 RCMC     |    0.893954 |      0.368013 |        0.070476 |
+| R1A4      | node3 RCMC     |    0.901018 |      0.394427 |        0.072251 |
+| R2A2      | node3 RCMC     |    0.892857 |      0.363750 |        0.066680 |
 
 机制解释强度：
 
@@ -166,12 +170,12 @@
 
 多样本补充摘要：
 
-| tau | R2A2 最优场景数 / 4 | Avg R2A2 off | Avg BestUni off | Avg Delta |
-|---:|---:|---:|---:|---:|
-| 0.15 | 4 | 0.408995 | 0.413779 | 0.004785 |
-| 0.25 | 3 | 0.704181 | 0.705821 | 0.001640 |
-| 0.35 | 3 | 0.868644 | 0.868598 | -0.000046 |
-| 0.45 | 3 | 0.945249 | 0.944960 | -0.000288 |
+|  tau | R2A2 最优场景数 / 4 | Avg R2A2 off | Avg BestUni off | Avg Delta |
+| ---: | -------------: | -----------: | --------------: | --------: |
+| 0.15 |              4 |     0.408995 |        0.413779 |  0.004785 |
+| 0.25 |              3 |     0.704181 |        0.705821 |  0.001640 |
+| 0.35 |              3 |     0.868644 |        0.868598 | -0.000046 |
+| 0.45 |              3 |     0.945249 |        0.944960 | -0.000288 |
 
 可用图表：
 
@@ -185,6 +189,10 @@
 | 方位向 1D profile | `Exp2_Mechanism_Output/Exp2_Node1_Residual_Azimuth_Profile.png` | 补充材料 |
 | RC/RCMC/Final montage | `Exp2_Mechanism_Output/Exp2_Montage_RC_RCMC_Final.png` | 补充材料或备选图 |
 | 多样本机制摘要图 | `Exp2_Mechanism_Supp_Output/Exp2_Supp_MultiSample_Summary.png` | 支撑机制趋势与局限 |
+![alt text](../Exp2_Mechanism_Output/Exp2_2D_Mechanism_Figure.png)
+![alt text](../Exp2_Mechanism_Output/Exp2_Node1_Residual_Spectra.png)
+![alt text](../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png)
+![alt text](../Exp2_Mechanism_Supp_Output/Exp2_Supp_MultiSample_Summary.png)
 
 论文可写结论：
 
@@ -221,6 +229,8 @@
 | SplitRT vs FullRT PSNR 曲线 | `Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_PSNR_curves.png` | 展示内部阈值构造鲁棒性 |
 | SplitRT vs FullRT SSIM 曲线 | `Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_SSIM_curves.png` | 补充结构相似性鲁棒性 |
 | SplitRT vs FullRT 汇总表 | `Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_Summary.csv` | 补充材料 |
+![alt text](../Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_PSNR_curves.png) 
+![alt text](../Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_SSIM_curves.png)
 
 论文可写结论：
 
@@ -252,6 +262,7 @@
 | ZT/NCT/RT 增益柱状图 | `Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png` | 推荐正文鲁棒性图 |
 | ZT/NCT/RT 增益表 | `Exp3B_ZT_NCT_RT_Output/Exp3B_ZT_NCT_RT_Gains.csv` | 核心统计证据 |
 | ZT/NCT/RT 汇总表 | `Exp3B_ZT_NCT_RT_Output/Exp3B_ZT_NCT_RT_Summary.csv` | 补充材料 |
+![alt text](../Exp3B_ZT_NCT_RT_Output/Exp3B_AbsoluteBars.png)
 
 论文可写结论：
 
@@ -261,15 +272,15 @@
 
 4 页会议论文建议压缩成 3 个正文图表组：
 
-| Priority | Type | Candidate | Reason |
-|---:|---|---|---|
-| P0 | Main figure | `Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png` 或重绘为 PSNR+SSIM 双子图 | 最直接支撑核心 claim |
-| P0 | Main table | `Exp1_MainResult_Output/Exp1_MainResult_Gain.csv` 精简表 | 显示最佳双向 vs 最佳单向及 p-value |
-| P1 | Mechanism figure | `Exp2_Mechanism_Output/Exp2_2D_Mechanism_Figure.pdf` | 支撑二维频域解释 |
-| P1 | Robustness figure | `Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png` | 证明 ZT/NCT/RT 下规律稳定 |
-| P2 | Supplementary | `Exp1_NonInteger_Output/Exp1_NonInteger_PSNR_bars.png` | 支撑非整数有效 |
-| P2 | Supplementary | `Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_PSNR_curves.png` | 支撑 SplitRT≈FullRT |
-| P2 | Supplementary | `Exp2_Mechanism_Supp_Output/Exp2_Supp_MultiSample_Summary.png` | 机制趋势与局限 |
+| Priority | Type              | Candidate                                                                   | Reason                  |
+| -------: | ----------------- | --------------------------------------------------------------------------- | ----------------------- |
+|       P0 | Main figure       | `Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png` 或重绘为 PSNR+SSIM 双子图 | 最直接支撑核心 claim           |
+|       P0 | Main table        | `Exp1_MainResult_Output/Exp1_MainResult_Gain.csv` 精简表                       | 显示最佳双向 vs 最佳单向及 p-value |
+|       P1 | Mechanism figure  | `Exp2_Mechanism_Output/Exp2_2D_Mechanism_Figure.pdf`                        | 支撑二维频域解释                |
+|       P1 | Robustness figure | `Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png`                                 | 证明 ZT/NCT/RT 下规律稳定      |
+|       P2 | Supplementary     | `Exp1_NonInteger_Output/Exp1_NonInteger_PSNR_bars.png`                      | 支撑非整数有效                 |
+|       P2 | Supplementary     | `Exp3A_SplitVsFull_Output/Exp3A_SplitVsFull_PSNR_curves.png`                | 支撑 SplitRT≈FullRT       |
+|       P2 | Supplementary     | `Exp2_Mechanism_Supp_Output/Exp2_Supp_MultiSample_Summary.png`              | 机制趋势与局限                 |
 
 如果正文只能放 3 张图，建议顺序：
 
