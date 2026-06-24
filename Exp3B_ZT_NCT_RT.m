@@ -539,7 +539,7 @@ function img_out = nct_percentile_search(signal60, S60, range_q, azimuth_q, img_
     % 分位数对应的A值列表，去重（保留稳定顺序）
     p_list = linspace(p_min, p_max, num_A);
     A_list = prctile(ref_mag, p_list);
-    [A_list, uniq_idx] = unique(double(A_list(:).'), "stable");
+    [A_list, ~] = unique(double(A_list(:).'), "stable");
 
     % 构建上采样后的RC参数
     nrn_up = size(signal_up, 1);
