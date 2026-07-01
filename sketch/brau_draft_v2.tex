@@ -60,6 +60,12 @@ Most existing work focuses on how to construct thresholds, how to recover images
 
 This paper presents bidirectional range-azimuth upsampling (BRAU) as a fixed-budget allocation strategy for one-bit SAR imaging. BRAU performs zero-padding upsampling on the raw echo grid before threshold generation and one-bit quantization, rather than interpolating a reconstructed image. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in both PSNR and SSIM. The advantage also appears under non-integer upsampling factors and remains significant under zero-threshold, non-random constant-threshold, and random-threshold settings. Mechanism analysis further shows that bidirectional allocation produces lower off-support and directional spectral leakage after range compression, supporting the interpretation that range-azimuth allocation better matches the two-dimensional spectral structure of SAR echoes.
 
+\begin{figure}[t]
+\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.jpg}}
+\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
+\label{fig:intro_scene_examples}
+\end{figure}
+
 The main contributions are summarized as follows:
 \begin{itemize}
     \item We formulate fixed-budget frequency-domain range-azimuth upsampling allocation for one-bit SAR imaging, where the total digital budget $Q_{\mathrm{up}}=R\times A$ is kept constant before quantization.
