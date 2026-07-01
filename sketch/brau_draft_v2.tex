@@ -227,11 +227,11 @@ RCMC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 
 Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The RCMC rows keep the same ordering because the metric is computed after the frequency-domain crop used before RCMC. This evidence links the intermediate spectra to the final metrics: the bidirectional group is better in PSNR and SSIM and also shows the least spectral leakage in the representative mechanism case.
 
-\begin{center}
-\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}
-\refstepcounter{figure}\label{fig:mechanism}
-{\footnotesize Fig.~\thefigure. Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
-\end{center}
+\begin{figure}[t]
+\centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
+\caption{Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
+\label{fig:mechanism}
+\end{figure}
 
 \subsection{Robustness to Threshold Design}
 
