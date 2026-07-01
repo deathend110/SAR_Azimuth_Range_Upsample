@@ -70,11 +70,15 @@ The main contributions are summarized as follows:
 
 \subsection{Fixed-Budget Range-Azimuth Upsampling}
 
-Let $s(\tau,\eta)$ denote the raw SAR echo, where $\tau$ and $\eta$ are the range-time and azimuth-time dimensions, respectively. In one-bit SAR imaging, the sampled echo is quantized by retaining only the sign information, which can be written as
+Let $s(\tau,\eta)\in\mathbb{C}$ denote the complex raw SAR echo, where $\tau$ and $\eta$ are the range-time and azimuth-time dimensions, respectively. The echo can be written as $s=I+jQ_c$, where $I=\operatorname{Re}(s)$ and $Q_c=\operatorname{Im}(s)$ denote the in-phase and quadrature components. In one-bit SAR imaging, the sampled echo is quantized by retaining only the sign information, which can be written as
 \begin{equation}
     y = \operatorname{sign}(s + u),
 \end{equation}
-where $u$ denotes the quantization threshold. This operation greatly reduces the sampling precision but also discards amplitude information and introduces strong quantization distortion.
+where $u$ denotes the quantization threshold. For the complex echo, the sign operator is applied separately to the in-phase and quadrature channels:
+\begin{equation}
+    \operatorname{sign}(s)=\operatorname{sign}(I)+j\operatorname{sign}(Q_c).
+\end{equation}
+This operation greatly reduces the sampling precision but also discards amplitude information and introduces strong quantization distortion.
 
 This paper studies how a digital frequency-domain upsampling budget should be allocated before one-bit quantization. Let $R$ be the range upsampling factor and $A$ be the azimuth upsampling factor. The total upsampling budget is defined as
 \begin{equation}
