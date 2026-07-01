@@ -8,6 +8,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{url}
+\usepackage[hidelinks]{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -120,7 +121,7 @@ Unless otherwise specified, the main fixed-budget experiments use SplitRT with $
 
 \subsection{Evaluation Protocol}
 
-The main experiment uses seed 2026, SplitRT with $A_s=0.6$, and seven SAR datasets: Bangkok, city1, city2, SAR-figure, field, port, and suburb scenes. The datasets are derived from the Capella Open Data IEEE Data Contest 2026 collection.\footnote{\url{https://radiantearth.github.io/stac-browser/#/external/capella-open-data.s3.us-west-2.amazonaws.com/stac/capella-open-data-ieee-data-contest/collection.json}} Ten stratified windows are selected from each dataset, giving 70 paired test samples. The ground-truth image is formed from the unquantized raw echo using the same SAR chain: range compression, RCMC, image formation, ROI extraction, and image normalization. Each one-bit result is compared with this normalized ground truth using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM).
+The main experiment uses seed 2026, SplitRT with $A_s=0.6$, and seven SAR datasets: Bangkok, city1, city2, SAR-figure, field, port, and suburb scenes. The datasets are derived from the Capella Open Data IEEE Data Contest 2026 collection.\footnote{\href{https://radiantearth.github.io/stac-browser/\#/external/capella-open-data.s3.us-west-2.amazonaws.com/stac/capella-open-data-ieee-data-contest/collection.json}{Capella Open Data IEEE Data Contest 2026 collection}} Ten stratified windows are selected from each dataset, giving 70 paired test samples. The ground-truth image is formed from the unquantized raw echo using the same SAR chain: range compression, RCMC, image formation, ROI extraction, and image normalization. Each one-bit result is compared with this normalized ground truth using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM).
 
 For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best unidirectional group are selected by their mean PSNR over the 70 paired samples. The reported gains are computed as bidirectional minus unidirectional. Statistical significance is tested using the paired Wilcoxon signed-rank test on the same paired sample vectors.
 
