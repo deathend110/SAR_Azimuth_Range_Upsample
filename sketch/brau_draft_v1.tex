@@ -1,23 +1,41 @@
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
-
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \begin{document}
 
-\title{Bidirectional Range-Azimuth Upsampling for 1-Bit SAR Imaging}
+\title{Bidirectional Range-Azimuth Upsampling for 1-Bit SAR Imaging
+\thanks{Identify applicable funding agency here. If none, delete this.}
+}
 
-\author{
-\IEEEauthorblockN{First Author, Second Author, Third Author}
-\IEEEauthorblockA{
-\textit{Department Placeholder} \\
-\textit{Institution Placeholder}\\
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
 City, Country \\
-email@example.com}
+email address or ORCID}
+~\\
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname*}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+*Corresponding author
+~\\
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
 }
 
 \maketitle
@@ -83,15 +101,13 @@ Experiments are conducted on seven SAR datasets, with 10 frames selected from ea
 The main experiment evaluates whether splitting a fixed upsampling budget across range and azimuth is more effective than concentrating the same budget in a single dimension. We test integer budgets $Q=4,6,8,9,10$. For each $Q$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
 
 \begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png}
+\centerline{\includegraphics[width=\linewidth]{../Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png}}
 \caption{Main fixed-budget PSNR results under different range-azimuth allocation strategies.}
 \label{fig:main_psnr}
 \end{figure}
 
 \begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../Exp1_MainResult_Output/Exp1_MainResult_SSIM_curves.png}
+\centerline{\includegraphics[width=\linewidth]{../Exp1_MainResult_Output/Exp1_MainResult_SSIM_curves.png}}
 \caption{Main fixed-budget SSIM results under different range-azimuth allocation strategies.}
 \label{fig:main_ssim}
 \end{figure}
@@ -100,8 +116,7 @@ Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the be
 
 \begin{table}[t]
 \caption{Best bidirectional and unidirectional results under each fixed budget.}
-\label{tab:main_gain}
-\centering
+\begin{center}
 \scriptsize
 \setlength{\tabcolsep}{2pt}
 \begin{tabular}{c c c c c}
@@ -115,6 +130,8 @@ $Q$ & Best bi-dir. & Best uni-dir. & $\Delta$PSNR & $\Delta$SSIM \\
 10 & R5A2 (26.9702/0.8427) & R10A1 (26.4630/0.8206) & 0.5072 & 0.0221 \\
 \hline
 \end{tabular}
+\label{tab:main_gain}
+\end{center}
 \end{table}
 
 Figs.~\ref{fig:main_psnr} and \ref{fig:main_ssim} show the PSNR and SSIM curves. The no-upsampling baseline gives the lowest reconstruction quality. Increasing the total budget improves all upsampled groups, but the bidirectional groups form a consistently higher curve than the range-only and azimuth-only baselines. This result supports the central claim that the dimensional allocation of the upsampling budget matters in one-bit SAR imaging.
@@ -130,16 +147,14 @@ We further analyze why bidirectional allocation is more effective under the same
 For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the range-compressed spectra. The figure preserves the different spectral extents induced by the four allocation strategies, showing the one-dimensional expansion of R4A1 and R1A4 and the two-dimensional expansion of R2A2. Compared with the unidirectional groups, R2A2 produces a cleaner spectral concentration with lower off-support and directional leakage.
 
 \begin{figure*}[t]
-\centering
-\includegraphics[width=0.95\textwidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}
+\centerline{\includegraphics[width=0.95\textwidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
 \caption{Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
 \label{fig:mechanism}
 \end{figure*}
 
 \begin{table}[t]
 \caption{Spectral leakage metrics after SAR processing for $Q=4$. Lower values indicate cleaner spectral concentration.}
-\label{tab:mechanism_metrics}
-\centering
+\begin{center}
 \scriptsize
 \begin{tabular}{c c c c c}
 \hline
@@ -156,6 +171,8 @@ RCMC & R1A4 & 0.901018 & 0.394427 & 0.072251 \\
 RCMC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \hline
 \end{tabular}
+\label{tab:mechanism_metrics}
+\end{center}
 \end{table}
 
 Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The same ordering is retained after RCMC. This result supports the interpretation that bidirectional allocation better matches the two-dimensional range-azimuth structure of SAR data after coherent processing. The mechanism evidence is therefore consistent with the final reconstruction metrics: the bidirectional group is not only better in PSNR and SSIM, but also produces cleaner intermediate spectra.
@@ -165,8 +182,7 @@ Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:m
 Finally, we test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
 
 \begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{../Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png}
+\centerline{\includegraphics[width=\linewidth]{../Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png}}
 \caption{Bidirectional gains under ZT, NCT, and RT threshold settings.}
 \label{fig:threshold}
 \end{figure}
