@@ -12,7 +12,7 @@
 
 \begin{document}
 
-\title{Bidirectional Range-Azimuth Upsampling for 1-Bit SAR Imaging
+\title{Bidirectional Range-Azimuth Upsampling for one-Bit SAR Imaging
 \thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
@@ -109,7 +109,7 @@ Step & Operation \\
 
 \subsection{Threshold Settings}
 
-We evaluate three threshold settings. Zero threshold (ZT) directly applies sign quantization with $u=0$. Non-random constant threshold (NCT) uses a deterministic constant threshold level. Random threshold (RT) uses a random threshold with an amplitude controlled by the scaling factor $A_s$. For RT, we also compare two implementation variants, SplitRT and FullRT, to test whether the observed allocation effect depends on the specific random-threshold construction.
+We evaluate three threshold settings. Zero threshold (ZT) directly applies sign quantization with $u=0$. Non-random constant threshold (NCT) uses a deterministic constant threshold level. Random threshold (RT) uses a random-phase threshold with fixed amplitude $|U|=A_s\hat{\sigma}$, where $\hat{\sigma}= \sqrt{2/\pi}\cdot\operatorname{mean}(|s(\tau,\eta)|)$ estimates the signal RMS amplitude and $A_s$ is a dimensionless scaling factor controlling the threshold amplitude relative to the signal level. For RT, we compare two phase construction variants: SplitRT generates the threshold phase as the sum of independent range-phase and azimuth-phase vectors (separable, $N_r+N_a$ degrees of freedom), while FullRT assigns an independent random phase to each sample (non-separable, $N_r\times N_a$ degrees of freedom). This comparison tests whether the spatial structure of the threshold phase affects the allocation result.
 
 Unless otherwise specified, the main fixed-budget experiments use SplitRT with $A_s=0.6$. This setting is used only to provide a consistent main comparison; the threshold robustness experiments verify that the bidirectional advantage is preserved under ZT, NCT, and RT.
 
