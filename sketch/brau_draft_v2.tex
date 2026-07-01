@@ -198,11 +198,11 @@ M_a(k_a)=\max_{k_r}M(k_r,k_a),
 
 For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the raw range-compressed spectra before final frequency crop, so the different spectral extents induced by R4A1, R1A4, and R2A2 remain visible. Compared with the unidirectional groups, R2A2 produces a cleaner two-dimensional spectral concentration.
 
-\begin{figure*}[t]
-\centerline{\includegraphics[width=0.95\textwidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
+\begin{figure}[!t]
+\centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
 \caption{Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
 \label{fig:mechanism}
-\end{figure*}
+\end{figure}
 
 \begin{table}[t]
 \caption{Spectral leakage metrics after SAR processing for $Q=4$. Lower values indicate cleaner spectral concentration.}
@@ -233,8 +233,8 @@ Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:m
 
 Finally, we test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
 
-\begin{figure}[t]
-\centerline{\includegraphics[width=\linewidth]{../Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png}}
+\begin{figure}[!t]
+\centerline{\includegraphics[width=0.98\linewidth]{../Exp3B_ZT_NCT_RT_Output/Exp3B_GainBars.png}}
 \caption{Bidirectional gains under ZT, NCT, and RT threshold settings.}
 \label{fig:threshold}
 \end{figure}
