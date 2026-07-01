@@ -198,12 +198,6 @@ M_a(k_a)=\max_{k_r}M(k_r,k_a),
 
 For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the raw range-compressed spectra before final frequency crop, so the different spectral extents induced by R4A1, R1A4, and R2A2 remain visible. Compared with the unidirectional groups, R2A2 produces a cleaner two-dimensional spectral concentration.
 
-\begin{figure}[!t]
-\centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
-\caption{Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
-\label{fig:mechanism}
-\end{figure}
-
 \begin{table}[t]
 \caption{Spectral leakage metrics after SAR processing for $Q=4$. Lower values indicate cleaner spectral concentration.}
 \begin{center}
@@ -228,6 +222,12 @@ RCMC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \end{table}
 
 Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The RCMC rows keep the same ordering because the metric is computed after the frequency-domain crop used before RCMC. This evidence links the intermediate spectra to the final metrics: the bidirectional group is better in PSNR and SSIM and also shows the least spectral leakage in the representative mechanism case.
+
+\begin{center}
+\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}
+\refstepcounter{figure}\label{fig:mechanism}
+{\footnotesize Fig.~\thefigure. Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
+\end{center}
 
 \subsection{Robustness to Threshold Design}
 
