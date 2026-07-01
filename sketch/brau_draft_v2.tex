@@ -52,6 +52,12 @@ one-bit SAR imaging, upsampling, range-azimuth allocation, quantization
 
 \section{Introduction}
 
+\begin{figure}[!t]
+\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.jpg}}
+\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
+\label{fig:intro_scene_examples}
+\end{figure}
+
 Synthetic aperture radar (SAR) forms high-resolution images by coherently processing echoes collected along a synthetic aperture, and has become a core sensing modality for remote sensing and target observation \cite{cumming2005sar,curlander1991sar}. Conventional SAR systems usually rely on high-resolution analog-to-digital converters to preserve echo amplitude and phase information. On lightweight or resource-constrained platforms, however, the cost, power consumption, and data throughput of high-resolution sampling can become limiting factors. One-bit SAR imaging addresses this constraint by retaining only the sign of the received echo, which substantially simplifies the sampling hardware but also removes amplitude information and introduces strong quantization distortion.
 
 Early signum-coded SAR studies showed that meaningful SAR images can still be formed from sign-only data under suitable processing conditions \cite{franceschetti1991signum}. Recent one-bit SAR methods further improve image quality by designing quantization thresholds or reconstruction strategies. Single-frequency thresholds were shown to suppress harmonic interference in one-bit SAR imaging \cite{zhao2019onebit}, while time-varying and fixed-threshold strategies have been investigated to improve the fidelity of low-precision SAR echoes \cite{demir2018onebit,zhao2021lowprecision,nie2025fixed}. Learning-based de-quantization methods have also been introduced to suppress one-bit harmonics after data acquisition \cite{si2023dequantization}. These studies demonstrate that threshold design and post-processing can recover useful information from severely quantized SAR data.
@@ -59,12 +65,6 @@ Early signum-coded SAR studies showed that meaningful SAR images can still be fo
 Most existing work focuses on how to construct thresholds, how to recover images from one-bit measurements, or how to use one-dimensional upsampling in a specific processing direction. In contrast, this paper studies a less explored design question: under a fixed pre-quantization frequency-domain upsampling budget, should the budget be concentrated in one dimension, or split between the range and azimuth dimensions? Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q_{\mathrm{up}}=R\times A$ be the total digital upsampling allocation. A unidirectional allocation uses either $R=Q_{\mathrm{up}},A=1$ or $R=1,A=Q_{\mathrm{up}}$, whereas a bidirectional allocation uses $R>1$ and $A>1$ under the same $Q_{\mathrm{up}}$.
 
 This paper presents bidirectional range-azimuth upsampling (BRAU) as a fixed-budget allocation strategy for one-bit SAR imaging. BRAU performs zero-padding upsampling on the raw echo grid before threshold generation and one-bit quantization, rather than interpolating a reconstructed image. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in both PSNR and SSIM. The advantage also appears under non-integer upsampling factors and remains significant under zero-threshold, non-random constant-threshold, and random-threshold settings. Mechanism analysis further shows that bidirectional allocation produces lower off-support and directional spectral leakage after range compression, supporting the interpretation that range-azimuth allocation better matches the two-dimensional spectral structure of SAR echoes.
-
-\begin{figure}[t]
-\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.jpg}}
-\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
-\label{fig:intro_scene_examples}
-\end{figure}
 
 The main contributions are summarized as follows:
 \begin{itemize}
