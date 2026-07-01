@@ -41,7 +41,7 @@ email address or ORCID}
 \maketitle
 
 \begin{abstract}
-One-bit synthetic aperture radar (SAR) imaging reduces sampling precision by retaining only sign information, but the resulting quantization distortion can severely degrade image quality. Existing studies mainly improve one-bit SAR imaging through threshold design or post-acquisition recovery. This paper studies a complementary design variable: how to allocate a fixed digital frequency-domain upsampling budget before one-bit quantization. We formulate bidirectional range-azimuth upsampling (BRAU), which applies zero-padding upsampling in both range and azimuth with a fixed total allocation $Q=R\times A$. BRAU is therefore different from ordinary image-domain interpolation after reconstruction. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in PSNR and SSIM. The advantage also holds for non-integer factors and under zero-threshold, non-random constant-threshold, and random-threshold quantization. Spectral analysis further shows that R2A2 produces the lowest off-support, range-leakage, and azimuth-leakage ratios after range compression. These results indicate that splitting the pre-quantization frequency-domain upsampling budget across range and azimuth is an effective allocation strategy for one-bit SAR imaging.
+One-bit synthetic aperture radar (SAR) imaging reduces sampling precision by retaining only sign information, but the resulting quantization distortion can severely degrade image quality. Existing studies mainly improve one-bit SAR imaging through threshold design or post-acquisition recovery. This paper studies a complementary design variable: how to allocate a fixed digital frequency-domain upsampling budget before one-bit quantization. We formulate bidirectional range-azimuth upsampling (BRAU), which applies zero-padding upsampling in both range and azimuth with a fixed total allocation $Q_{\mathrm{up}}=R\times A$. BRAU is therefore different from ordinary image-domain interpolation after reconstruction. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in PSNR and SSIM. The advantage also holds for non-integer factors and under zero-threshold, non-random constant-threshold, and random-threshold quantization. Spectral analysis further shows that R2A2 produces the lowest off-support, range-leakage, and azimuth-leakage ratios after range compression. These results indicate that splitting the pre-quantization frequency-domain upsampling budget across range and azimuth is an effective allocation strategy for one-bit SAR imaging.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -54,13 +54,13 @@ Synthetic aperture radar (SAR) forms high-resolution images by coherently proces
 
 Early signum-coded SAR studies showed that meaningful SAR images can still be formed from sign-only data under suitable processing conditions \cite{franceschetti1991signum}. Recent one-bit SAR methods further improve image quality by designing quantization thresholds or reconstruction strategies. Single-frequency thresholds were shown to suppress harmonic interference in one-bit SAR imaging \cite{zhao2019onebit}, while time-varying and fixed-threshold strategies have been investigated to improve the fidelity of low-precision SAR echoes \cite{demir2018onebit,zhao2021lowprecision,nie2025fixed}. Learning-based de-quantization methods have also been introduced to suppress one-bit harmonics after data acquisition \cite{si2023dequantization}. These studies demonstrate that threshold design and post-processing can recover useful information from severely quantized SAR data.
 
-Most existing work focuses on how to construct thresholds, how to recover images from one-bit measurements, or how to use one-dimensional upsampling in a specific processing direction. In contrast, this paper studies a less explored design question: under a fixed pre-quantization frequency-domain upsampling budget, should the budget be concentrated in one dimension, or split between the range and azimuth dimensions? Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q=R\times A$ be the total digital upsampling allocation. A unidirectional allocation uses either $R=Q,A=1$ or $R=1,A=Q$, whereas a bidirectional allocation uses $R>1$ and $A>1$ under the same $Q$.
+Most existing work focuses on how to construct thresholds, how to recover images from one-bit measurements, or how to use one-dimensional upsampling in a specific processing direction. In contrast, this paper studies a less explored design question: under a fixed pre-quantization frequency-domain upsampling budget, should the budget be concentrated in one dimension, or split between the range and azimuth dimensions? Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q_{\mathrm{up}}=R\times A$ be the total digital upsampling allocation. A unidirectional allocation uses either $R=Q_{\mathrm{up}},A=1$ or $R=1,A=Q_{\mathrm{up}}$, whereas a bidirectional allocation uses $R>1$ and $A>1$ under the same $Q_{\mathrm{up}}$.
 
 This paper presents bidirectional range-azimuth upsampling (BRAU) as a fixed-budget allocation strategy for one-bit SAR imaging. BRAU performs zero-padding upsampling on the raw echo grid before threshold generation and one-bit quantization, rather than interpolating a reconstructed image. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in both PSNR and SSIM. The advantage also appears under non-integer upsampling factors and remains significant under zero-threshold, non-random constant-threshold, and random-threshold settings. Mechanism analysis further shows that bidirectional allocation produces lower off-support and directional spectral leakage after range compression, supporting the interpretation that range-azimuth allocation better matches the two-dimensional spectral structure of SAR echoes.
 
 The main contributions are summarized as follows:
 \begin{itemize}
-    \item We formulate fixed-budget frequency-domain range-azimuth upsampling allocation for one-bit SAR imaging, where the total digital budget $Q=R\times A$ is kept constant before quantization.
+    \item We formulate fixed-budget frequency-domain range-azimuth upsampling allocation for one-bit SAR imaging, where the total digital budget $Q_{\mathrm{up}}=R\times A$ is kept constant before quantization.
     \item We show that bidirectional allocation consistently improves reconstruction quality over the best unidirectional allocation across multiple tested budgets.
     \item We verify that the advantage is robust to non-integer upsampling factors and different threshold constructions.
     \item We provide spectral leakage evidence showing that bidirectional allocation yields cleaner two-dimensional spectral structure after range compression.
@@ -70,23 +70,23 @@ The main contributions are summarized as follows:
 
 \subsection{Fixed-Budget Range-Azimuth Upsampling}
 
-Let $s(\tau,\eta)\in\mathbb{C}$ denote the complex raw SAR echo, where $\tau$ and $\eta$ are the range-time and azimuth-time dimensions, respectively. The echo can be written as $s=I+jQ_c$, where $I=\operatorname{Re}(s)$ and $Q_c=\operatorname{Im}(s)$ denote the in-phase and quadrature components. In one-bit SAR imaging, the sampled echo is quantized by retaining only the sign information, which can be written as
+Let $s(\tau,\eta)\in\mathbb{C}$ denote the complex raw SAR echo, where $\tau$ and $\eta$ are the range-time and azimuth-time dimensions, respectively. The echo can be written as $s=I+jQ$, where $I,Q\in\mathbb{R}$ denote the in-phase and quadrature components. In one-bit SAR imaging, the sampled echo is quantized by retaining only the sign information, which can be written as
 \begin{equation}
     y = \operatorname{sign}(s + u),
 \end{equation}
 where $u$ denotes the quantization threshold. For the complex echo, the sign operator is applied separately to the in-phase and quadrature channels:
 \begin{equation}
-    \operatorname{sign}(s)=\operatorname{sign}(I)+j\operatorname{sign}(Q_c).
+    \operatorname{sign}(s)=\operatorname{sign}(I)+j\operatorname{sign}(Q).
 \end{equation}
 This operation greatly reduces the sampling precision but also discards amplitude information and introduces strong quantization distortion.
 
 This paper studies how a digital frequency-domain upsampling budget should be allocated before one-bit quantization. Let $R$ be the range upsampling factor and $A$ be the azimuth upsampling factor. The total upsampling budget is defined as
 \begin{equation}
-    Q = R \times A .
+    Q_{\mathrm{up}} = R \times A .
 \end{equation}
-For a fixed $Q$, different allocation strategies can be constructed. A range-only strategy uses $R=Q$ and $A=1$, while an azimuth-only strategy uses $R=1$ and $A=Q$. A bidirectional strategy uses $R>1$ and $A>1$ under the same total budget. The no-upsampling case $R=1,A=1$ is used as the baseline.
+For a fixed $Q_{\mathrm{up}}$, different allocation strategies can be constructed. A range-only strategy uses $R=Q_{\mathrm{up}}$ and $A=1$, while an azimuth-only strategy uses $R=1$ and $A=Q_{\mathrm{up}}$. A bidirectional strategy uses $R>1$ and $A>1$ under the same total budget. The no-upsampling case $R=1,A=1$ is used as the baseline.
 
-The proposed bidirectional range-azimuth upsampling (BRAU) strategy does not change the SAR imaging processor itself. Instead, it changes the dimensional allocation of the frequency-domain grid before one-bit quantization. For each tested $(R,A)$, the raw echo is upsampled by FFT zero-padding along range and azimuth. The threshold is then generated on the upsampled grid, and one-bit quantization is applied before range compression. If range is upsampled, the range sampling frequency and range-time grid are updated for range compression. The range-compressed result is then cropped back to the original grid by frequency-domain downsampling, and all methods use the same downstream range cell migration correction (RCMC), SAR image formation, region of interest (ROI), and normalization. Table~\ref{alg:brau} summarizes the processing pipeline. Thus, BRAU is a pre-quantization raw-echo operation, not a post-reconstruction image interpolation step. The budget $Q$ is used as a digital upsampling allocation and sample-count proxy; it is not claimed to be a direct hardware budget such as ADC resolution, PRF, or transmitted bandwidth.
+The proposed bidirectional range-azimuth upsampling (BRAU) strategy does not change the SAR imaging processor itself. Instead, it changes the dimensional allocation of the frequency-domain grid before one-bit quantization. For each tested $(R,A)$, the raw echo is upsampled by FFT zero-padding along range and azimuth. The threshold is then generated on the upsampled grid, and one-bit quantization is applied before range compression. If range is upsampled, the range sampling frequency and range-time grid are updated for range compression. The range-compressed result is then cropped back to the original grid by frequency-domain downsampling, and all methods use the same downstream range cell migration correction (RCMC), SAR image formation, region of interest (ROI), and normalization. Table~\ref{alg:brau} summarizes the processing pipeline. Thus, BRAU is a pre-quantization raw-echo operation, not a post-reconstruction image interpolation step. The budget $Q_{\mathrm{up}}$ is used as a digital upsampling allocation and sample-count proxy; it is not claimed to be a direct hardware budget such as ADC resolution, PRF, or transmitted bandwidth.
 
 \begin{table}[t]
 \caption{BRAU processing pipeline for one-bit SAR imaging.}
@@ -98,7 +98,7 @@ The proposed bidirectional range-azimuth upsampling (BRAU) strategy does not cha
 \hline
 Step & Operation \\
 \hline
-1 & Input raw SAR echo $s(\tau,\eta)$ and choose range/azimuth factors $(R,A)$ under $Q=R\times A$. \\
+1 & Input raw SAR echo $s(\tau,\eta)$ and choose range/azimuth factors $(R,A)$ under $Q_{\mathrm{up}}=R\times A$. \\
 2 & Apply frequency-domain zero-padding along range and azimuth to obtain the upsampled echo $s_{\uparrow}$. \\
 3 & Generate the quantization threshold $u$ on the upsampled grid. \\
 4 & Quantize the upsampled echo as $y=\operatorname{sign}(s_{\uparrow}+u)$. \\
@@ -121,13 +121,13 @@ Unless otherwise specified, the main fixed-budget experiments use SplitRT with $
 
 The main experiment uses seed 2026, SplitRT with $A_s=0.6$, and seven SAR datasets: Bangkok, city1, city2, SAR-figure, field, port, and suburb scenes. Ten stratified windows are selected from each dataset, giving 70 paired test samples. The ground-truth image is formed from the unquantized raw echo using the same SAR chain: range compression, RCMC, image formation, ROI extraction, and image normalization. Each one-bit result is compared with this normalized ground truth using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM).
 
-For each budget $Q$, the best bidirectional group and the best unidirectional group are selected by their mean PSNR over the 70 paired samples. The reported gains are computed as bidirectional minus unidirectional. Statistical significance is tested using the paired Wilcoxon signed-rank test on the same paired sample vectors.
+For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best unidirectional group are selected by their mean PSNR over the 70 paired samples. The reported gains are computed as bidirectional minus unidirectional. Statistical significance is tested using the paired Wilcoxon signed-rank test on the same paired sample vectors.
 
 \section{Experiments and Results}
 
 \subsection{Main Fixed-Budget Results}
 
-The main experiment evaluates whether splitting a fixed upsampling budget across range and azimuth is more effective than concentrating the same budget in a single dimension. We test integer budgets $Q=4,6,8,9,10$. For each $Q$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
+The main experiment evaluates whether splitting a fixed upsampling budget across range and azimuth is more effective than concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\linewidth]{../Exp1_MainResult_Output/Exp1_MainResult_PSNR_curves.png}}
@@ -150,7 +150,7 @@ Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the be
 \setlength{\tabcolsep}{2pt}
 \begin{tabular}{c c c c c}
 \hline
-$Q$ & Best bi-dir. & Best uni-dir. & $\Delta$PSNR & $\Delta$SSIM \\
+$Q_{\mathrm{up}}$ & Best bi-dir. & Best uni-dir. & $\Delta$PSNR & $\Delta$SSIM \\
 \hline
 4  & R2A2 (26.0623/0.8026) & R4A1 (25.7767/0.7857)  & 0.2856 & 0.0169 \\
 6  & R2A3 (26.5585/0.8246) & R1A6 (26.1415/0.8037)  & 0.4170 & 0.0208 \\
@@ -167,7 +167,7 @@ Figs.~\ref{fig:main_psnr} and \ref{fig:main_ssim} show the PSNR and SSIM curves.
 
 \subsection{Non-Integer Factorization}
 
-To verify that the bidirectional advantage is not an artifact of integer factorization, we further evaluate non-integer allocation groups implemented by the same frequency-domain resampling and crop procedure. The tested budgets include $Q=3,4.5,5,7.5$. In all cases, the best bidirectional allocation remains better than the best unidirectional allocation. The PSNR gains are 0.2723 dB, 0.3437 dB, 0.3952 dB, and 0.4567 dB, respectively. The corresponding SSIM gains range from 0.0146 to 0.0221. These results show that BRAU is not limited to balanced or integer-only allocation patterns.
+To verify that the bidirectional advantage is not an artifact of integer factorization, we further evaluate non-integer allocation groups implemented by the same frequency-domain resampling and crop procedure. The tested budgets include $Q_{\mathrm{up}}=3,4.5,5,7.5$. In all cases, the best bidirectional allocation remains better than the best unidirectional allocation. The PSNR gains are 0.2723 dB, 0.3437 dB, 0.3952 dB, and 0.4567 dB, respectively. The corresponding SSIM gains range from 0.0146 to 0.0221. These results show that BRAU is not limited to balanced or integer-only allocation patterns.
 
 \subsection{Mechanism Analysis Through Spectral Leakage}
 
@@ -200,10 +200,10 @@ M_a(k_a)=\max_{k_r}M(k_r,k_a),
 \frac{\sum_{k_a}P_a(k_a)[1-M_a(k_a)]}{\sum_{k_a}P_a(k_a)}.
 \end{equation}
 
-For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the raw range-compressed spectra before final frequency crop, so the different spectral extents induced by R4A1, R1A4, and R2A2 remain visible. Compared with the unidirectional groups, R2A2 produces a cleaner two-dimensional spectral concentration.
+For this analysis, we use $Q_{\mathrm{up}}=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the raw range-compressed spectra before final frequency crop, so the different spectral extents induced by R4A1, R1A4, and R2A2 remain visible. Compared with the unidirectional groups, R2A2 produces a cleaner two-dimensional spectral concentration.
 
 \begin{table}[t]
-\caption{Spectral leakage metrics after SAR processing for $Q=4$. Lower values indicate cleaner spectral concentration.}
+\caption{Spectral leakage metrics after SAR processing for $Q_{\mathrm{up}}=4$. Lower values indicate cleaner spectral concentration.}
 \begin{center}
 \scriptsize
 \begin{tabular}{c c c c c}
@@ -230,7 +230,7 @@ Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:m
 \begin{center}
 \includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}
 \refstepcounter{figure}\label{fig:mechanism}
-{\footnotesize Fig.~\thefigure. Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
+{\footnotesize Fig.~\thefigure. Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
 \end{center}
 
 \subsection{Robustness to Threshold Design}
@@ -243,11 +243,11 @@ Finally, we test whether the bidirectional advantage depends on a specific thres
 \label{fig:threshold}
 \end{figure}
 
-Second, we compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
+Second, we compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
 
 \section{Conclusion}
 
-This paper investigated fixed-budget frequency-domain range-azimuth upsampling allocation for one-bit SAR imaging. Instead of asking only how to design the quantization threshold or how to recover an image after one-bit acquisition, we studied how a fixed pre-quantization digital budget $Q=R\times A$ should be distributed between the range and azimuth dimensions. The experimental results show that bidirectional allocation consistently outperforms the best unidirectional allocation across all tested integer budgets. The same advantage is also observed under non-integer factors, indicating that the effect is not caused by a special integer factorization pattern.
+This paper investigated fixed-budget frequency-domain range-azimuth upsampling allocation for one-bit SAR imaging. Instead of asking only how to design the quantization threshold or how to recover an image after one-bit acquisition, we studied how a fixed pre-quantization digital budget $Q_{\mathrm{up}}=R\times A$ should be distributed between the range and azimuth dimensions. The experimental results show that bidirectional allocation consistently outperforms the best unidirectional allocation across all tested integer budgets. The same advantage is also observed under non-integer factors, indicating that the effect is not caused by a special integer factorization pattern.
 
 The mechanism analysis provides further support for the allocation effect. After range compression, the bidirectional group produces lower off-support spectral energy and lower directional leakage than range-only and azimuth-only allocations. This suggests that splitting the budget across both dimensions reduces the overlap between quantization distortion and the effective two-dimensional SAR spectral support. Threshold experiments also show that the advantage remains under ZT, NCT, and RT settings, so the observed effect is not tied to a specific threshold construction.
 
