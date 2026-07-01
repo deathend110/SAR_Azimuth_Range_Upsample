@@ -127,12 +127,12 @@ To verify that the bidirectional advantage is not an artifact of integer factori
 
 We further analyze why bidirectional allocation is more effective under the same total budget. The working hypothesis is that SAR echoes have a two-dimensional spectral structure, while one-bit quantization introduces distortion across both range and azimuth. A unidirectional allocation increases sampling density in only one dimension, whereas bidirectional allocation distributes the budget over both dimensions and better suppresses spectral leakage after SAR processing.
 
-For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the intermediate spectra. The most informative difference appears after range compression (RC) and is preserved after range cell migration correction (RCMC). Compared with the unidirectional groups, R2A2 produces a cleaner spectral concentration with lower off-support and directional leakage.
+For this analysis, we use $Q=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the range-compressed spectra. The figure preserves the different spectral extents induced by the four allocation strategies, showing the one-dimensional expansion of R4A1 and R1A4 and the two-dimensional expansion of R2A2. Compared with the unidirectional groups, R2A2 produces a cleaner spectral concentration with lower off-support and directional leakage.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.95\textwidth]{../Exp2_Mechanism_Output/Exp2_2D_Mechanism_Figure.pdf}
-\caption{Two-dimensional spectral evidence for different allocation strategies. Bidirectional allocation shows lower off-support and directional leakage after SAR processing.}
+\includegraphics[width=0.95\textwidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}
+\caption{Range-compressed spectra for $Q=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
 \label{fig:mechanism}
 \end{figure*}
 
@@ -158,7 +158,7 @@ RCMC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:mechanism_metrics} quantifies this observation. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The same ordering is retained after RCMC. This result supports the interpretation that bidirectional allocation better matches the two-dimensional range-azimuth structure of SAR data after coherent processing. The mechanism evidence is therefore consistent with the final reconstruction metrics: the bidirectional group is not only better in PSNR and SSIM, but also produces cleaner intermediate spectra.
+Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The same ordering is retained after RCMC. This result supports the interpretation that bidirectional allocation better matches the two-dimensional range-azimuth structure of SAR data after coherent processing. The mechanism evidence is therefore consistent with the final reconstruction metrics: the bidirectional group is not only better in PSNR and SSIM, but also produces cleaner intermediate spectra.
 
 \subsection{Robustness to Threshold Design}
 
