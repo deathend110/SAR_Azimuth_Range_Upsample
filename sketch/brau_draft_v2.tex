@@ -212,29 +212,24 @@ M_a(k_a)=\max_{k_r}M(k_r,k_a),
 For this analysis, we use $Q_{\mathrm{up}}=4$ and compare four representative allocations: no upsampling (R1A1), range-only upsampling (R4A1), azimuth-only upsampling (R1A4), and bidirectional upsampling (R2A2). Fig.~\ref{fig:mechanism} visualizes the raw range-compressed spectra before final frequency crop, so the different spectral extents induced by R4A1, R1A4, and R2A2 remain visible. Compared with the unidirectional groups, R2A2 produces a cleaner two-dimensional spectral concentration.
 
 \begin{table}[t]
-\caption{Spectral leakage metrics after SAR processing for $Q_{\mathrm{up}}=4$. Lower values indicate cleaner spectral concentration.}
+\caption{Spectral leakage metrics after range compression and frequency-domain crop for $Q_{\mathrm{up}}=4$. Lower values indicate cleaner spectral concentration.}
 \begin{center}
 \scriptsize
-\begin{tabular}{c c c c c}
+\begin{tabular}{c c c c}
 \hline
-Node & Allocation & Off-support & Range leak. & Azimuth leak. \\
+Allocation & Off-support & Range leak. & Azimuth leak. \\
 \hline
-RC & R1A1 & 0.926008 & 0.471044 & 0.101785 \\
-RC & R4A1 & 0.893954 & 0.368013 & 0.070476 \\
-RC & R1A4 & 0.901018 & 0.394427 & 0.072251 \\
-RC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
-\hline
-RCMC & R1A1 & 0.926008 & 0.471044 & 0.101785 \\
-RCMC & R4A1 & 0.893954 & 0.368013 & 0.070476 \\
-RCMC & R1A4 & 0.901018 & 0.394427 & 0.072251 \\
-RCMC & R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
+R1A1 & 0.926008 & 0.471044 & 0.101785 \\
+R4A1 & 0.893954 & 0.368013 & 0.070476 \\
+R1A4 & 0.901018 & 0.394427 & 0.072251 \\
+R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \hline
 \end{tabular}
 \label{tab:mechanism_metrics}
 \end{center}
 \end{table}
 
-Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. The RCMC rows keep the same ordering because the metric is computed after the frequency-domain crop used before RCMC. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: the bidirectional group is better in PSNR and SSIM and also shows the least spectral leakage in the representative mechanism case.
+Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC and frequency-domain crop, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. Since RCMC is a phase-correction step in the range-Doppler domain, it does not materially change the spectral-energy support measured by these leakage metrics; therefore, Table~\ref{tab:mechanism_metrics} reports the RC-stage metrics. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: the bidirectional group is better in PSNR and SSIM and also shows the least spectral leakage in the representative mechanism case.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
