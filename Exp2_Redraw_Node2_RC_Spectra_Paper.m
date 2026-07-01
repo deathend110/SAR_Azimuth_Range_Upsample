@@ -53,10 +53,15 @@ function export_node2_rc_spectra_paper(results, save_file)
 
     for i = 1:numel(specs)
         ax = nexttile(layout);
-        imagesc(ax, specs{i});
+        range_freq = shifted_frequency_axis(size(specs{i}, 2));
+        azimuth_freq = shifted_frequency_axis(size(specs{i}, 1));
+        imagesc(ax, range_freq, azimuth_freq, specs{i});
         axis(ax, "image");
-        axis(ax, "off");
         clim(ax, color_limits);
+        xlabel(ax, "Range frequency", "FontName", "Times New Roman", "FontSize", 8);
+        ylabel(ax, "Azimuth frequency", "FontName", "Times New Roman", "FontSize", 8);
+        set(ax, "YDir", "normal", "FontName", "Times New Roman", "FontSize", 7, ...
+            "TickDir", "out", "Box", "on");
         title(ax, panel_titles(i), "Interpreter", "none", ...
             "FontName", "Times New Roman", "FontSize", 9, "FontWeight", "normal");
     end
@@ -74,6 +79,11 @@ end
 
 function spec = compute_log_spectrum(X)
     spec = log1p(abs(fftshift(fft2(X))));
+end
+
+function freq = shifted_frequency_axis(n)
+    % 归一化频率坐标，与 fftshift 后的二维频谱顺序一致。
+    freq = ((0:n-1) - floor(n / 2)) / n;
 end
 
 function value = local_percentile(x, p)
