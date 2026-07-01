@@ -96,21 +96,23 @@ The main experiment evaluates whether splitting a fixed upsampling budget across
 \label{fig:main_ssim}
 \end{figure}
 
-Table~\ref{tab:main_gain} reports the gain of the best bidirectional allocation over the best unidirectional allocation. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. All paired Wilcoxon tests are statistically significant.
+Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. All paired Wilcoxon tests are statistically significant.
 
 \begin{table}[t]
-\caption{Gain of the best bidirectional allocation over the best unidirectional allocation.}
+\caption{Best bidirectional and unidirectional results under each fixed budget.}
 \label{tab:main_gain}
 \centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
 \begin{tabular}{c c c c c}
 \hline
 $Q$ & Best bi-dir. & Best uni-dir. & $\Delta$PSNR & $\Delta$SSIM \\
 \hline
-4  & R2A2 & R4A1  & 0.2856 & 0.0169 \\
-6  & R2A3 & R1A6  & 0.4170 & 0.0208 \\
-8  & R2A4 & R8A1  & 0.4576 & 0.0215 \\
-9  & R3A3 & R9A1  & 0.4685 & 0.0214 \\
-10 & R5A2 & R10A1 & 0.5072 & 0.0221 \\
+4  & R2A2 (26.0623/0.8026) & R4A1 (25.7767/0.7857)  & 0.2856 & 0.0169 \\
+6  & R2A3 (26.5585/0.8246) & R1A6 (26.1415/0.8037)  & 0.4170 & 0.0208 \\
+8  & R2A4 (26.8194/0.8363) & R8A1 (26.3618/0.8148)  & 0.4576 & 0.0215 \\
+9  & R3A3 (26.9167/0.8400) & R9A1 (26.4482/0.8186)  & 0.4685 & 0.0214 \\
+10 & R5A2 (26.9702/0.8427) & R10A1 (26.4630/0.8206) & 0.5072 & 0.0221 \\
 \hline
 \end{tabular}
 \end{table}
