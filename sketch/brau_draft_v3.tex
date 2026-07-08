@@ -52,12 +52,6 @@ one-bit SAR imaging, upsampling, range-azimuth allocation, quantization
 
 \section{Introduction}
 
-\begin{figure}[!t]
-\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.png}}
-\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
-\label{fig:intro_scene_examples}
-\end{figure}
-
 Synthetic aperture radar (SAR) forms high-resolution images by coherently processing echoes collected along a synthetic aperture, and has become a core sensing modality for remote sensing and target observation \cite{cumming2005sar,curlander1991sar}. Conventional SAR systems usually rely on high-resolution analog-to-digital converters to preserve echo amplitude and phase information. In spaceborne SAR, onboard storage, power consumption, and downlink bandwidth impose additional pressure on the raw echo data stream, motivating raw-data compression and block-adaptive quantization strategies \cite{kwok1989baq,attema2010fdbaq}. One-bit SAR imaging addresses this constraint by retaining only the sign of the received echo, which substantially reduces the data representation but also removes amplitude information and introduces strong quantization distortion.
 
 Early signum-coded SAR studies showed that meaningful SAR images can still be formed from sign-only data under suitable processing conditions \cite{franceschetti1991signum}. Recent one-bit SAR methods further improve image quality by designing quantization thresholds or reconstruction strategies. Single-frequency thresholds were shown to suppress harmonic interference in one-bit SAR imaging \cite{zhao2019onebit}, while time-varying and fixed-threshold strategies have been investigated to improve the fidelity of low-precision SAR echoes \cite{demir2018onebit,zhao2021lowprecision,nie2025fixed}. Learning-based de-quantization methods have also been introduced to suppress one-bit harmonics after data acquisition \cite{si2023dequantization}. These studies demonstrate that threshold design and post-processing can recover useful information from severely quantized SAR data.
@@ -134,6 +128,12 @@ For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best uni
 
 \section{Experiments and Results}
 
+\begin{figure}[!t]
+\centerline{\includegraphics[width=\linewidth]{../assert/2D SplitRT As0.6.png}}
+\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
+\label{fig:intro_scene_examples}
+\end{figure}
+
 \subsection{Mechanism Analysis Through Spectral Leakage}
 
 We further analyze why bidirectional allocation is more effective under the same total budget. The working hypothesis is that SAR echoes have a two-dimensional spectral structure, while one-bit quantization introduces distortion across both range and azimuth. Following the intuition of oversampling and quantization-noise shaping, a larger pre-quantization grid can move quantization harmonics and distortion away from the effective support. A unidirectional allocation increases sampling density in only one dimension, whereas bidirectional allocation distributes the budget over both dimensions and reduces the overlap between quantization error and the effective SAR spectral support.
@@ -188,22 +188,10 @@ R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC and frequency-domain crop, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. Since RCMC is a phase-correction step in the range-Doppler domain, it does not materially change the spectral-energy support measured by these leakage metrics; therefore, Table~\ref{tab:mechanism_metrics} reports the RC-stage metrics. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: Together with the main PSNR and SSIM gains reported in the final subsection, this representative mechanism case shows that the bidirectional group also has the least spectral leakage at the intermediate RC stage.
 
 \begin{figure}[t]
-\centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
+\centerline{\includegraphics[width=\linewidth]{../assert/Exp2_Node2_RC_Spectra.png}}
 \caption{Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
 \label{fig:mechanism}
 \end{figure}
-
-\subsection{Robustness to Threshold Design}
-
-We next test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
-
-We then compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
-
-\subsection{Main Fixed-Budget Results}
-
-We finally evaluate whether splitting a fixed upsampling budget across range and azimuth improves reconstruction quality compared with concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
-
-Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. Here, ``best'' is selected by mean PSNR over the 70 paired samples. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. Paired Wilcoxon signed-rank tests give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}=3.56\times10^{-13}$ for all listed budgets.
 
 \begin{table*}[t]
 \caption{Best bidirectional and unidirectional results under each fixed budget. Best groups are selected by mean PSNR; values are mean $\pm$ standard deviation over 70 paired samples.}
@@ -224,6 +212,19 @@ $Q_{\mathrm{up}}$ & Best bi-dir. & Best uni-dir. & Bi-dir. PSNR & Uni-dir. PSNR 
 \label{tab:main_gain}
 \end{center}
 \end{table*}
+\clearpage
+
+\subsection{Robustness to Threshold Design}
+
+We next test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
+
+We then compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
+
+\subsection{Main Fixed-Budget Results}
+
+We finally evaluate whether splitting a fixed upsampling budget across range and azimuth improves reconstruction quality compared with concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
+
+Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. Here, ``best'' is selected by mean PSNR over the 70 paired samples. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. Paired Wilcoxon signed-rank tests give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}=3.56\times10^{-13}$ for all listed budgets.
 
 The no-upsampling baseline gives the lowest reconstruction quality. Increasing the total budget improves all upsampled groups, but the bidirectional groups consistently outperform the range-only and azimuth-only baselines. This result supports the central claim that the dimensional allocation of the upsampling budget matters in one-bit SAR imaging.
 
