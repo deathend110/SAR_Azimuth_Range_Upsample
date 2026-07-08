@@ -134,34 +134,6 @@ For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best uni
 
 \section{Experiments and Results}
 
-\subsection{Main Fixed-Budget Results}
-
-The main experiment evaluates whether splitting a fixed upsampling budget across range and azimuth is more effective than concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
-
-Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. Here, ``best'' is selected by mean PSNR over the 70 paired samples. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. Paired Wilcoxon signed-rank tests give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}=3.56\times10^{-13}$ for all listed budgets.
-
-\begin{table}[t]
-\caption{Best bidirectional and unidirectional results under each fixed budget. Each entry reports mean PSNR/SSIM; best groups are selected by mean PSNR.}
-\begin{center}
-\scriptsize
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{c c c c c}
-\hline
-$Q_{\mathrm{up}}$ & Best bi-dir. & Best uni-dir. & $\Delta$PSNR & $\Delta$SSIM \\
-\hline
-4  & R2A2 (26.0623/0.8026) & R4A1 (25.7767/0.7857)  & 0.2856 & 0.0169 \\
-6  & R2A3 (26.5585/0.8246) & R1A6 (26.1415/0.8037)  & 0.4170 & 0.0208 \\
-8  & R2A4 (26.8194/0.8363) & R8A1 (26.3618/0.8148)  & 0.4576 & 0.0215 \\
-9  & R3A3 (26.9167/0.8400) & R9A1 (26.4482/0.8186)  & 0.4685 & 0.0214 \\
-10 & R5A2 (26.9702/0.8427) & R10A1 (26.4630/0.8206) & 0.5072 & 0.0221 \\
-\hline
-\end{tabular}
-\label{tab:main_gain}
-\end{center}
-\end{table}
-
-The no-upsampling baseline gives the lowest reconstruction quality. Increasing the total budget improves all upsampled groups, but the bidirectional groups consistently outperform the range-only and azimuth-only baselines. This result supports the central claim that the dimensional allocation of the upsampling budget matters in one-bit SAR imaging.
-
 \subsection{Mechanism Analysis Through Spectral Leakage}
 
 We further analyze why bidirectional allocation is more effective under the same total budget. The working hypothesis is that SAR echoes have a two-dimensional spectral structure, while one-bit quantization introduces distortion across both range and azimuth. Following the intuition of oversampling and quantization-noise shaping, a larger pre-quantization grid can move quantization harmonics and distortion away from the effective support. A unidirectional allocation increases sampling density in only one dimension, whereas bidirectional allocation distributes the budget over both dimensions and reduces the overlap between quantization error and the effective SAR spectral support.
@@ -213,7 +185,7 @@ R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \end{center}
 \end{table}
 
-Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC and frequency-domain crop, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. Since RCMC is a phase-correction step in the range-Doppler domain, it does not materially change the spectral-energy support measured by these leakage metrics; therefore, Table~\ref{tab:mechanism_metrics} reports the RC-stage metrics. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: Together with the PSNR and SSIM gains reported above, this representative mechanism case shows that the bidirectional group also has the least spectral leakage at the intermediate RC stage.
+Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC and frequency-domain crop, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. Since RCMC is a phase-correction step in the range-Doppler domain, it does not materially change the spectral-energy support measured by these leakage metrics; therefore, Table~\ref{tab:mechanism_metrics} reports the RC-stage metrics. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: Together with the main PSNR and SSIM gains reported in the final subsection, this representative mechanism case shows that the bidirectional group also has the least spectral leakage at the intermediate RC stage.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\linewidth]{../Exp2_Mechanism_Output/Exp2_Node2_RC_Spectra.png}}
@@ -223,9 +195,37 @@ Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:m
 
 \subsection{Robustness to Threshold Design}
 
-Finally, we test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
+We next test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
 
-Second, we compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
+We then compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
+
+\subsection{Main Fixed-Budget Results}
+
+We finally evaluate whether splitting a fixed upsampling budget across range and azimuth improves reconstruction quality compared with concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
+
+Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. Here, ``best'' is selected by mean PSNR over the 70 paired samples. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. Paired Wilcoxon signed-rank tests give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}=3.56\times10^{-13}$ for all listed budgets.
+
+\begin{table*}[t]
+\caption{Best bidirectional and unidirectional results under each fixed budget. Best groups are selected by mean PSNR; values are mean $\pm$ standard deviation over 70 paired samples.}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{c c c c c c c c c}
+\hline
+$Q_{\mathrm{up}}$ & Best bi-dir. & Best uni-dir. & Bi-dir. PSNR & Uni-dir. PSNR & Bi-dir. SSIM & Uni-dir. SSIM & $\Delta$PSNR & $\Delta$SSIM \\
+\hline
+4  & R2A2 & R4A1  & 26.0623$\pm$1.4358 & 25.7767$\pm$1.4104 & 0.8026$\pm$0.0263 & 0.7857$\pm$0.0277 & 0.2856 & 0.0169 \\
+6  & R2A3 & R1A6  & 26.5585$\pm$1.4797 & 26.1415$\pm$1.4268 & 0.8246$\pm$0.0248 & 0.8037$\pm$0.0249 & 0.4170 & 0.0208 \\
+8  & R2A4 & R8A1  & 26.8194$\pm$1.5110 & 26.3618$\pm$1.4619 & 0.8363$\pm$0.0215 & 0.8148$\pm$0.0249 & 0.4576 & 0.0215 \\
+9  & R3A3 & R9A1  & 26.9167$\pm$1.5381 & 26.4482$\pm$1.4724 & 0.8400$\pm$0.0228 & 0.8186$\pm$0.0233 & 0.4685 & 0.0214 \\
+10 & R5A2 & R10A1 & 26.9702$\pm$1.5220 & 26.4630$\pm$1.4602 & 0.8427$\pm$0.0212 & 0.8206$\pm$0.0235 & 0.5072 & 0.0221 \\
+\hline
+\end{tabular}
+\label{tab:main_gain}
+\end{center}
+\end{table*}
+
+The no-upsampling baseline gives the lowest reconstruction quality. Increasing the total budget improves all upsampled groups, but the bidirectional groups consistently outperform the range-only and azimuth-only baselines. This result supports the central claim that the dimensional allocation of the upsampling budget matters in one-bit SAR imaging.
 
 \section{Conclusion}
 
