@@ -43,7 +43,7 @@ email address or ORCID}
 \maketitle
 
 \begin{abstract}
-One-bit synthetic aperture radar (SAR) imaging reduces sampling precision by retaining only sign information, but the resulting quantization distortion can severely degrade image quality. Existing studies mainly improve one-bit SAR imaging through threshold design or post-acquisition recovery. This paper studies a complementary design variable: how to allocate a fixed digital frequency-domain upsampling budget before one-bit quantization. We formulate bidirectional range-azimuth upsampling (BRAU), which applies zero-padding upsampling in both range and azimuth with a fixed total allocation $Q_{\mathrm{up}}=R\times A$. BRAU is therefore different from ordinary image-domain interpolation after reconstruction. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in PSNR and SSIM. The advantage also holds under zero-threshold, non-random constant-threshold, and random-threshold quantization. Spectral analysis further shows that R2A2 produces the lowest off-support, range-leakage, and azimuth-leakage ratios after range compression. These results indicate that splitting the pre-quantization frequency-domain upsampling budget across range and azimuth is an effective allocation strategy for one-bit SAR imaging.
+One-bit synthetic aperture radar (SAR) imaging reduces sampling precision by retaining only sign information, but the resulting quantization distortion can severely degrade image quality. Existing studies mainly improve one-bit SAR imaging through threshold design or post-acquisition recovery. This paper studies a complementary design variable: how to allocate a fixed digital frequency-domain upsampling budget before one-bit quantization. We formulate bidirectional range-azimuth upsampling (BRAU), which applies zero-padding upsampling in both range and azimuth under a fixed total allocation. BRAU is therefore different from ordinary image-domain interpolation after reconstruction. Experiments on seven SAR datasets show that, for all tested integer budgets, the best bidirectional allocation consistently outperforms the best unidirectional allocation in PSNR and SSIM. The advantage also holds under zero-threshold, non-random constant-threshold, and random-threshold quantization. Spectral analysis further shows that R2A2 produces the lowest off-support, range-leakage, and azimuth-leakage ratios after range compression. These results indicate that splitting the pre-quantization frequency-domain upsampling budget across range and azimuth is an effective allocation strategy for one-bit SAR imaging.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -128,6 +128,12 @@ For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best uni
 
 \section{Experiments and Results}
 
+\begin{figure}[t]
+\centerline{\includegraphics[width=\linewidth]{../assert/Exp2_Node2_RC_Spectra.png}}
+\caption{Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
+\label{fig:mechanism}
+\end{figure}
+
 \begin{figure}[!t]
 \centerline{\includegraphics[width=\linewidth]{../assert/2D SplitRT As0.6.png}}
 \caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
@@ -186,12 +192,6 @@ R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \end{table}
 
 Table~\ref{tab:mechanism_metrics} quantifies the visual trend in Fig.~\ref{fig:mechanism}. After RC and frequency-domain crop, R2A2 achieves the lowest off-support ratio, range leakage ratio, and azimuth leakage ratio among all upsampled groups. Since RCMC is a phase-correction step in the range-Doppler domain, it does not materially change the spectral-energy support measured by these leakage metrics; therefore, Table~\ref{tab:mechanism_metrics} reports the RC-stage metrics. These off-support and directional leakage results support the interpretation that bidirectional oversampling helps move one-bit quantization harmonics and distortion away from the effective two-dimensional SAR spectral support. This evidence links the intermediate spectra to the final metrics: Together with the main PSNR and SSIM gains reported in the final subsection, this representative mechanism case shows that the bidirectional group also has the least spectral leakage at the intermediate RC stage.
-
-\begin{figure}[t]
-\centerline{\includegraphics[width=\linewidth]{../assert/Exp2_Node2_RC_Spectra.png}}
-\caption{Range-compressed spectra for $Q_{\mathrm{up}}=4$ under different allocation strategies. R4A1 and R1A4 expand the spectrum along one dimension, whereas R2A2 distributes the expansion over both range and azimuth and yields cleaner two-dimensional spectral concentration.}
-\label{fig:mechanism}
-\end{figure}
 
 \begin{table*}[t]
 \caption{Best bidirectional and unidirectional results under each fixed budget. Best groups are selected by mean PSNR; values are mean $\pm$ standard deviation over 70 paired samples.}
