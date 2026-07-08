@@ -80,6 +80,7 @@ ssim_std_rt   = std(ssim_all_rt, 0, 3);
 summary_table = build_summary_table(rxax_configs, As_list, ...
     psnr_mean_nct, psnr_std_nct, ssim_mean_nct, ssim_std_nct, ...
     psnr_mean_rt, psnr_std_rt, ssim_mean_rt, ssim_std_rt, total_samples);
+ensure_output_dir(output_dir);
 writetable(summary_table, fullfile(output_dir, "Exp4B_ThresholdAs_ByQ_Summary.csv"));
 
 save(fullfile(output_dir, "Exp4B_ThresholdAs_ByQ_Data.mat"), ...
@@ -94,6 +95,15 @@ plot_multi_q_curve(rxax_configs, As_list, psnr_mean_rt, psnr_std_rt, "PSNR (dB)"
 plot_multi_q_curve(rxax_configs, As_list, ssim_mean_rt, ssim_std_rt, "SSIM", "SplitRT", "SSIM", output_dir);
 
 fprintf("Exp4B完成，结果已保存到：%s\n", output_dir);
+
+function ensure_output_dir(output_dir)
+    if ~exist(output_dir, "dir")
+        [ok, msg] = mkdir(output_dir);
+        if ~ok
+            error("无法创建输出目录 %s: %s", output_dir, msg);
+        end
+    end
+end
 
 function summary_table = build_summary_table(rxax_configs, As_list, psnr_mean_nct, psnr_std_nct, ssim_mean_nct, ssim_std_nct, psnr_mean_rt, psnr_std_rt, ssim_mean_rt, ssim_std_rt, total_samples)
     num_configs = numel(rxax_configs);
@@ -351,6 +361,7 @@ function y = normalize_image(x)
 end
 
 function plot_multi_q_curve(rxax_configs, As_list, metric_mean, metric_std, y_label, threshold_name, metric_tag, output_dir)
+    ensure_output_dir(output_dir);
     figure("Color", "w", "Position", [100, 100, 900, 500]);
     hold on; grid on; box on;
     colors_q = lines(numel(rxax_configs));

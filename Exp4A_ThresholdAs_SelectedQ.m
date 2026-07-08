@@ -82,6 +82,7 @@ summary_table = table( ...
     'VariableNames', {'Q', 'Range_q', 'Azimuth_q', 'GroupName', 'ThresholdType', ...
                       'As', 'PSNR_Mean', 'PSNR_Std', 'SSIM_Mean', 'SSIM_Std', 'SampleCount'});
 
+ensure_output_dir(output_dir);
 writetable(summary_table, fullfile(output_dir, "Exp4A_ThresholdAs_SelectedQ_Summary.csv"));
 save(fullfile(output_dir, "Exp4A_ThresholdAs_SelectedQ_Data.mat"), ...
     "cfg", "As_list", "seed", "dataset_names", "num_samples_per_dataset", ...
@@ -95,6 +96,15 @@ plot_single_threshold_curve(As_list, psnr_mean_rt, psnr_std_rt, "PSNR (dB)", "RT
 plot_single_threshold_curve(As_list, ssim_mean_rt, ssim_std_rt, "SSIM", "RT", "SSIM", output_dir);
 
 fprintf("Exp4A完成，结果已保存到：%s\n", output_dir);
+
+function ensure_output_dir(output_dir)
+    if ~exist(output_dir, "dir")
+        [ok, msg] = mkdir(output_dir);
+        if ~ok
+            error("无法创建输出目录 %s: %s", output_dir, msg);
+        end
+    end
+end
 
 function sample_cache = build_sample_cache(dataset_names, data_root, S60, seed, num_samples_per_dataset)
     total_samples = numel(dataset_names) * num_samples_per_dataset;
@@ -299,6 +309,7 @@ function y = normalize_image(x)
 end
 
 function plot_single_threshold_curve(As_list, metric_mean, metric_std, y_label, threshold_name, metric_tag, output_dir)
+    ensure_output_dir(output_dir);
     figure("Color", "w", "Position", [100, 100, 720, 520]);
     hold on; grid on; box on;
     eb = errorbar(As_list, metric_mean, metric_std, "-o", ...
