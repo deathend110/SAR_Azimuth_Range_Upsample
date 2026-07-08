@@ -2,7 +2,7 @@ clear; close all;
 
 %% ==================== 用户参数 ====================
 % 距离向上采样
-q_list = 2:5;              % q=1到q=10
+q_list = 1:5;              % q=1到q=10
 % q_list = [2, 2.3, 2.7, 3, 3.4, 3.8, 4, 4.2, 4.6];
 num_A = 11;                 % NCT 幅度扫描点数（分位数）
 p_min = 5;
@@ -17,18 +17,18 @@ rng_seed = 20260414;
 show_best_images = true;    % 是否展示每个方法全局最佳图像
 
 %% ==================== 读取基础数据 ====================
-load("Generate_SAR.mat");
+% load("Generate_SAR.mat");
 
-% load("FS60_params.mat");
-% data_figure = "SAR_Dataset_city2_histeq";
-% data_root = "G:\MATLAB-G\SAR Full PSF";
-% data_folder = fullfile(data_root, data_figure);
-% data_name = "rstart 2401.mat";
-% data_path = fullfile(data_folder, data_name);
-% data = load(data_path).channel_1;
-% c_start = 2200;
-% channel_1 = data(:, c_start:c_start+nrn-1);
-% channel_1 = channel_1(1:3:end, :);
+load("FS60_params.mat");
+data_figure = "SAR_Dataset_city2_histeq";
+data_root = "G:\MATLAB-G\SAR Full PSF";
+data_folder = fullfile(data_root, data_figure);
+data_name = "rstart 2401.mat";
+data_path = fullfile(data_folder, data_name);
+data = load(data_path).channel_1;
+c_start = 2200;
+channel_1 = data(:, c_start:c_start+nrn-1);
+channel_1 = channel_1(1:3:end, :);
 
 %% ==================== Accurate 参考图 ====================
 RC_acc   = Range_Compress(channel_1, fc, tnrn, gama, R0, C, Fs, Tp);

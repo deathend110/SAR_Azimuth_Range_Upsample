@@ -6,8 +6,8 @@ S60 = load("FS60_params.mat");
 % RT / mixed 参数
 seed = 42;
 rng(seed);
-Azimuth_q_m     = 1.5;       % 混合AR上采样的单独方位向上采样倍率
-Range_q_m       = 1.7;       % 混合AR上采样的单独距离向上采样倍率
+Azimuth_q_m     = 2;       % 混合AR上采样的单独方位向上采样倍率
+Range_q_m       = 2;       % 混合AR上采样的单独距离向上采样倍率
 q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 
 Azimuth_q       = q;       % 方位向上采样倍率
@@ -133,7 +133,7 @@ Azimuth_Range_title = [
     "SSIM: " + num2str(ssim(Azimuth_Range_Upsample, img_gt))+"   PSNR: " + num2str(psnr(Azimuth_Range_Upsample, img_gt))
 ];
 subplot(224);imagesc(Azimuth_Range_Upsample);axis image;colorbar;title(Azimuth_Range_title);
-% movegui('center');
+movegui('center');
 
 
 %% =========================================================
