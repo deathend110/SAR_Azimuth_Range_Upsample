@@ -215,7 +215,23 @@ $Q_{\mathrm{up}}$ & Best bi-dir. & Best uni-dir. & Bi-dir. PSNR & Uni-dir. PSNR 
 
 \subsection{Robustness to Threshold Design}
 
-We next test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. This shows that the main effect is not tied to the internal implementation of random threshold generation.
+We next test whether the bidirectional advantage depends on a specific threshold construction. First, SplitRT and FullRT are compared over $A_s \in [0,1]$ for representative budgets. Their PSNR and SSIM curves nearly overlap, with only small differences across the tested range. Fig.~\ref{fig:threshold_as_q4} further reports the $A_s$ sensitivity of NCT and RT for the representative R2A2 setting. This shows that the main effect is not tied to the internal implementation of random threshold generation.
+
+\begin{figure}[!htbp]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{1pt}
+\begin{tabular}{@{}cc@{}}
+\includegraphics[width=0.48\linewidth]{../Exp4A_ThresholdAs_SelectedQ_Output/Exp4A_NCT_PSNR_AsCurve.png} &
+\includegraphics[width=0.48\linewidth]{../Exp4A_ThresholdAs_SelectedQ_Output/Exp4A_NCT_SSIM_AsCurve.png} \\
+(a) NCT, PSNR & (b) NCT, SSIM \\
+\includegraphics[width=0.48\linewidth]{../Exp4A_ThresholdAs_SelectedQ_Output/Exp4A_RT_PSNR_AsCurve.png} &
+\includegraphics[width=0.48\linewidth]{../Exp4A_ThresholdAs_SelectedQ_Output/Exp4A_RT_SSIM_AsCurve.png} \\
+(c) RT, PSNR & (d) RT, SSIM
+\end{tabular}
+\caption{Threshold-amplitude sensitivity for $Q_{\mathrm{up}}=4$ with R2A2. NCT and RT curves are plotted against $A_s$ using PSNR and SSIM references; error bars denote one standard deviation over 70 paired samples.}
+\label{fig:threshold_as_q4}
+\end{figure}
 
 We then compare ZT, NCT, and RT. In this robustness experiment, the unidirectional reference is computed as the per-sample maximum over range-only and azimuth-only groups, which is a stricter baseline than selecting one mean-best group. For $Q_{\mathrm{up}}=4,6,9$, the bidirectional group remains better than this unidirectional reference under all three threshold settings. Under ZT, the PSNR gains are 0.3612 dB, 0.4162 dB, and 0.4318 dB. Under NCT, the gains increase to 0.4308 dB, 0.4896 dB, and 0.5341 dB. Under RT, the gains remain positive at 0.2018 dB, 0.3306 dB, and 0.3611 dB. Therefore, RT improves the absolute reconstruction quality, but it is not the source of the bidirectional allocation effect.
 
