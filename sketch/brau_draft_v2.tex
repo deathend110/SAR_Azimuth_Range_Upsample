@@ -53,7 +53,7 @@ one-bit SAR imaging, upsampling, range-azimuth allocation, quantization
 \section{Introduction}
 
 \begin{figure}[!t]
-\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.jpg}}
+\centerline{\includegraphics[width=\linewidth]{../MD/2D SplitRT As0.6.png}}
 \caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
 \label{fig:intro_scene_examples}
 \end{figure}
@@ -128,7 +128,7 @@ Unless otherwise specified, the main fixed-budget experiments use SplitRT with $
 
 \subsection{Evaluation Protocol}
 
-The main experiment uses seed 2026, SplitRT with $A_s=0.6$, and seven SAR datasets: Bangkok, city1, city2, SAR-figure, field, port, and suburb scenes. The datasets are derived from the Capella Open Data IEEE Data Contest 2026 collection.\footnote{\href{https://radiantearth.github.io/stac-browser/\#/external/capella-open-data.s3.us-west-2.amazonaws.com/stac/capella-open-data-ieee-data-contest/collection.json}{Capella Open Data IEEE Data Contest 2026 collection}} Ten stratified windows are selected from each dataset, giving 70 paired test samples. The ground-truth image is formed from the unquantized raw echo using the same SAR chain: range compression, RCMC, image formation, ROI extraction, and image normalization. Each one-bit result is compared with this normalized ground truth using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM).
+The main experiment uses seed 2026, SplitRT with $A_s=0.6$, and SAR scenes across various landforms (including urban areas, farmlands, suburbs, and sea surfaces) to ensure data diversity. The datasets are derived from the Capella Open Data IEEE Data Contest 2026 collection.\footnote{\href{https://radiantearth.github.io/stac-browser/\#/external/capella-open-data.s3.us-west-2.amazonaws.com/stac/capella-open-data-ieee-data-contest/collection.json}{Capella Open Data IEEE Data Contest 2026 collection}} Ten stratified windows are selected from each dataset, giving 70 paired test samples. The ground-truth image is formed from the unquantized raw echo using the same SAR chain: range compression, RCMC, image formation, ROI extraction, and image normalization. Each one-bit result is compared with this normalized ground truth using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM).
 
 For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best unidirectional group are selected by their mean PSNR over the 70 paired samples. The reported gains are computed as bidirectional minus unidirectional. Statistical significance is tested using the paired Wilcoxon signed-rank test on the same paired sample vectors.
 

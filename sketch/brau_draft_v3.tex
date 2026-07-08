@@ -134,12 +134,6 @@ For each budget $Q_{\mathrm{up}}$, the best bidirectional group and the best uni
 \label{fig:mechanism}
 \end{figure}
 
-\begin{figure}[!t]
-\centerline{\includegraphics[width=\linewidth]{../assert/2D SplitRT As0.6.png}}
-\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
-\label{fig:intro_scene_examples}
-\end{figure}
-
 \subsection{Mechanism Analysis Through Spectral Leakage}
 
 We further analyze why bidirectional allocation is more effective under the same total budget. The working hypothesis is that SAR echoes have a two-dimensional spectral structure, while one-bit quantization introduces distortion across both range and azimuth. Following the intuition of oversampling and quantization-noise shaping, a larger pre-quantization grid can move quantization harmonics and distortion away from the effective support. A unidirectional allocation increases sampling density in only one dimension, whereas bidirectional allocation distributes the budget over both dimensions and reduces the overlap between quantization error and the effective SAR spectral support.
@@ -224,10 +218,8 @@ We next test whether the bidirectional advantage depends on a specific threshold
 \begin{tabular}{@{}cc@{}}
 \includegraphics[width=0.48\linewidth]{../assert/Exp4A_NCT_PSNR_AsCurve.png} &
 \includegraphics[width=0.48\linewidth]{../assert/Exp4A_NCT_SSIM_AsCurve.png} \\
-(a) NCT, PSNR & (b) NCT, SSIM \\
 \includegraphics[width=0.48\linewidth]{../assert/Exp4A_RT_PSNR_AsCurve.png} &
 \includegraphics[width=0.48\linewidth]{../assert/Exp4A_RT_SSIM_AsCurve.png} \\
-(c) RT, PSNR & (d) RT, SSIM
 \end{tabular}
 \caption{Threshold-amplitude sensitivity for $Q_{\mathrm{up}}=4$ with R2A2. NCT and RT curves are plotted against $A_s$ using PSNR and SSIM references; error bars denote one standard deviation over 70 paired samples.}
 \label{fig:threshold_as_q4}
@@ -237,6 +229,11 @@ We then compare ZT, NCT, and RT. In this robustness experiment, the unidirection
 
 \subsection{Main Fixed-Budget Results}
 
+\begin{figure}[!t]
+\centerline{\includegraphics[width=\linewidth]{../assert/2D SplitRT As0.6.png}}
+\caption{Two-dimensional SAR scene examples used in the SplitRT setting with $A_s=0.6$.}
+\label{fig:intro_scene_examples}
+\end{figure}
 We finally evaluate whether splitting a fixed upsampling budget across range and azimuth improves reconstruction quality compared with concentrating the same budget in a single dimension. We test integer budgets $Q_{\mathrm{up}}=4,6,8,9,10$. For each $Q_{\mathrm{up}}$, all available integer factor pairs are grouped into no-upsampling, range-only, azimuth-only, and bidirectional allocations.
 
 Table~\ref{tab:main_gain} compares the absolute reconstruction quality of the best bidirectional allocation and the best unidirectional allocation under each budget. Here, ``best'' is selected by mean PSNR over the 70 paired samples. The last two columns report the gain, computed as bidirectional minus unidirectional. Across all tested budgets, the best bidirectional group consistently outperforms the best unidirectional group in both PSNR and SSIM. The PSNR improvement ranges from 0.2856 dB to 0.5072 dB, and the SSIM improvement ranges from 0.0169 to 0.0221. Paired Wilcoxon signed-rank tests give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}=3.56\times10^{-13}$ for all listed budgets.
