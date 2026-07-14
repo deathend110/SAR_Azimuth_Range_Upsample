@@ -73,7 +73,7 @@ function export_node2_rc_spectra_paper(results, save_file)
     cb.FontSize = 8;
     ylabel(cb, "log(1 + |FFT|)", "FontName", "Times New Roman", "FontSize", 8);
 
-    exportgraphics(fig, save_file, "Resolution", 600);
+    exportgraphics(fig, save_file, "Resolution", 300);
     close(fig);
 end
 
