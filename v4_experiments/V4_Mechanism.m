@@ -152,8 +152,8 @@ end
 
 function exportSceneFigure(img_gt, results, save_path)
 fig = figure("Color", "w", "Units", "centimeters", ...
-    "Position", [2, 2, 18, 5.2], "Visible", "off");
-layout = tiledlayout(fig, 1, 4, ...
+    "Position", [2, 2, 12.5, 10.8], "Visible", "off");
+layout = tiledlayout(fig, 2, 2, ...
     "Padding", "compact", "TileSpacing", "compact");
 panel_labels = ["(a)", "(b)", "(c)", "(d)"];
 scene_names = ["GT", "R4A1", "R1A4", "R2A2"];
@@ -166,7 +166,7 @@ for idx = 1:numel(scene_images)
         "FontName", "Times New Roman", "FontSize", 9, ...
         "FontWeight", "normal");
 end
-colormap(fig, gray);
+colormap(fig, parula);
 cb = colorbar;
 cb.Layout.Tile = "east";
 cb.FontName = "Times New Roman";
