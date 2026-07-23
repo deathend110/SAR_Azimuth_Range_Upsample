@@ -106,14 +106,14 @@ Step & Operation \\
 
 \subsection{Threshold Settings}
 
-The main allocation experiment uses a separable random threshold (RT). Its phase is the sum of independent range and azimuth phase vectors:
+The main allocation experiment uses a separable random threshold (RT), following the fluctuating-threshold design principle used in one-bit SAR imaging \cite{nie2025fixed}. Its phase is the sum of independent range and azimuth phase vectors:
 \begin{equation}
     u_{\mathrm{RT}}(m,n)
     =A_s\hat{\sigma}\exp\!\left[j\bigl(\phi_r(m)+\phi_a(n)\bigr)\right],
 \end{equation}
 where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scale estimated from the upsampled echo, and $A_s$ controls the threshold amplitude. The fixed-budget results use $A_s=0.6$ as a common comparison setting.
 
-The range single-frequency threshold (RSFT) is used to study the joint influence of threshold strength and frequency:
+The range single-frequency threshold (RSFT), adapted from the single-frequency threshold construction in \cite{zhao2019onebit}, is used to study the joint influence of threshold strength and frequency:
 \begin{equation}
     u_{\mathrm{RSFT}}(\tau)
     =A_u\exp(j2\pi f_0\tau),
@@ -128,23 +128,23 @@ Here, STR is the signal-to-threshold ratio in decibels, $f_0$ is the threshold f
 
 The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. The main allocation experiment uses seed 2026, RT with $A_s=0.6$, and budgets $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
 
-Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Image entropy is computed from the normalized amplitude image using a fixed 256-bin histogram:
+Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Image entropy is computed from the normalized amplitude image using a fixed 256-bin histogram \cite{shannon1948communication}:
 \begin{equation}
     H=-\sum_{b=1}^{256}p_b\log_2 p_b.
 \end{equation}
-Equivalent number of looks (ENL) is evaluated on intensity, obtained by squaring the normalized amplitude:
+Equivalent number of looks (ENL) is evaluated on intensity, obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
 \begin{equation}
     \mathrm{ENL}=\frac{\mu_I^2}{\sigma_I^2},
 \end{equation}
 where $\mu_I$ and $\sigma_I^2$ are the mean and variance within a homogeneous ROI. ENL is calculated for 20 samples from the field and port datasets. A $64\times64$ ROI is selected on each GT image and then reused unchanged for every allocation. PSNR, SSIM, and entropy use all 70 samples.
 
-For each budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests are applied to the corresponding 70-sample vectors.
+For each budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding 70-sample vectors.
 
 \section{Experiments and Results}
 
 \subsection{Mechanism Analysis Through Spectral Leakage}
 
-The working interpretation of BRAU is that the effective SAR echo occupies a two-dimensional range-azimuth spectral support, whereas one-bit quantization produces distortion in both dimensions. A unidirectional allocation enlarges only one spectral axis. In contrast, a bidirectional allocation supplies frequency-domain redundancy in both dimensions and can reduce the overlap between quantization distortion and the effective support. Fig.~\ref{fig:mechanism} compares representative allocations for $Q_{\mathrm{up}}=4$ on the common frequency range $[-2,2]\times[-2,2]$.
+One-bit quantization is known to generate nonlinear harmonic distortion \cite{franceschetti1999phase,zhao2019onebit,si2023dequantization}. In the two-dimensional SAR data considered here, this distortion appears along both range and azimuth. The working interpretation of BRAU is that the effective SAR echo occupies a two-dimensional range-azimuth spectral support, whereas a unidirectional allocation enlarges only one spectral axis. In contrast, a bidirectional allocation supplies frequency-domain redundancy in both dimensions and can reduce the overlap between quantization distortion and the effective support. Fig.~\ref{fig:mechanism} compares representative allocations for $Q_{\mathrm{up}}=4$ on the common frequency range $[-2,2]\times[-2,2]$.
 
 \begin{figure}[t]
 \centering
@@ -200,7 +200,7 @@ As shown in Table~\ref{tab:mechanism_metrics}, all upsampled groups reduce leaka
 
 \subsection{Threshold Design}
 
-The threshold parameters influence absolute reconstruction quality and therefore require separate calibration. Fig.~\ref{fig:threshold_design}(a) shows the RT amplitude sensitivity for the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$. The SSIM first increases and then decreases with $A_s$. The best tested values shift from $A_s=0.7$ for $Q_{\mathrm{up}}=4$ to $0.8$ for $Q_{\mathrm{up}}=6$ and $1.0$ for $Q_{\mathrm{up}}=9$. The common $A_s=0.6$ used in the main experiment is thus a controlled setting for allocation comparison rather than a global optimum for every budget.
+Prior one-bit SAR studies show that threshold amplitude and spectral placement influence reconstruction quality \cite{demir2018onebit,zhao2019onebit,nie2025fixed}; the corresponding parameters therefore require separate calibration. Fig.~\ref{fig:threshold_design}(a) shows the RT amplitude sensitivity for the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$. The SSIM first increases and then decreases with $A_s$. The best tested values shift from $A_s=0.7$ for $Q_{\mathrm{up}}=4$ to $0.8$ for $Q_{\mathrm{up}}=6$ and $1.0$ for $Q_{\mathrm{up}}=9$. The common $A_s=0.6$ used in the main experiment is thus a controlled setting for allocation comparison rather than a global optimum for every budget.
 
 \begin{figure}[t]
 \centering
@@ -328,6 +328,9 @@ X. Dong and Y. Zhang, ``A MAP approach for 1-bit compressive sensing in syntheti
 \bibitem{wang2019enhanced}
 X. Wang, G. Li, Y. Liu, and M. G. Amin, ``Enhanced 1-bit radar imaging by exploiting two-level block sparsity,'' \textit{IEEE Trans. Geosci. Remote Sens.}, vol. 57, no. 2, pp. 1131--1141, Feb. 2019, doi: 10.1109/TGRS.2018.2864795.
 
+\bibitem{ge2023sparse}
+S. Ge, D. Feng, S. Song, J. Wang, and X. Huang, ``Sparse logistic regression-based one-bit SAR imaging,'' \textit{IEEE Trans. Geosci. Remote Sens.}, vol. 61, 2023, Art. no. 5217915, doi: 10.1109/TGRS.2023.3322554.
+
 \bibitem{demir2018onebit}
 M. Demir and E. Er\c{c}elebi, ``One-bit compressive sensing with time-varying thresholds in synthetic aperture radar imaging,'' \textit{IET Radar, Sonar Navig.}, vol. 12, no. 12, pp. 1517--1526, Dec. 2018, doi: 10.1049/iet-rsn.2018.5044.
 
@@ -340,9 +343,6 @@ B. Zhao, L. Huang, and B. Jin, ``Strategy for SAR imaging quality improvement wi
 \bibitem{liu2023twobit}
 S. Liu, B. Zhao, L. Huang, B. Li, and W. Bao, ``Lightweight SAR: A two-bit strategy,'' \textit{Remote Sens.}, vol. 15, no. 2, Art. no. 310, Jan. 2023, doi: 10.3390/rs15020310.
 
-\bibitem{ge2023sparse}
-S. Ge, D. Feng, S. Song, J. Wang, and X. Huang, ``Sparse logistic regression-based one-bit SAR imaging,'' \textit{IEEE Trans. Geosci. Remote Sens.}, vol. 61, 2023, Art. no. 5217915, doi: 10.1109/TGRS.2023.3322554.
-
 \bibitem{si2023dequantization}
 C. Si, B. Zhao, L. Huang, and S. Liu, ``A convolutional de-quantization network for harmonics suppression in one-bit SAR imaging,'' \textit{IEEE Trans. Geosci. Remote Sens.}, vol. 61, pp. 1--16, 2023, doi: 10.1109/TGRS.2023.3330530.
 
@@ -351,6 +351,15 @@ G. Nie, B. Zhao, Q. Liu, L. Huang, and G. Liao, ``One-bit synthetic aperture rad
 
 \bibitem{wang2004ssim}
 Z. Wang, A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli, ``Image quality assessment: From error visibility to structural similarity,'' \textit{IEEE Trans. Image Process.}, vol. 13, no. 4, pp. 600--612, Apr. 2004, doi: 10.1109/TIP.2003.819861.
+
+\bibitem{shannon1948communication}
+C. E. Shannon, ``A mathematical theory of communication,'' \textit{Bell Syst. Tech. J.}, vol. 27, no. 3, pp. 379--423, Jul. 1948, doi: 10.1002/j.1538-7305.1948.tb01338.x.
+
+\bibitem{feng2015tgv}
+W. Feng, H. Lei, and H. Qiao, ``Synthetic aperture radar image despeckling via total generalised variation approach,'' \textit{IET Image Process.}, vol. 9, no. 3, pp. 236--248, 2015, doi: 10.1049/iet-ipr.2013.0701.
+
+\bibitem{wilcoxon1945ranking}
+F. Wilcoxon, ``Individual comparisons by ranking methods,'' \textit{Biometrics Bull.}, vol. 1, no. 6, pp. 80--83, Dec. 1945, doi: 10.2307/3001968.
 
 \end{thebibliography}
 
