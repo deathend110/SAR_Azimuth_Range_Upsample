@@ -42,7 +42,7 @@ email address or ORCID}
 \maketitle
 
 \begin{abstract}
-One-bit synthetic aperture radar (SAR) imaging greatly reduces echo precision but introduces strong quantization distortion. This paper proposes bidirectional range-azimuth upsampling (BRAU), which distributes a fixed pre-quantization digital upsampling budget over both SAR dimensions instead of concentrating it in range or azimuth alone. Across the tested budgets, bidirectional allocations consistently provide better reconstruction quality than unidirectional allocations. Range-compressed spectral analysis further shows reduced off-support and directional leakage, supporting two-dimensional spectral redundancy as the mechanism behind the allocation advantage.
+One-bit synthetic aperture radar (SAR) imaging greatly reduces echo precision but introduces strong quantization distortion. This paper proposes bidirectional range-azimuth upsampling (BRAU), which distributes a fixed pre-quantization digital upsampling budget over both SAR dimensions instead of concentrating it in range or azimuth alone. Under a common separable random threshold, bidirectional allocations consistently improve reconstruction fidelity, whereas a range-dependent single-frequency threshold favors range-only allocation, revealing a direct coupling between threshold geometry and sampling allocation. Range-compressed spectral analysis further shows reduced off-support and directional leakage for representative bidirectional processing, supporting two-dimensional spectral redundancy as its operating mechanism.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -60,7 +60,8 @@ More recent one-bit SAR studies have focused on threshold construction and quant
 Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q_{\mathrm{up}}=R A$ be the total pre-quantization allocation. Under the same $Q_{\mathrm{up}}$, a unidirectional strategy assigns the full budget to one dimension, whereas a bidirectional strategy uses $R>1$ and $A>1$. This paper formulates bidirectional range-azimuth upsampling (BRAU) and evaluates whether dimensional allocation matters for one-bit SAR imaging. The main contributions are as follows:
 \begin{itemize}
     \item We formulate fixed-budget range-azimuth upsampling allocation before one-bit quantization, distinguishing bidirectional raw-echo processing from post-reconstruction image interpolation.
-    \item We show on 70 paired samples that bidirectional allocations consistently outperform unidirectional allocations across the tested budgets, with a near-optimal plateau among several bidirectional factor pairs.
+    \item We show on 70 paired samples that bidirectional allocations consistently outperform unidirectional allocations under a common separable random threshold, with a near-optimal plateau among several bidirectional factor pairs.
+    \item We evaluate a range-dependent single-frequency threshold over the same 19 allocations and show that its range-only threshold geometry changes the preferred allocation, establishing threshold--allocation coupling as an experimental design consideration.
     \item We provide range-compressed spectral evidence showing that bidirectional allocation reduces off-support and directional leakage relative to unidirectional allocation.
 \end{itemize}
 
@@ -126,7 +127,7 @@ Here, STR is the signal-to-threshold ratio in decibels, $f_0$ is the threshold f
 
 \subsection{Evaluation Protocol}
 
-The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. The main allocation experiment uses seed 2026, RT with $A_s=0.6$, and budgets $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
+The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. Two threshold settings are evaluated over the same 19 allocation groups and budgets $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$. The RT experiment uses seed 2026 and the common amplitude $A_s=0.6$. For RSFT, each required range factor $R\in\{1,2,3,4,5,6,8,9,10\}$ is calibrated on the range-only configuration $(R,1)$ using mean SSIM; the resulting setting is then fixed for every allocation sharing that $R$.
 
 Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Image entropy is computed from the normalized amplitude image using a fixed 256-bin histogram \cite{shannon1948communication}:
 \begin{equation}
@@ -138,7 +139,7 @@ Equivalent number of looks (ENL) is evaluated on intensity, obtained by squaring
 \end{equation}
 where $\mu_I$ and $\sigma_I^2$ are the mean and variance within a homogeneous ROI. ENL is calculated for 20 samples from the field and port datasets. A $64\times64$ ROI is selected on each GT image and then reused unchanged for every allocation. PSNR, SSIM, and entropy use all 70 samples.
 
-For each budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding 70-sample vectors.
+For each threshold and budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding 70-sample vectors.
 
 \section{Experiments and Results}
 
@@ -206,13 +207,17 @@ Prior one-bit SAR studies show that threshold amplitude and spectral placement i
 \centering
 \includegraphics[width=0.98\linewidth]{../assert/RT_SSIM_bestAs_curve.png}\\[3pt]
 \small (a) RT amplitude sensitivity\\[5pt]
-\includegraphics[width=0.98\linewidth]{../Exp5_RSFT_ParameterMap_Output/Exp5_RSFT_ParameterMap.png}\\[3pt]
+\includegraphics[width=0.98\linewidth]{../V4_Experiments_Output/RSFTCalibration/V4_RSFT_ParameterMap.png}\\[3pt]
 \small (b) RSFT parameter maps
 \caption{Threshold parameter design. (a) Mean SSIM of RT versus $A_s$ for representative bidirectional allocations. (b) Mean-SSIM maps of RSFT over STR and normalized frequency $f_0/B_r$ for $R=2$ and $R=3$.}
 \label{fig:threshold_design}
 \end{figure}
 
-Fig.~\ref{fig:threshold_design}(b) maps the two RSFT parameters over 70 samples. For $R=2$, the highest mean SSIM is obtained at $\mathrm{STR}=0$~dB and $f_0/B_r=1.4$. For $R=3$, the optimum moves to $\mathrm{STR}=-2$~dB while the normalized frequency remains $f_0/B_r=1.4$. The high-quality region extends beyond a single isolated grid point, indicating that RSFT admits a practical near-optimal parameter region. Overall, the RT and RSFT results show that threshold parameters should be adjusted to the sampling configuration; they do not alter the fixed-budget allocation question addressed by BRAU.
+Fig.~\ref{fig:threshold_design}(b) maps the two RSFT parameters over 70 samples for the representative $R=2$ and $R=3$ calibrations. The complete best tested mapping $(R:\mathrm{STR},f_0/B_r)$ is
+$1:(4,2.0)$, $2:(0,1.4)$, $3:(-2,1.4)$, $4:(-4,2.0)$,
+$5:(-4,1.8)$, $6:(-4,1.8)$, $8:(-4,1.8)$,
+$9:(-6,1.6)$, and $10:(-6,1.6)$, with STR in decibels.
+All selected points lie inside the tested grid. The same $R$-specific setting is subsequently used for every azimuth factor $A$, so the evaluation does not tune individual $(R,A)$ allocations. These results show that threshold parameters should be adjusted to the range sampling configuration and motivate evaluating allocation separately within each threshold design.
 
 \subsection{Main Fixed-Budget Results}
 
@@ -225,12 +230,14 @@ Fig.~\ref{fig:scene_examples} shows a representative scene using a common normal
 \label{fig:scene_examples}
 \end{figure}
 
-\begin{table}[t]
-\caption{Evaluation indexes.}
+\begin{table*}[t]
+\caption{Fixed-budget evaluation indexes under RT and RSFT.}
 \label{tab:evaluation_indexes}
 \centering
 \scriptsize
-\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{0.88}
+\setlength{\tabcolsep}{5.2pt}
+\textbf{(a) Separable RT, $A_s=0.6$}\\[2pt]
 \begin{tabular}{c c c c c}
 \hline
 Allocation & PSNR & SSIM & ENL & Entropy \\
@@ -259,20 +266,55 @@ R2A4 & \textbf{26.8194} & \textbf{0.8363} & 1.0183 & 6.4231 \\
 R4A2 & 26.8066 & 0.8356 & 1.0187 & 6.4207 \\
 \hline
 \end{tabular}
+\vspace{5pt}
+
+\textbf{(b) RSFT with $R$-dependent calibrated parameters}\\[2pt]
+\begin{tabular}{c c c c c c}
+\hline
+Allocation & $(\mathrm{STR},f_0/B_r)$ & PSNR & SSIM & ENL & Entropy \\
+\hline
+GT & -- & $\infty$ & 1.0000 & 1.0321 & 6.4640 \\
+R1A1 & $(+4,2.0)$ & 23.8965 & 0.6839 & 1.0018 & 6.4721 \\
+\hline
+\multicolumn{6}{c}{$Q_{\mathrm{up}}=4$} \\
+\hline
+R4A1 & $(-4,2.0)$ & \textbf{29.5098} & \textbf{0.8863} & 1.0306 & 6.4957 \\
+R1A4 & $(+4,2.0)$ & 25.4028 & 0.7693 & 1.0146 & 6.4469 \\
+R2A2 & $(0,1.4)$ & 27.5347 & 0.8431 & 1.0181 & 6.4843 \\
+\hline
+\multicolumn{6}{c}{$Q_{\mathrm{up}}=6$} \\
+\hline
+R6A1 & $(-4,1.8)$ & \textbf{31.1381} & \textbf{0.9203} & 1.0293 & 6.5003 \\
+R1A6 & $(+4,2.0)$ & 25.4668 & 0.7726 & 1.0165 & 6.4454 \\
+R2A3 & $(0,1.4)$ & 27.7932 & 0.8527 & 1.0174 & 6.4838 \\
+R3A2 & $(-2,1.4)$ & 29.2904 & 0.8878 & 1.0274 & 6.4922 \\
+\hline
+\multicolumn{6}{c}{$Q_{\mathrm{up}}=8$} \\
+\hline
+R8A1 & $(-4,1.8)$ & \textbf{32.3176} & \textbf{0.9387} & 1.0318 & 6.4881 \\
+R1A8 & $(+4,2.0)$ & 25.4900 & 0.7737 & 1.0160 & 6.4447 \\
+R2A4 & $(0,1.4)$ & 27.9124 & 0.8564 & 1.0189 & 6.4824 \\
+R4A2 & $(-4,2.0)$ & 31.4092 & 0.9252 & 1.0319 & 6.4893 \\
+\hline
+\end{tabular}
 \vspace{2pt}
 
-\parbox{0.98\linewidth}{\footnotesize PSNR, SSIM, and entropy are averaged over 70 paired samples. ENL is averaged over 20 fixed $64\times64$ homogeneous ROIs from the field and port scenes.}
-\end{table}
+\parbox{0.96\textwidth}{\footnotesize PSNR, SSIM, and entropy are averaged over 70 paired samples. ENL is averaged over the same 20 fixed $64\times64$ homogeneous ROIs from the field and port scenes in both panels. RSFT settings are calibrated by $R$ on $(R,1)$ and are not tuned for individual $(R,A)$ allocations.}
+\end{table*}
 
-Table~\ref{tab:evaluation_indexes} reports the requested mean evaluation indexes. R1A1 gives the lowest reconstruction fidelity. Increasing $Q_{\mathrm{up}}$ improves both unidirectional and bidirectional results, but the bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 and R3A2 are nearly indistinguishable, with PSNR values of 26.5585 and 26.5525~dB. A similar plateau occurs at $Q_{\mathrm{up}}=8$, where R2A4 and R4A2 reach 26.8194 and 26.8066~dB. These paired allocations show that bidirectionality, rather than exact balance, is the important design property.
+Table~\ref{tab:evaluation_indexes}(a) reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity. Increasing $Q_{\mathrm{up}}$ improves both unidirectional and bidirectional results, and the bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 and R3A2 are nearly indistinguishable, with PSNR values of 26.5585 and 26.5525~dB. A similar plateau occurs at $Q_{\mathrm{up}}=8$, where R2A4 and R4A2 reach 26.8194 and 26.8066~dB. These paired RT allocations show that bidirectionality, rather than exact balance, is the important design property under a threshold that varies along both dimensions.
 
-The same tendency continues for the additional budgets. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400 SSIM, while R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427 SSIM. Across $Q_{\mathrm{up}}=4,6,8,9,10$, paired Wilcoxon tests between the mean-best bidirectional and unidirectional groups give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$.
+The RT tendency continues for the additional budgets. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400 SSIM, while R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427 SSIM. Across $Q_{\mathrm{up}}=4,6,8,9,10$, paired Wilcoxon tests between the mean-best bidirectional and unidirectional groups give positive PSNR differences of 0.2856--0.5072~dB, with $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$.
 
-ENL and entropy describe complementary image statistics but show much smaller between-allocation differences than PSNR and SSIM. They are therefore included as references to GT and to the statistical character of the normalized images, rather than used as the primary ranking criteria. The paired fidelity results and the consistent bidirectional plateau provide the principal evidence for BRAU.
+Table~\ref{tab:evaluation_indexes}(b) shows a different within-threshold pattern for RSFT. Because the threshold is a range-direction sinusoid and its parameters are calibrated by $R$ on $(R,1)$, the best range-only group obtains the highest PSNR and SSIM at $Q_{\mathrm{up}}=4,6,8$. The corresponding best bidirectional-to-unidirectional PSNR differences are $-1.9752$, $-1.8477$, and $-0.9084$~dB. At the additional budgets, R9A1 reaches 33.1245~dB and 0.9452 SSIM at $Q_{\mathrm{up}}=9$, compared with 29.6835~dB and 0.8968 for R3A3; R10A1 reaches 33.6347~dB and 0.9512 at $Q_{\mathrm{up}}=10$, compared with 32.0805~dB and 0.9347 for R5A2. All five RSFT comparisons favor the selected unidirectional group, with $p_{\mathrm{PSNR}}\leq4.24\times10^{-13}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$.
+
+The two panels are comparisons within their respective threshold designs, rather than a ranking of RT against RSFT. Together they show that the fixed-budget allocation law is coupled to threshold geometry: a two-dimensional separable threshold benefits from bidirectional spectral redundancy, whereas an $R$-calibrated range-only sinusoid concentrates its benefit along range. The BRAU advantage is therefore established for the controlled RT setting, while the RSFT result identifies the threshold structure that must be coordinated with dimensional allocation.
+
+ENL and entropy describe complementary image statistics but show much smaller between-allocation differences than PSNR and SSIM. They are therefore included as references to GT and to the statistical character of the normalized images, rather than used as the primary ranking criteria. The paired RT fidelity results and its consistent bidirectional plateau provide the principal evidence for BRAU, while the RSFT comparisons delimit how that evidence depends on threshold geometry.
 
 \section{Conclusion}
 
-This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Across the tested budgets, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while several neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed lower off-support and directional leakage for the representative bidirectional allocation, supporting two-dimensional spectral redundancy as the source of the allocation advantage. BRAU therefore provides a simple design principle for distributing limited digital preprocessing resources in low-precision SAR acquisition.
+This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau; range-compressed spectral measurements supported two-dimensional spectral redundancy as the operating mechanism. Under an $R$-dependent range single-frequency threshold, range-only allocation instead achieved the highest fidelity, showing that threshold geometry and dimensional redundancy must be designed jointly. BRAU thus provides a fixed-budget allocation principle for thresholds that exploit both SAR dimensions and a basis for coordinating threshold construction with digital preprocessing resources.
 
 \IEEEtriggeratref{20}
 \begin{thebibliography}{00}

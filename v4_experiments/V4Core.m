@@ -33,8 +33,12 @@ classdef V4Core
             cfg.entropy_num_bins = 256;
 
             cfg.rt_figure = fullfile(repo_root, "assert", "RT_SSIM_bestAs_curve.png");
-            cfg.rsft_figure = fullfile(repo_root, ...
-                "Exp5_RSFT_ParameterMap_Output", "Exp5_RSFT_ParameterMap.png");
+            cfg.rsft_calibration_dir = fullfile( ...
+                cfg.output_root, "RSFTCalibration");
+            cfg.rsft_evaluation_dir = fullfile( ...
+                cfg.output_root, "RSFTEvaluation");
+            cfg.rsft_figure = fullfile(cfg.rsft_calibration_dir, ...
+                "V4_RSFT_ParameterMap.png");
         end
 
         function ensureDir(path_value)
@@ -217,6 +221,19 @@ classdef V4Core
                 channel_1bit, S60, range_q, azimuth_q);
         end
 
+        function img_out = buildRSFTImage( ...
+                signal60, S60, range_q, azimuth_q, ...
+                STR_dB, f0_over_Br, initial_phase)
+            signal_up = V4Core.twoDimUpsample( ...
+                signal60, azimuth_q, range_q);
+            U = V4Core.buildRSFTThreshold( ...
+                signal_up, S60, range_q, ...
+                STR_dB, f0_over_Br, initial_phase);
+            channel_1bit = V4Core.quantizeWithThreshold(signal_up, U);
+            img_out = V4Core.focusUpsampledChannel( ...
+                channel_1bit, S60, range_q, azimuth_q);
+        end
+
         function [nodes, reference_rc_crop] = buildMechanismNodes( ...
                 signal60, S60, range_q, azimuth_q, As)
             signal_up = V4Core.twoDimUpsample(signal60, azimuth_q, range_q);
@@ -293,6 +310,32 @@ classdef V4Core
             phi_a = 2 * pi * rand(1, Na_up);
             sigma = sqrt(2 / pi) * mean(abs(signal_up(:)));
             U = As * sigma * exp(1i * (phi_r + phi_a));
+        end
+
+        function [U, sigma_hat, threshold_amplitude] = ...
+                buildRSFTThreshold( ...
+                signal_up, S60, range_q, ...
+                STR_dB, f0_over_Br, initial_phase)
+            arguments
+                signal_up
+                S60
+                range_q (1, 1) double {mustBePositive}
+                STR_dB (1, 1) double
+                f0_over_Br (1, 1) double {mustBeNonnegative}
+                initial_phase (1, 1) double = 0
+            end
+
+            nrn_up = size(signal_up, 1);
+            Fs_up = range_q * S60.Fs;
+            fast_time_rel = ...
+                ((0:nrn_up - 1).' - floor(nrn_up / 2)) / Fs_up;
+            f0_Hz = f0_over_Br * S60.B;
+            sigma_hat = sqrt(2 / pi) * mean(abs(signal_up(:)));
+            threshold_amplitude = ...
+                sigma_hat / (10 ^ (STR_dB / 20));
+            threshold_column = threshold_amplitude * exp( ...
+                1i * (2 * pi * f0_Hz * fast_time_rel + initial_phase));
+            U = repmat(threshold_column, 1, size(signal_up, 2));
         end
 
         function S1 = quantizeWithThreshold(S, U)

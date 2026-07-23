@@ -33,7 +33,38 @@ end
 function testRSFTSourceFiguresExist(test_case)
 cfg = V4Core.config();
 verifyTrue(test_case, isfile(cfg.rt_figure));
-verifyTrue(test_case, isfile(cfg.rsft_figure));
+if isfolder(cfg.rsft_calibration_dir)
+    verifyTrue(test_case, isfile(cfg.rsft_figure));
+end
+end
+
+function testRSFTThresholdDefinition(test_case)
+rng(11);
+signal_up = complex(randn(24, 7), randn(24, 7));
+S60 = struct("Fs", 60e6, "B", 45e6);
+range_q = 2;
+STR_dB = -2;
+f0_over_Br = 1.4;
+initial_phase = 0;
+
+[U1, sigma_hat, amplitude] = V4Core.buildRSFTThreshold( ...
+    signal_up, S60, range_q, STR_dB, f0_over_Br, initial_phase);
+U2 = V4Core.buildRSFTThreshold( ...
+    signal_up, S60, range_q, STR_dB, f0_over_Br, initial_phase);
+
+verifySize(test_case, U1, size(signal_up));
+verifyEqual(test_case, U1, U2);
+verifyEqual(test_case, U1, repmat(U1(:, 1), 1, size(U1, 2)));
+verifyEqual(test_case, amplitude, ...
+    sigma_hat / (10 ^ (STR_dB / 20)), "RelTol", 1e-12);
+verifyEqual(test_case, abs(U1), ...
+    amplitude * ones(size(U1)), "AbsTol", 1e-10);
+
+expected_step = 2 * pi * (f0_over_Br * S60.B) / ...
+    (range_q * S60.Fs);
+observed_step = angle(U1(13, 1) / U1(12, 1));
+verifyEqual(test_case, observed_step, ...
+    angle(exp(1i * expected_step)), "AbsTol", 1e-12);
 end
 
 function testUpsampleDimensions(test_case)

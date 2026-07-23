@@ -1,5 +1,5 @@
 function V4_Run_All()
-% 依次执行V4测试、主结果和机制实验。
+% 依次执行V4测试、RT/RSFT主结果和机制实验。
 
 experiment_dir = fileparts(mfilename("fullpath"));
 repo_root = fileparts(experiment_dir);
@@ -10,6 +10,12 @@ test_v4_core();
 
 fprintf("\n=== V4实验套件：主结果 ===\n");
 V4_MainEvaluation();
+
+fprintf("\n=== V4实验套件：RSFT统一校准 ===\n");
+V4_RSFTCalibration();
+
+fprintf("\n=== V4实验套件：RSFT完整评价 ===\n");
+V4_RSFTEvaluation();
 
 fprintf("\n=== V4实验套件：机制实验 ===\n");
 V4_Mechanism();
