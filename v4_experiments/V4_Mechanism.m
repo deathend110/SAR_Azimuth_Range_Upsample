@@ -146,6 +146,7 @@ cb.FontName = "Times New Roman";
 cb.FontSize = 8;
 ylabel(cb, "log(1 + |FFT|)", ...
     "FontName", "Times New Roman", "FontSize", 8);
+figure(gcf)
 exportgraphics(fig, save_path, "Resolution", 300);
 close(fig);
 end
