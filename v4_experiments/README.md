@@ -28,5 +28,9 @@ RSFT 参数图由 `V4_RSFTCalibration` 根据统一校准结果重新生成：
 
 - `V4_Experiments_Output/RSFTCalibration/V4_RSFT_ParameterMap.png`
 
+Fig. 3 的逐场景 PSNR/SSIM 与图中标题使用同一数据源：
+
+- `V4_Experiments_Output/Mechanism/V4_Scene_Metrics.csv`
+
 RSFT 搜参和评价均支持 checkpoint。恢复时会核验样本数、预算、参数网格及
 参数映射，配置不一致时拒绝静默复用旧结果。

@@ -46,13 +46,18 @@ writetable(metric_table, fullfile(output_dir, "V4_Mechanism_Metrics.csv"));
 exportSpectrumFigure(results, S60, ...
     fullfile(output_dir, "V4_Mechanism_Common4x4.png"));
 img_gt = V4Core.buildGTImage(signal60, S60);
-exportSceneFigure(img_gt, results, ...
+scene_rois = cat(3, ...
+    img_gt, results(2).ROI, results(3).ROI, results(4).ROI);
+scene_metric_table = buildSceneMetricTable(scene_rois);
+writetable(scene_metric_table, ...
+    fullfile(output_dir, "V4_Scene_Metrics.csv"));
+exportSceneFigure(scene_rois, scene_metric_table, ...
     fullfile(output_dir, "V4_Scene_SharedColorbar.png"));
 
-scene_rois = cat(3, img_gt, results(2).ROI, results(3).ROI, results(4).ROI);
 save(fullfile(output_dir, "V4_Mechanism_Data.mat"), ...
     "seed", "As", "dataset_name", "file_name", "c_start", ...
-    "case_defs", "metric_table", "scene_rois", "-v7.3");
+    "case_defs", "metric_table", "scene_rois", ...
+    "scene_metric_table", "-v7.3");
 writeMetadata(cfg, seed, As, dataset_name, file_name, c_start, output_dir);
 fprintf("V4机制实验完成：%s\n", output_dir);
 end
@@ -92,6 +97,21 @@ end
 metric_table = table( ...
     Allocation, Range_q, Azimuth_q, ...
     OffSupport, RangeLeakage, AzimuthLeakage, ThresholdMeanAbs);
+end
+
+function scene_metric_table = buildSceneMetricTable(scene_rois)
+% Fig. 3指标基于图中归一化幅度，并逐幅与同一GT比较。
+Allocation = ["GT"; "R4A1"; "R1A4"; "R2A2"];
+num_scenes = numel(Allocation);
+PSNR = zeros(num_scenes, 1);
+SSIM = zeros(num_scenes, 1);
+img_gt = scene_rois(:, :, 1);
+for idx = 1:num_scenes
+    scene = scene_rois(:, :, idx);
+    PSNR(idx) = psnr(scene, img_gt);
+    SSIM(idx) = ssim(scene, img_gt);
+end
+scene_metric_table = table(Allocation, PSNR, SSIM);
 end
 
 function exportSpectrumFigure(results, S60, save_path)
@@ -151,20 +171,27 @@ exportgraphics(fig, save_path, "Resolution", 300);
 close(fig);
 end
 
-function exportSceneFigure(img_gt, results, save_path)
+function exportSceneFigure(scene_rois, scene_metric_table, save_path)
 fig = figure("Color", "w", "Units", "centimeters", ...
-    "Position", [2, 2, 12.5, 10.8], "Visible", "off");
+    "Position", [2, 2, 12.5, 10.0], "Visible", "off");
 layout = tiledlayout(fig, 2, 2, ...
     "Padding", "compact", "TileSpacing", "compact");
 panel_labels = ["(a)", "(b)", "(c)", "(d)"];
-scene_names = ["GT", "R4A1", "R1A4", "R2A2"];
-scene_images = {img_gt, results(2).ROI, results(3).ROI, results(4).ROI};
-for idx = 1:numel(scene_images)
+for idx = 1:height(scene_metric_table)
     ax = nexttile(layout);
-    imagesc(ax, scene_images{idx}, [0, 1]);
+    imagesc(ax, scene_rois(:, :, idx), [0, 1]);
     axis(ax, "image", "off");
-    title(ax, sprintf("%s %s", panel_labels(idx), scene_names(idx)), ...
-        "FontName", "Times New Roman", "FontSize", 9, ...
+    if isinf(scene_metric_table.PSNR(idx))
+        psnr_text = "Inf";
+    else
+        psnr_text = sprintf("%.2f", scene_metric_table.PSNR(idx));
+    end
+    name_line = sprintf("%s %s", ...
+        panel_labels(idx), scene_metric_table.Allocation(idx));
+    metric_line = sprintf("PSNR = %s dB; SSIM = %.4f", ...
+        psnr_text, scene_metric_table.SSIM(idx));
+    title(ax, {name_line, metric_line}, ...
+        "FontName", "Times New Roman", "FontSize", 8, ...
         "FontWeight", "normal");
 end
 colormap(fig, parula);
