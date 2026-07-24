@@ -6,11 +6,11 @@
 
 在固定总上采样预算
 
-\[
+$$
 Q_{\mathrm{up}}=R\times A
-\]
+$$
 
-下，R4A1 与 R2A2 虽然具有相同的总预算，但对现有 RSFT 而言，真正直接增强阈值频谱搬移能力的是距离倍率 \(R\)。因此，R4A1 实际上相当于使用比 R2A2 更大的距离频谱扩展空间，容易天然取得更高的成像指标。
+下，R4A1 与 R2A2 虽然具有相同的总预算，但对现有 RSFT 而言，真正直接增强阈值频谱搬移能力的是距离倍率 $R$。因此，R4A1 实际上相当于使用比 R2A2 更大的距离频谱扩展空间，容易天然取得更高的成像指标。
 
 为使阈值结构与双向距离—方位上采样相匹配，可以分别在距离方向和方位方向构造单频相位向量，并采用与 SplitRT 相同的“相位广播相加”方式生成二维阈值矩阵。该方案记为 **2D RSFT**。
 
@@ -20,48 +20,48 @@ Q_{\mathrm{up}}=R\times A
 
 设上采样后的 SAR 复回波为
 
-\[
+$$
 s_{\uparrow}(\tau,\eta)\in\mathbb{C},
-\]
+$$
 
 其中：
 
-- \(\tau\) 为距离快时间；
-- \(\eta\) 为方位慢时间。
+- $\tau$ 为距离快时间；
+- $\eta$ 为方位慢时间。
 
 现有距离向 RSFT 可写为
 
-\[
+$$
 u_{\mathrm{RSFT}}(\tau)
 =A_u\exp\left[j\left(2\pi f_r\tau+\phi_0\right)\right],
-\]
+$$
 
 其中：
 
-- \(A_u\) 为阈值幅度；
-- \(f_r\) 为距离阈值频率；
-- \(\phi_0\) 为初始相位。
+- $A_u$ 为阈值幅度；
+- $f_r$ 为距离阈值频率；
+- $\phi_0$ 为初始相位。
 
 阈值幅度按照信号—阈值比 STR 设定：
 
-\[
+$$
 A_u
 =\frac{\hat{\sigma}}{10^{\mathrm{STR}/20}},
-\]
+$$
 
 其中
 
-\[
+$$
 \hat{\sigma}
 =\sqrt{\frac{2}{\pi}}\operatorname{mean}\left(|s_{\uparrow}|\right).
-\]
+$$
 
 在二维回波矩阵上，现有 RSFT 实际为
 
-\[
+$$
 U_{\mathrm{RSFT}}(m,n)
 =A_u\exp\left[j\left(2\pi f_r\tau_m+\phi_0\right)\right],
-\]
+$$
 
 即同一条距离阈值向量沿全部方位脉冲重复。
 
@@ -71,19 +71,19 @@ U_{\mathrm{RSFT}}(m,n)
 
 分别构造距离向和方位向单频相位：
 
-\[
+$$
 \phi_r(\tau)=2\pi f_r\tau,
-\]
+$$
 
-\[
+$$
 \phi_a(\eta)=2\pi f_a\eta,
-\]
+$$
 
-其中 \(f_a\) 为方位慢时间方向的阈值频率。
+其中 $f_a$ 为方位慢时间方向的阈值频率。
 
 将两个方向的相位广播相加，得到二维阈值：
 
-\[
+$$
 \boxed{
 U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 =A_u\exp\left\{
@@ -94,21 +94,21 @@ U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 \right]
 \right\}
 }
-\]
+$$
 
 该式也可写为两个单位模复指数的乘积：
 
-\[
+$$
 U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 =A_u
 \exp(j2\pi f_r\tau)
 \exp(j2\pi f_a\eta)
 \exp(j\phi_0).
-\]
+$$
 
 离散形式为
 
-\[
+$$
 \boxed{
 U[m,n]
 =A_u\exp\left\{
@@ -119,25 +119,25 @@ j\left[
 \right]
 \right\}
 }
-\]
+$$
 
 其中：
 
-\[
+$$
 \tau_m
 =\frac{m-m_0}{F_{s,\uparrow}},
 \qquad
 F_{s,\uparrow}=R F_s,
-\]
+$$
 
-\[
+$$
 \eta_n
 =\frac{n-n_0}{\mathrm{PRF}_{\uparrow}},
 \qquad
 \mathrm{PRF}_{\uparrow}=A\,\mathrm{PRF}.
-\]
+$$
 
-这里 \(m_0\) 和 \(n_0\) 为距离向、方位向离散网格中心位置。
+这里 $m_0$ 和 $n_0$ 为距离向、方位向离散网格中心位置。
 
 ---
 
@@ -145,21 +145,21 @@ F_{s,\uparrow}=R F_s,
 
 SplitRT 的二维阈值结构为
 
-\[
+$$
 U_{\mathrm{SplitRT}}(m,n)
 =A_s\hat{\sigma}
 \exp\left[j\left(\phi_r(m)+\phi_a(n)\right)\right],
-\]
+$$
 
-其中 \(\phi_r\) 和 \(\phi_a\) 是分别沿距离和方位生成的随机相位向量。
+其中 $\phi_r$ 和 $\phi_a$ 是分别沿距离和方位生成的随机相位向量。
 
 2D RSFT 与 SplitRT 的形式完全一致，区别仅在于相位函数：
 
-\[
+$$
 \phi_r(m)=2\pi f_r\tau_m,
 \qquad
 \phi_a(n)=2\pi f_a\eta_n.
-\]
+$$
 
 因此，2D RSFT 可以看作将 SplitRT 的随机相位替换为距离—方位两个方向上的确定性线性相位。
 
@@ -171,18 +171,18 @@ U_{\mathrm{SplitRT}}(m,n)
 
 由定义可得
 
-\[
+$$
 \left|U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)\right|
 =A_u.
-\]
+$$
 
 因此，整个二维阈值矩阵的模长恒定，局部 STR 不随位置变化：
 
-\[
+$$
 \mathrm{STR}(\tau,\eta)
 =20\log_{10}\frac{\hat{\sigma}}{A_u}
 =\mathrm{STR}.
-\]
+$$
 
 这意味着现有 RSFT 的幅度标定公式仍然有效，不需要重新定义局部阈值幅度。
 
@@ -192,33 +192,33 @@ U_{\mathrm{SplitRT}}(m,n)
 
 ### 5.2 固定任一维后仍退化为一维单频阈值
 
-固定某个方位采样点 \(\eta=\eta_n\)，有
+固定某个方位采样点 $\eta=\eta_n$，有
 
-\[
+$$
 U(\tau,\eta_n)
 =A_u\exp\left[j\left(2\pi f_r\tau+\phi_n\right)\right],
-\]
+$$
 
 其中
 
-\[
+$$
 \phi_n=2\pi f_a\eta_n+\phi_0.
-\]
+$$
 
 因此，对每一个方位脉冲而言，阈值仍是一条标准的距离向单频阈值，只是初始相位随方位变化。
 
-同理，固定某个距离采样点 \(\tau=\tau_m\)，有
+同理，固定某个距离采样点 $\tau=\tau_m$，有
 
-\[
+$$
 U(\tau_m,\eta)
 =A_u\exp\left[j\left(2\pi f_a\eta+\psi_m\right)\right],
-\]
+$$
 
 其中
 
-\[
+$$
 \psi_m=2\pi f_r\tau_m+\phi_0.
-\]
+$$
 
 因此，对每一个距离单元而言，阈值又是一条方位慢时间单频阈值。
 
@@ -230,31 +230,31 @@ U(\tau_m,\eta)
 
 将阈值相位记为
 
-\[
+$$
 \psi(\tau,\eta)
 =2\pi f_r\tau+2\pi f_a\eta+\phi_0.
-\]
+$$
 
 一比特量化后，按照单频阈值谐波展开的基本形式，量化信号中会出现
 
-\[
+$$
 m\phi(\tau,\eta)\pm n\psi(\tau,\eta)
-\]
+$$
 
-类型的互调项，其中 \(\phi(\tau,\eta)\) 为原 SAR 回波相位，\(m,n\) 为谐波阶数。
+类型的互调项，其中 $\phi(\tau,\eta)$ 为原 SAR 回波相位，$m,n$ 为谐波阶数。
 
 代入二维阈值相位后，由阈值引入的频移为
 
-\[
+$$
 \pm n\psi(\tau,\eta)
 =\pm 2\pi n f_r\tau
 \pm 2\pi n f_a\eta
 \pm n\phi_0.
-\]
+$$
 
-因此，每个第 \(n\) 阶阈值谐波对应二维频率位移
+因此，每个第 $n$ 阶阈值谐波对应二维频率位移
 
-\[
+$$
 \boxed{
 \Delta\boldsymbol{f}_n
 =\pm n
@@ -263,21 +263,21 @@ f_r\\
 f_a
 \end{bmatrix}
 }
-\]
+$$
 
 即不再只沿距离频率轴移动，而是同时沿距离频率和方位多普勒频率移动。
 
 从二维频谱角度看，单个阈值基频位于
 
-\[
+$$
 (f_r,f_a),
-\]
+$$
 
 其高阶项位于
 
-\[
+$$
 (\pm n f_r,\pm n f_a).
-\]
+$$
 
 因此，2D RSFT 具备将有害分量向二维频谱外部重新分配的数学可能性。
 
@@ -299,7 +299,7 @@ f_a
 - 只有方位扩展而没有距离扩展，可能导致距离向谐波重新折叠进入主距离带；
 - 双向扩展可以同时为两个方向的频谱搬移提供冗余空间。
 
-因此，2D RSFT 在机制上能够消除现有 RSFT 对距离倍率 \(R\) 的结构性偏向，并使阈值结构与 BRAU 的二维频谱冗余假设一致。
+因此，2D RSFT 在机制上能够消除现有 RSFT 对距离倍率 $R$ 的结构性偏向，并使阈值结构与 BRAU 的二维频谱冗余假设一致。
 
 但需要强调：
 
@@ -311,11 +311,11 @@ f_a
 
 一比特复量化仍按照实部和虚部分别进行：
 
-\[
+$$
 y(\tau,\eta)
 =\operatorname{sign}\left(\Re\{s_{\uparrow}+U\}\right)
 +j\operatorname{sign}\left(\Im\{s_{\uparrow}+U\}\right).
-\]
+$$
 
 由于 2D RSFT 输出仍是与回波矩阵同尺寸的复阈值矩阵，因此不需要修改现有量化器，只需替换阈值生成函数。
 
@@ -334,28 +334,28 @@ y(\tau,\eta)
 
 另一种表面上类似的构造为
 
-\[
+$$
 U_{\mathrm{sum}}(\tau,\eta)
 =A_r\exp(j2\pi f_r\tau)
 +A_a\exp(j2\pi f_a\eta).
-\]
+$$
 
 该式并不等价于相位相加。
 
 其模长为
 
-\[
+$$
 |U_{\mathrm{sum}}|^2
 =A_r^2+A_a^2
 +2A_rA_a
 \cos\left(2\pi f_r\tau-2\pi f_a\eta\right).
-\]
+$$
 
-当 \(A_r=A_a=A\) 时，
+当 $A_r=A_a=A$ 时，
 
-\[
+$$
 0\le |U_{\mathrm{sum}}|\le 2A.
-\]
+$$
 
 这会导致：
 
@@ -367,19 +367,19 @@ U_{\mathrm{sum}}(\tau,\eta)
 
 因此，主方案应采用
 
-\[
+$$
 \boxed{
 \text{相位相加，再统一取复指数}
 }
-\]
+$$
 
 而不是
 
-\[
+$$
 \boxed{
 \text{两个复阈值直接相加}
 }.
-\]
+$$
 
 复阈值直接相加可以作为额外的双音阈值消融实验，但不适合作为 2D RSFT 的默认定义。
 
@@ -389,52 +389,52 @@ U_{\mathrm{sum}}(\tau,\eta)
 
 2D RSFT 至少包含三个核心参数：
 
-\[
+$$
 \mathrm{STR},
 \qquad
 \frac{f_r}{B_r},
 \qquad
 \frac{f_a}{B_a},
-\]
+$$
 
 其中：
 
-- \(B_r\) 为距离 LFM 信号带宽；
-- \(B_a\) 为有效方位多普勒带宽。
+- $B_r$ 为距离 LFM 信号带宽；
+- $B_a$ 为有效方位多普勒带宽。
 
 定义
 
-\[
+$$
 f_r=\alpha_r B_r,
 \qquad
 f_a=\alpha_a B_a,
-\]
+$$
 
 其中
 
-\[
+$$
 \alpha_r=\frac{f_r}{B_r},
 \qquad
 \alpha_a=\frac{f_a}{B_a}.
-\]
+$$
 
 必须满足离散采样约束：
 
-\[
+$$
 |f_r|<\frac{R F_s}{2},
-\]
+$$
 
-\[
+$$
 |f_a|<\frac{A\,\mathrm{PRF}}{2}.
-\]
+$$
 
 此外，需要分析高阶谐波
 
-\[
+$$
 nf_r,
 \qquad
 nf_a
-\]
+$$
 
 在有限采样率下的折叠位置，以避免主要有害分量重新进入有效距离带或主多普勒带。
 
@@ -446,9 +446,9 @@ nf_a
 
 先固定
 
-\[
+$$
 Q_{\mathrm{up}}=4,
-\]
+$$
 
 比较：
 
@@ -464,7 +464,7 @@ Q_{\mathrm{up}}=4,
 
 建议记录：
 
-\[
+$$
 \min|U|,
 \quad
 \max|U|,
@@ -472,13 +472,13 @@ Q_{\mathrm{up}}=4,
 \operatorname{mean}|U|,
 \quad
 \operatorname{std}|U|.
-\]
+$$
 
 理论预期为：
 
-- 1D RSFT：\(\operatorname{std}|U|\approx 0\)；
-- 2D RSFT：\(\operatorname{std}|U|\approx 0\)；
-- 复阈值直接相加：\(\operatorname{std}|U|>0\)，且可能出现接近零的阈值位置。
+- 1D RSFT：$\operatorname{std}|U|\approx 0$；
+- 2D RSFT：$\operatorname{std}|U|\approx 0$；
+- 复阈值直接相加：$\operatorname{std}|U|>0$，且可能出现接近零的阈值位置。
 
 若 2D RSFT 能显著缩小 R4A1 与 R2A2 的差距，或使 R2A2 反超，则说明继续完整搜索具有价值。
 
@@ -488,9 +488,9 @@ Q_{\mathrm{up}}=4,
 
 为了公平验证 BRAU，建议首先采用全组公共参数：
 
-\[
+$$
 (\mathrm{STR},\alpha_r,\alpha_a)
-\]
+$$
 
 对全部分配组保持一致。
 
@@ -504,15 +504,15 @@ Q_{\mathrm{up}}=4,
 
 ### 8.3 第三阶段：联合参数优化实验
 
-补充实验可以分别按照 \(R\) 和 \(A\) 标定频率：
+补充实验可以分别按照 $R$ 和 $A$ 标定频率：
 
-\[
+$$
 f_r=f_r(R),
 \qquad
 f_a=f_a(A).
-\]
+$$
 
-然后为每个 \((R,A)\) 组合构造对应阈值。
+然后为每个 $(R,A)$ 组合构造对应阈值。
 
 该实验回答：
 
@@ -557,10 +557,10 @@ f_a=f_a(A).
 
 因此，最佳参数通常不会满足
 
-\[
+$$
 \frac{f_r}{B_r}
 =\frac{f_a}{B_a}.
-\]
+$$
 
 2D RSFT 应允许距离和方位频率独立设计。
 
@@ -572,7 +572,7 @@ f_a=f_a(A).
 
 采用
 
-\[
+$$
 \boxed{
 U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 =A_u\exp\left\{
@@ -583,7 +583,7 @@ U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 \right]
 \right\}
 }
-\]
+$$
 
 构造二维 RSFT 在数学上是可行的。
 
@@ -600,7 +600,7 @@ U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 
 推荐采用：
 
-\[
+$$
 \boxed{
 \text{距离相位向量}
 +
@@ -608,19 +608,19 @@ U_{\mathrm{2D\text{-}RSFT}}(\tau,\eta)
 \rightarrow
 \text{统一复指数}
 }
-\]
+$$
 
 即
 
-\[
+$$
 U=A_u\exp[j(\phi_r+\phi_a+\phi_0)].
-\]
+$$
 
 不推荐采用：
 
-\[
+$$
 U=U_r+U_a,
-\]
+$$
 
 因为复阈值直接相加会破坏恒模结构和统一 STR 定义。
 
@@ -644,11 +644,11 @@ U=U_r+U_a,
 
 从论文表达清晰度看，建议采用：
 
-\[
+$$
 \boxed{
 \text{Two-Dimensional Range–Azimuth Single-Frequency Threshold}
 }
-\]
+$$
 
 并在文中简称 **2D RSFT**。
 
