@@ -208,6 +208,9 @@ ptr = 0;
 for p_idx = 1:num_p
     p = search_cfg.p_values(p_idx);
     p2 = p ^ 2;
+    if abs(p2 - round(p2)) < 1e-12
+        p2 = round(p2);
+    end
     p_label = search_cfg.p_labels(p_idx);
     p2_label = formatFactor(p2);
 
