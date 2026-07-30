@@ -10,7 +10,7 @@
 - `V4_RSFTCalibration`：在统一70样本和搜索网格下校准主实验所需的9个距离倍率。
 - `V4_RSFTEvaluation`：锁定每个距离倍率的RSFT参数并运行完整19组分配。
 - `V4_RTFractionalPAllocationEvaluation`：按Table III(a)的固定
-  SplitRT协议评价4组小数 $p$ 的平衡与单向分配。
+  SplitRT协议评价6组小数 $p$ 的平衡与单向分配。
 - `V4_Mechanism`：重跑固定机制样本并导出统一频率画布和共享色条场景图。
 - `V4_ValidateResults`：检查RT、RSFT和机制结果完整性，并回归对比旧 Exp1/Exp2。
 - `V4_Run_All`：按测试、RT主实验、RSFT校准、RSFT评价和机制实验的顺序执行全部任务。
@@ -26,9 +26,10 @@ V4_Run_All;
 
 - `assert/RT_SSIM_bestAs_curve.png`
 
-小数 $p$ RT实验固定使用 `As=0.6`，不执行阈值参数搜索。实验复用
+小数 $p\in\{1.5,\sqrt{3},2.5,\sqrt{6},\sqrt{8},\sqrt{10}\}$ 的RT实验
+固定使用 `As=0.6`，不执行阈值参数搜索。实验复用
 Table III(a) 的70样本清单、ENL ROI、归一化和指标协议，并输出PSNR、SSIM、
-Entropy和ENL：
+Entropy和ENL。共评价18个分配组，输出1260行逐样本明细和6行配对检验：
 
 ```matlab
 addpath("v4_experiments");
@@ -38,6 +39,9 @@ V4_RTFractionalPAllocationEvaluation;
 结果写入：
 
 - `V4_Experiments_Output/RTFractionalPAllocationEvaluation`
+
+checkpoint按完整的 $p$ 标签集合写入 `Checkpoints/P_<标签集合>` 子目录。扩展
+$p$ 列表时会保留旧配置的checkpoint，并为新配置使用独立目录。
 
 RSFT 参数图由 `V4_RSFTCalibration` 根据统一校准结果重新生成：
 

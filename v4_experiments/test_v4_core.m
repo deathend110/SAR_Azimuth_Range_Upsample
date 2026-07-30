@@ -80,8 +80,8 @@ function testFractionalSplitRTDimensions(test_case)
 rng(17);
 S = complex(randn(12, 10), randn(12, 10));
 meta = struct("nrn", 12, "nan", 10);
-p_values = [1.5, sqrt(3), 2.5, sqrt(8)];
-expected_p2 = [2.25, 3, 6.25, 8];
+p_values = [1.5, sqrt(3), 2.5, sqrt(6), sqrt(8), sqrt(10)];
+expected_p2 = [2.25, 3, 6.25, 6, 8, 10];
 axis_meta = struct( ...
     "nrn", 12, "nan", 10, "Fs", 60e6, ...
     "R0", 1000, "C", 3e8, "tnrn", zeros(12, 1));
