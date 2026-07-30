@@ -45,7 +45,7 @@ SQ-chen@hotmail.com}
 \maketitle
 
 \begin{abstract}
-One-bit synthetic aperture radar (SAR) imaging greatly reduces echo precision but introduces strong quantization distortion. This paper proposes bidirectional range-azimuth upsampling (BRAU), which distributes a fixed pre-quantization digital upsampling budget over both SAR dimensions instead of concentrating it in range or azimuth alone. Under a common separable random threshold, bidirectional allocations consistently improve reconstruction fidelity over unidirectional allocations across six sampling budgets. Range-compressed spectral analysis further shows reduced off-support and directional leakage for representative bidirectional processing, supporting two-dimensional spectral redundancy as its operating mechanism.
+High-resolution synthetic aperture radar (SAR) produces large raw-data volumes, motivating one-bit acquisition as an extreme form of onboard data reduction. The resulting sign-only echoes, however, lose amplitude information and introduce nonlinear quantization distortion. Existing one-bit SAR methods mainly optimize threshold design or reconstruction, while the allocation of a fixed digital upsampling budget between range and azimuth has received limited attention. This paper proposes bidirectional range-azimuth upsampling (BRAU), which distributes pre-quantization upsampling over both echo dimensions. Experiments on 70 paired samples from seven SAR datasets compare bidirectional and unidirectional allocations under a common separable random threshold. Across five integer sampling budgets, bidirectional allocations consistently provide higher reconstruction fidelity and form a near-optimal region among neighboring factor pairs. Range-compressed spectral measurements also show lower off-support and directional leakage for representative bidirectional processing. These results support two-dimensional spectral redundancy as an operating interpretation of BRAU and provide a practical allocation principle for one-bit SAR imaging under a fixed upsampling budget.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -54,13 +54,17 @@ one-bit SAR imaging, range-azimuth allocation, upsampling, quantization
 
 \section{Introduction}
 
-Synthetic aperture radar (SAR) forms high-resolution images through coherent processing of echoes collected along a synthetic aperture \cite{cumming2005sar,curlander1991sar}. High-resolution and wide-swath operation produces large raw-data volumes, placing pressure on onboard storage, processing, and downlink resources. Raw-data coding methods such as block-adaptive quantization and predictive coding reduce this burden while retaining sufficient imaging information \cite{kwok1989baq,attema2010fdbaq,magli2003lossy}. One-bit SAR takes this reduction to the extreme by retaining only the signs of the in-phase and quadrature echo components.
+Synthetic aperture radar (SAR) forms high-resolution images through coherent processing of echoes collected along a synthetic aperture \cite{cumming2005sar,curlander1991sar}. Increasing resolution and swath width enlarges the number of complex samples that must be acquired, buffered, processed, and transmitted. This data burden is especially restrictive for spaceborne and airborne platforms, where onboard memory, downlink capacity, and power are limited. Raw-data coding methods such as block-adaptive quantization, flexible dynamic quantization, and predictive coding reduce the bit rate while preserving information required by the imaging processor \cite{kwok1989baq,attema2010fdbaq,magli2003lossy}. One-bit SAR takes this reduction to the extreme by retaining only the signs of the in-phase and quadrature echo components. Its simple representation can greatly reduce storage and transmission requirements, but it also changes the signal entering every subsequent coherent processing stage.
 
-Early signum-coded SAR studies established that useful images can be formed from binary echoes and investigated real-time processing, interferometry, phase quantization, and oversampling \cite{franceschetti1991signum,alberti1991time,cappuccino1996processor,fornaro1997interferometry,pascazio1998onebit,franceschetti1999phase}. Related one-bit compressive-sensing research characterized binary acquisition and reconstruction from sign measurements \cite{candes2008intro,boufounos2008onebit,laska2011trust,jacques2013robust}. These ideas were subsequently applied to SAR and radar imaging through model-based and sparsity-aware reconstruction \cite{dong2015map,wang2019enhanced,ge2023sparse}.
+Sign quantization discards the continuous amplitude of the complex echo and generates nonlinear harmonics whose spectra can overlap the useful SAR signal \cite{franceschetti1999phase,zhao2019onebit}. Unlike image-domain compression applied after focusing, one-bit acquisition acts on the two-dimensional raw echo before range compression and azimuth synthesis. The range and slow-time axes therefore determine both the sampled signal support and the placement of quantization distortion. Oversampling can create additional spectral separation before the data are returned to the original imaging grid, but the benefit depends on which dimension is enlarged. Concentrating all additional samples in range changes only the fast-time grid, while azimuth-only processing changes only the slow-time grid. Because SAR focusing uses information from both axes, the dimensional allocation of a limited sampling budget is itself a signal-processing decision.
 
-More recent one-bit SAR studies have focused on threshold construction and quantization-distortion suppression. Time-varying thresholds recover amplitude information, single-frequency thresholds shift harmful harmonics, and low-precision or learning-based schemes improve reconstructed imagery \cite{demir2018onebit,zhao2019onebit,zhao2021lowprecision,liu2023twobit,si2023dequantization,nie2025fixed}. These methods show that the sampling grid and threshold spectrum jointly influence the distortion entering the SAR imaging chain. However, existing studies generally prescribe one-dimensional upsampling within a particular threshold scheme and do not ask how a fixed digital upsampling budget should be divided between range and azimuth.
+Early signum-coded SAR studies established that useful images can be formed from binary echoes and investigated real-time processing, interferometry, phase quantization, and oversampling \cite{franceschetti1991signum,alberti1991time,cappuccino1996processor,fornaro1997interferometry,pascazio1998onebit,franceschetti1999phase}. In parallel, one-bit compressive-sensing research characterized binary measurements, scale ambiguity, and reconstruction from sign observations \cite{candes2008intro,boufounos2008onebit,laska2011trust,jacques2013robust}. Model-based and sparsity-aware methods later adapted these ideas to SAR and radar imaging \cite{dong2015map,wang2019enhanced,ge2023sparse}. This line of work established the feasibility of severe quantization and showed that reconstruction quality depends on both the observation model and the structure imposed during recovery.
 
-Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q_{\mathrm{up}}=R A$ be the total pre-quantization allocation. Under the same $Q_{\mathrm{up}}$, a unidirectional strategy assigns the full budget to one dimension, whereas a bidirectional strategy uses $R>1$ and $A>1$. This paper formulates bidirectional range-azimuth upsampling (BRAU) and evaluates whether dimensional allocation matters for one-bit SAR imaging. The main contributions are as follows:
+Recent one-bit SAR research has placed greater emphasis on the acquisition threshold and suppression of quantization distortion. Time-varying thresholds retain amplitude-related information, single-frequency thresholds relocate harmful harmonics, and low-precision or learning-based methods improve the reconstructed image through refined observation or de-quantization models \cite{demir2018onebit,zhao2019onebit,zhao2021lowprecision,liu2023twobit,si2023dequantization,nie2025fixed}. Several of these methods employ oversampling as part of a particular threshold construction, confirming that the sampling grid and threshold spectrum are coupled. Their primary design variable, however, remains the threshold or the reconstruction algorithm. Upsampling is generally prescribed along one dimension, and its range-azimuth allocation is not evaluated under a common resource constraint.
+
+This omission matters when digital upsampling is limited by memory and computation. Two allocations can produce the same number of pre-quantization samples while distributing them differently over the range-azimuth plane. Treating them as equivalent ignores the two-dimensional spectral support of SAR echoes and the directional structure of quantization distortion. It also leaves open a practical question: for a fixed increase in sample count, should the entire budget be assigned to one axis or shared by both? Answering this question requires controlled comparisons with the same threshold, data, image-formation chain, region of interest, and normalization protocol.
+
+Let $R$ and $A$ denote the range and azimuth upsampling factors, respectively, and let $Q_{\mathrm{up}}=R A$ be the total pre-quantization allocation. Under the same $Q_{\mathrm{up}}$, a unidirectional strategy assigns the full budget to one dimension, whereas a bidirectional strategy uses $R>1$ and $A>1$. This paper formulates bidirectional range-azimuth upsampling (BRAU) and evaluates whether dimensional allocation affects one-bit SAR reconstruction. BRAU operates on the complex raw echo before quantization and is distinct from interpolation of an already reconstructed image. The main contributions are as follows:
 \begin{itemize}
     \item We formulate fixed-budget range-azimuth upsampling allocation before one-bit quantization, distinguishing bidirectional raw-echo processing from post-reconstruction image interpolation.
     \item We show on 70 paired samples that bidirectional allocations consistently outperform unidirectional allocations under a common separable random threshold, with a near-optimal plateau among several bidirectional factor pairs.
@@ -118,7 +122,7 @@ where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scal
 
 \subsection{Evaluation Protocol}
 
-The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. RT is evaluated with seed 2026 and the common amplitude $A_s=0.6$ for $Q_{\mathrm{up}}\in\{3,4,6,8,9,10\}$. Fractional factors use the nominal budget $Q_{\mathrm{up}}=RA$, with discrete dimensions implemented as $\operatorname{round}(RN_r)$ and $\operatorname{round}(AN_a)$.
+The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. RT is evaluated with seed 2026 and the common amplitude $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
 
 Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Equivalent number of looks (ENL) is evaluated on intensity, obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
 \begin{equation}
@@ -222,13 +226,6 @@ Allocation & PSNR & SSIM & ENL \\
 GT & $\infty$ & 1.0000 & 1.0321 \\
 R1A1 & 23.0517 & 0.6359 & 1.0094 \\
 \hline
-\multicolumn{4}{c}{$Q_{\mathrm{up}}=3$} \\
-\hline
-R3A1 & 25.4031 & 0.7675 & \textbf{1.0203} \\
-R1A3 & 25.3326 & 0.7653 & 1.0170 \\
-$\mathrm{R}\sqrt{3}\mathrm{A}\sqrt{3}$ &
-\textbf{25.6424} & \textbf{0.7811} & 1.0132 \\
-\hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=4$} \\
 \hline
 R4A1 & 25.7767 & 0.7857 & 1.0202 \\
@@ -241,17 +238,13 @@ R6A1 & 26.1032 & 0.8038 & 1.0161 \\
 R1A6 & 26.1415 & 0.8037 & 1.0173 \\
 R2A3 & \textbf{26.5585} & 0.8246 & 1.0175 \\
 R3A2 & 26.5525 & \textbf{0.8246} & \textbf{1.0204} \\
-$\mathrm{R}\sqrt{6}\mathrm{A}\sqrt{6}$ &
-26.4889 & 0.8232 & 1.0160 \\
 \hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=8$} \\
 \hline
 R8A1 & 26.3618 & 0.8148 & 1.0173 \\
 R1A8 & 26.3358 & 0.8136 & 1.0179 \\
-R2A4 & 26.8194 & 0.8363 & 1.0183 \\
+R2A4 & \textbf{26.8194} & \textbf{0.8363} & 1.0183 \\
 R4A2 & 26.8066 & 0.8356 & \textbf{1.0187} \\
-$\mathrm{R}\sqrt{8}\mathrm{A}\sqrt{8}$ &
-\textbf{26.8473} & \textbf{0.8364} & 1.0161 \\
 \hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=9$} \\
 \hline
@@ -261,24 +254,22 @@ R9A1 & 26.4482 & 0.8186 & 1.0180 \\
 \hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=10$} \\
 \hline
-R1A10 & 26.4481 & 0.8198 & 1.0192 \\
+R1A10 & 26.4481 & 0.8198 & \textbf{1.0192} \\
 R2A5 & 26.9418 & 0.8423 & 1.0171 \\
 R5A2 & \textbf{26.9702} & \textbf{0.8427} & 1.0173 \\
 R10A1 & 26.4630 & 0.8206 & 1.0171 \\
-$\mathrm{R}\sqrt{10}\mathrm{A}\sqrt{10}$ &
-26.9322 & 0.8423 & \textbf{1.0198} \\
 \hline
 \end{tabular}
 \vspace{2pt}
 
-\parbox{0.96\textwidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs. Fractional allocations use nominal $Q_{\mathrm{up}}=RA$ and discrete sizes $\operatorname{round}(RN_r)\times\operatorname{round}(AN_a)$.}
+\parbox{0.96\textwidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
 \end{table*}
 
-Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. For $Q_{\mathrm{up}}=3$, $\mathrm{R}\sqrt{3}\mathrm{A}\sqrt{3}$ improves on the best unidirectional allocation by 0.2393~dB and 0.0137 SSIM. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 and R3A2 retain the highest PSNR and SSIM, respectively. The balanced fractional allocation $\mathrm{R}\sqrt{6}\mathrm{A}\sqrt{6}$ reaches 26.4889~dB and 0.8232, trailing the corresponding maxima by only 0.0697~dB and 0.0014.
+Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 gives the highest PSNR of 26.5585~dB, while R3A2 gives the highest SSIM of 0.8246. At $Q_{\mathrm{up}}=8$, R2A4 reaches 26.8194~dB and 0.8363. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400, and R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427.
 
-Related plateaus appear at $Q_{\mathrm{up}}=8$ and 10. The balanced fractional allocation $\mathrm{R}\sqrt{8}\mathrm{A}\sqrt{8}$ reaches 26.8473~dB and 0.8364 SSIM, only 0.0279~dB above R2A4 and with nearly identical SSIM. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400 SSIM. At $Q_{\mathrm{up}}=10$, $\mathrm{R}\sqrt{10}\mathrm{A}\sqrt{10}$ obtains 26.9322~dB and 0.8423 SSIM. No significant paired difference is detected relative to R2A5 ($p_{\mathrm{PSNR}}=0.6714$ and $p_{\mathrm{SSIM}}=0.7453$), while R5A2 retains the highest means of 26.9702~dB and 0.8427. Across all six budgets, paired comparisons between the mean-best bidirectional and unidirectional groups give PSNR gains of 0.2393--0.5072~dB, with $p_{\mathrm{PSNR}}\leq4.38\times10^{-8}$ and $p_{\mathrm{SSIM}}\leq4.05\times10^{-13}$.
+Across the five integer budgets, the mean-best bidirectional allocations improve PSNR by 0.2856--0.5072~dB and SSIM by 0.0169--0.0221 over the mean-best unidirectional allocations. Paired comparisons on the corresponding 70-sample vectors give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$. The close results of R2A3 and R3A2 at $Q_{\mathrm{up}}=6$, R2A4 and R4A2 at $Q_{\mathrm{up}}=8$, and R2A5 and R5A2 at $Q_{\mathrm{up}}=10$ further indicate a near-optimal region rather than a unique factor pair.
 
-ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, whereas the balanced fractional group has the largest ENL at $Q_{\mathrm{up}}=10$. The consistent PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
+ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
 \section{Conclusion}
 
