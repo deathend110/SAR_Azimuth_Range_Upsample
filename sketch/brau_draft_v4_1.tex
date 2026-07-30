@@ -238,6 +238,8 @@ R6A1 & 26.1032 & 0.8038 & 1.0161 \\
 R1A6 & 26.1415 & 0.8037 & 1.0173 \\
 R2A3 & \textbf{26.5585} & 0.8246 & 1.0175 \\
 R3A2 & 26.5525 & \textbf{0.8246} & \textbf{1.0204} \\
+$\mathrm{R}\sqrt{6}\mathrm{A}\sqrt{6}$ &
+26.4889 & 0.8232 & 1.0160 \\
 \hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=8$} \\
 \hline
@@ -256,10 +258,12 @@ R9A1 & 26.4482 & 0.8186 & 1.0180 \\
 \hline
 \multicolumn{4}{c}{$Q_{\mathrm{up}}=10$} \\
 \hline
-R1A10 & 26.4481 & 0.8198 & \textbf{1.0192} \\
+R1A10 & 26.4481 & 0.8198 & 1.0192 \\
 R2A5 & 26.9418 & 0.8423 & 1.0171 \\
 R5A2 & \textbf{26.9702} & \textbf{0.8427} & 1.0173 \\
 R10A1 & 26.4630 & 0.8206 & 1.0171 \\
+$\mathrm{R}\sqrt{10}\mathrm{A}\sqrt{10}$ &
+26.9322 & 0.8423 & \textbf{1.0198} \\
 \hline
 \end{tabular}
 \vspace{2pt}
@@ -267,11 +271,11 @@ R10A1 & 26.4630 & 0.8206 & 1.0171 \\
 \parbox{0.96\textwidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs. Fractional allocations use nominal $Q_{\mathrm{up}}=RA$ and discrete sizes $\operatorname{round}(RN_r)\times\operatorname{round}(AN_a)$.}
 \end{table*}
 
-Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. For $Q_{\mathrm{up}}=3$, $\mathrm{R}\sqrt{3}\mathrm{A}\sqrt{3}$ improves on the best unidirectional allocation by 0.2393~dB and 0.0137 SSIM. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 and R3A2 are nearly indistinguishable, with PSNR values of 26.5585 and 26.5525~dB.
+Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. For $Q_{\mathrm{up}}=3$, $\mathrm{R}\sqrt{3}\mathrm{A}\sqrt{3}$ improves on the best unidirectional allocation by 0.2393~dB and 0.0137 SSIM. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 and R3A2 retain the highest PSNR and SSIM, respectively. The balanced fractional allocation $\mathrm{R}\sqrt{6}\mathrm{A}\sqrt{6}$ reaches 26.4889~dB and 0.8232, trailing the corresponding maxima by only 0.0697~dB and 0.0014.
 
-The same plateau appears at $Q_{\mathrm{up}}=8$. The fractional balanced allocation $\mathrm{R}\sqrt{8}\mathrm{A}\sqrt{8}$ reaches 26.8473~dB and 0.8364 SSIM, only 0.0279~dB above R2A4 and with nearly identical SSIM. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400 SSIM, while R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427 SSIM. Across all six budgets, paired comparisons between the mean-best bidirectional and unidirectional groups give PSNR gains of 0.2393--0.5072~dB, with $p_{\mathrm{PSNR}}\leq4.38\times10^{-8}$ and $p_{\mathrm{SSIM}}\leq4.05\times10^{-13}$.
+Related plateaus appear at $Q_{\mathrm{up}}=8$ and 10. The balanced fractional allocation $\mathrm{R}\sqrt{8}\mathrm{A}\sqrt{8}$ reaches 26.8473~dB and 0.8364 SSIM, only 0.0279~dB above R2A4 and with nearly identical SSIM. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400 SSIM. At $Q_{\mathrm{up}}=10$, $\mathrm{R}\sqrt{10}\mathrm{A}\sqrt{10}$ obtains 26.9322~dB and 0.8423 SSIM. No significant paired difference is detected relative to R2A5 ($p_{\mathrm{PSNR}}=0.6714$ and $p_{\mathrm{SSIM}}=0.7453$), while R5A2 retains the highest means of 26.9702~dB and 0.8427. Across all six budgets, paired comparisons between the mean-best bidirectional and unidirectional groups give PSNR gains of 0.2393--0.5072~dB, with $p_{\mathrm{PSNR}}\leq4.38\times10^{-8}$ and $p_{\mathrm{SSIM}}\leq4.05\times10^{-13}$.
 
-ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, but not at every budget. The consistent PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
+ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, whereas the balanced fractional group has the largest ENL at $Q_{\mathrm{up}}=10$. The consistent PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
 \section{Conclusion}
 
