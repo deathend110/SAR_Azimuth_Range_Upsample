@@ -26,7 +26,7 @@ V4_Run_All;
 
 - `assert/RT_SSIM_bestAs_curve.png`
 
-小数 $p\in\{1.5,\sqrt{3},2.5,\sqrt{6},\sqrt{8},\sqrt{10}\}$ 的RT实验
+小数 $p\in\{1.5,\sqrt{3},\sqrt{6},2.5,\sqrt{8},\sqrt{10}\}$ 的RT实验
 固定使用 `As=0.6`，不执行阈值参数搜索。实验复用
 Table III(a) 的70样本清单、ENL ROI、归一化和指标协议，并输出PSNR、SSIM、
 Entropy和ENL。共评价18个分配组，输出1260行逐样本明细和6行配对检验：
@@ -42,6 +42,11 @@ V4_RTFractionalPAllocationEvaluation;
 
 checkpoint按完整的 $p$ 标签集合写入 `Checkpoints/P_<标签集合>` 子目录。扩展
 $p$ 列表时会保留旧配置的checkpoint，并为新配置使用独立目录。
+当前协议使用 `centered_odd_v2` 后缀：当 `round(p*N_r)` 为奇数时，快时间轴
+的中心样本严格对齐 $2R_0/C$，不会复用旧的半采样点偏移结果。小数组的RNG
+编号按组名固定；历史组保持原编号，新增的
+$\mathrm{R}\sqrt{6}\mathrm{A}\sqrt{6}$ 和
+$\mathrm{R}\sqrt{10}\mathrm{A}\sqrt{10}$ 分别使用30和31。
 与Table III(a)重合组的逐样本数值回归仅用于提示潜在漂移；参考文件缺失、
 样本不匹配或数值超出参考容差时给出warning，不阻止本次有效结果写出。
 

@@ -199,6 +199,31 @@ classdef V4Core
             end
         end
 
+        function rng_group_idx = fractionalRTRNGGroupIndex( ...
+                group_name, base_group_defs)
+            % 按组名固定随机种子编号，避免扩展p列表时改变已有实验结果。
+            group_name = string(group_name);
+            base_names = string({base_group_defs.GroupName});
+            base_idx = find(base_names == group_name, 1);
+            if ~isempty(base_idx)
+                rng_group_idx = base_idx;
+                return;
+            end
+
+            stable_names = [ ...
+                "R1.5A1.5", "R2.25A1", "R1A2.25", ...
+                "Rsqrt3Asqrt3", "R3A1", "R1A3", ...
+                "R2.5A2.5", "R6.25A1", "R1A6.25", ...
+                "Rsqrt8Asqrt8", ...
+                "Rsqrt6Asqrt6", "Rsqrt10Asqrt10"];
+            stable_indices = 20:31;
+            stable_idx = find(stable_names == group_name, 1);
+            assert(~isempty(stable_idx), ...
+                "未知RT小数分配组%s，请先为其分配稳定的RNG编号。", ...
+                group_name);
+            rng_group_idx = stable_indices(stable_idx);
+        end
+
         function img_gt = buildGTImage(signal60, S60)
             RC = Range_Compress( ...
                 signal60, S60.fc, S60.tnrn, S60.gama, ...
@@ -300,7 +325,9 @@ classdef V4Core
                 tnrn_up = S60.tnrn;
                 return;
             end
-            Tstart_up = 2 * S60.R0 / S60.C - nrn_up / 2 / Fs_up;
+            % 奇数长度以中心样本对齐场景中心；偶数长度保持原时间轴不变。
+            Tstart_up = 2 * S60.R0 / S60.C - ...
+                floor(nrn_up / 2) / Fs_up;
             tnrn_up = Tstart_up + (0:nrn_up - 1).' / Fs_up;
         end
 

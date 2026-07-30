@@ -80,8 +80,8 @@ function testFractionalSplitRTDimensions(test_case)
 rng(17);
 S = complex(randn(12, 10), randn(12, 10));
 meta = struct("nrn", 12, "nan", 10);
-p_values = [1.5, sqrt(3), 2.5, sqrt(6), sqrt(8), sqrt(10)];
-expected_p2 = [2.25, 3, 6.25, 6, 8, 10];
+p_values = [1.5, sqrt(3), sqrt(6), 2.5, sqrt(8), sqrt(10)];
+expected_p2 = [2.25, 3, 6, 6.25, 8, 10];
 axis_meta = struct( ...
     "nrn", 12, "nan", 10, "Fs", 60e6, ...
     "R0", 1000, "C", 3e8, "tnrn", zeros(12, 1));
@@ -114,4 +114,60 @@ for idx = 1:numel(p_values)
     verifyEqual(test_case, Fs_up, p * axis_meta.Fs, ...
         "RelTol", 1e-12);
 end
+end
+
+function testFractionalRangeAxisCentering(test_case)
+meta = struct( ...
+    "nrn", 1200, "Fs", 60e6, ...
+    "R0", 1000, "C", 3e8, "tnrn", zeros(1200, 1));
+center_time = 2 * meta.R0 / meta.C;
+
+odd_p_values = [sqrt(6), sqrt(10)];
+expected_sizes = [2939, 3795];
+for idx = 1:numel(odd_p_values)
+    p = odd_p_values(idx);
+    nrn_up = round(p * meta.nrn);
+    [tnrn_up, Fs_up] = V4Core.rangeAxis(nrn_up, p, meta);
+    center_idx = floor(nrn_up / 2) + 1;
+
+    verifyEqual(test_case, nrn_up, expected_sizes(idx));
+    verifyEqual(test_case, tnrn_up(center_idx), ...
+        center_time, "AbsTol", 1e-15);
+    verifyEqual(test_case, diff(tnrn_up), ...
+        repmat(1 / Fs_up, nrn_up - 1, 1), "AbsTol", 1e-18);
+end
+
+even_p = 2.5;
+even_nrn_up = round(even_p * meta.nrn);
+[even_axis, even_Fs] = V4Core.rangeAxis( ...
+    even_nrn_up, even_p, meta);
+old_even_start = center_time - even_nrn_up / 2 / even_Fs;
+verifyEqual(test_case, even_axis(1), old_even_start, ...
+    "AbsTol", 1e-15);
+end
+
+function testFractionalRTRNGMappingIsStable(test_case)
+base_group_defs = V4Core.buildGroupDefinitions([4, 6, 8, 9, 10]);
+fractional_names = [ ...
+    "R1.5A1.5", "R2.25A1", "R1A2.25", ...
+    "Rsqrt3Asqrt3", "R3A1", "R1A3", ...
+    "R2.5A2.5", "R6.25A1", "R1A6.25", ...
+    "Rsqrt8Asqrt8", "Rsqrt6Asqrt6", "Rsqrt10Asqrt10"];
+actual_indices = arrayfun( ...
+    @(name) V4Core.fractionalRTRNGGroupIndex( ...
+    name, base_group_defs), fractional_names);
+
+verifyEqual(test_case, actual_indices, 20:31);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R1A6", base_group_defs), 5);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R6A1", base_group_defs), 8);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R1A8", base_group_defs), 9);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R8A1", base_group_defs), 12);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R1A10", base_group_defs), 16);
+verifyEqual(test_case, ...
+    V4Core.fractionalRTRNGGroupIndex("R10A1", base_group_defs), 19);
 end
