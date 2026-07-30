@@ -229,7 +229,7 @@ end
 
 reused_base_names = intersect( ...
     string({group_defs.GroupName}), base_names, "stable");
-for base_name = reused_base_names
+for base_name = reused_base_names(:).'
     fractional_idx = find( ...
         string({group_defs.GroupName}) == base_name, 1);
     base_idx = find(base_names == base_name, 1);
@@ -591,7 +591,7 @@ metric_names = ["PSNR", "SSIM", "Entropy"];
 % 以下逐样本容差远小于论文报告精度，同时仍能识别成像链或seed漂移。
 metric_tolerances = [1e-3, 2e-5, 2e-4];
 enl_tolerance = 1e-6;
-for name = duplicate_names
+for name = duplicate_names(:).'
     new_idx = find(string({group_defs.GroupName}) == name, 1);
     assert(~isempty(new_idx), "小数p组中缺少%s。", name);
     old_rows = main_detail(main_detail.GroupName == name, :);
