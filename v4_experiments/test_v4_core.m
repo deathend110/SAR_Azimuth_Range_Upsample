@@ -75,3 +75,43 @@ meta = struct("nrn", 12, "nan", 10);
 S_down = V4Core.twoDimDownsample(S_up, 2, 3, meta);
 verifySize(test_case, S_down, [12, 10]);
 end
+
+function testFractionalSplitRTDimensions(test_case)
+rng(17);
+S = complex(randn(12, 10), randn(12, 10));
+meta = struct("nrn", 12, "nan", 10);
+p_values = [1.5, sqrt(3), 2.5, sqrt(8)];
+expected_p2 = [2.25, 3, 6.25, 8];
+axis_meta = struct( ...
+    "nrn", 12, "nan", 10, "Fs", 60e6, ...
+    "R0", 1000, "C", 3e8, "tnrn", zeros(12, 1));
+
+for idx = 1:numel(p_values)
+    p = p_values(idx);
+    S_up = V4Core.twoDimUpsample(S, p, p);
+    verifySize(test_case, S_up, [round(p * 12), round(p * 10)]);
+
+    U = V4Core.buildSplitRTThreshold(S_up, 0.6);
+    verifySize(test_case, U, size(S_up));
+    S1 = V4Core.quantizeWithThreshold(S_up, U);
+    verifySize(test_case, S1, size(S_up));
+    verifyTrue(test_case, ...
+        all(ismember(real(S1(:)), [-1, 1])) && ...
+        all(ismember(imag(S1(:)), [-1, 1])));
+
+    S_down = V4Core.twoDimDownsample(S_up, p, p, meta);
+    verifySize(test_case, S_down, size(S));
+
+    p2 = p ^ 2;
+    if abs(p2 - round(p2)) < 1e-12
+        p2 = round(p2);
+    end
+    verifyEqual(test_case, p2, expected_p2(idx), "AbsTol", 1e-12);
+
+    [tnrn_up, Fs_up] = V4Core.rangeAxis( ...
+        size(S_up, 1), p, axis_meta);
+    verifySize(test_case, tnrn_up, [round(p * 12), 1]);
+    verifyEqual(test_case, Fs_up, p * axis_meta.Fs, ...
+        "RelTol", 1e-12);
+end
+end

@@ -9,6 +9,8 @@
 - `V4_MainEvaluation`：重跑 SplitRT 主实验并导出 Table III 指标。
 - `V4_RSFTCalibration`：在统一70样本和搜索网格下校准主实验所需的9个距离倍率。
 - `V4_RSFTEvaluation`：锁定每个距离倍率的RSFT参数并运行完整19组分配。
+- `V4_RTFractionalPAllocationEvaluation`：按Table III(a)的固定
+  SplitRT协议评价4组小数 $p$ 的平衡与单向分配。
 - `V4_Mechanism`：重跑固定机制样本并导出统一频率画布和共享色条场景图。
 - `V4_ValidateResults`：检查RT、RSFT和机制结果完整性，并回归对比旧 Exp1/Exp2。
 - `V4_Run_All`：按测试、RT主实验、RSFT校准、RSFT评价和机制实验的顺序执行全部任务。
@@ -23,6 +25,19 @@ V4_Run_All;
 结果写入 `V4_Experiments_Output`。RT 参数图继续复用既有文件：
 
 - `assert/RT_SSIM_bestAs_curve.png`
+
+小数 $p$ RT实验固定使用 `As=0.6`，不执行阈值参数搜索。实验复用
+Table III(a) 的70样本清单、ENL ROI、归一化和指标协议，并输出PSNR、SSIM、
+Entropy和ENL：
+
+```matlab
+addpath("v4_experiments");
+V4_RTFractionalPAllocationEvaluation;
+```
+
+结果写入：
+
+- `V4_Experiments_Output/RTFractionalPAllocationEvaluation`
 
 RSFT 参数图由 `V4_RSFTCalibration` 根据统一校准结果重新生成：
 
