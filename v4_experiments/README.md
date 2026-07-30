@@ -42,6 +42,8 @@ V4_RTFractionalPAllocationEvaluation;
 
 checkpoint按完整的 $p$ 标签集合写入 `Checkpoints/P_<标签集合>` 子目录。扩展
 $p$ 列表时会保留旧配置的checkpoint，并为新配置使用独立目录。
+与Table III(a)重合组的逐样本数值回归仅用于提示潜在漂移；参考文件缺失、
+样本不匹配或数值超出参考容差时给出warning，不阻止本次有效结果写出。
 
 RSFT 参数图由 `V4_RSFTCalibration` 根据统一校准结果重新生成：
 
