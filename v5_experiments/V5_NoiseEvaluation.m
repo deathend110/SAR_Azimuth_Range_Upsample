@@ -86,9 +86,7 @@ writetable(clean_baseline,fullfile(output_dir,"V5_Noise_CleanBaseline.csv"));
 save(fullfile(output_dir,"V5_Noise_Data.mat"),"cfg","defs","manifest", ...
     "psnr_clean","ssim_clean","psnr_noisy","ssim_noisy","actual_snr", ...
     "clean_psnr","clean_ssim","summary","paired_tests","-v7.3");
-exportCurves(defs,cfg.SNR_dB_list,summary,clean_baseline, ...
-    fullfile(output_dir,"V5_Noise_Curves.png"), ...
-    fullfile(output_dir,"V5_Noise_Curves.pdf"));
+exportCurves(defs,cfg.SNR_dB_list,summary,clean_baseline,output_dir);
 writeMetadata(cfg,defs,n_samples,output_dir);
 fprintf("V5噪声实验完成：%s\n",output_dir);
 end
@@ -231,26 +229,62 @@ PSNR_Mean=mean(p,2); PSNR_Std=std(p,0,2); SSIM_Mean=mean(s,2); SSIM_Std=std(s,0,
 T=table(GroupName,Range_q,Azimuth_q,SampleCount,PSNR_Mean,PSNR_Std,SSIM_Mean,SSIM_Std);
 end
 
-function exportCurves(defs,snr_list,summary,baseline,png_path,pdf_path)
-fig=figure("Visible","off","Color","w","Units","centimeters","Position",[2 2 17 12]);
-layout=tiledlayout(fig,2,2,"Padding","compact","TileSpacing","compact");
-specs={"PSNR_CleanGT_Mean","SSIM_CleanGT_Mean","PSNR_NoisyGT_Mean","SSIM_NoisyGT_Mean"};
-ylabels={"PSNR vs. clean GT (dB)","SSIM vs. clean GT", ...
-    "PSNR vs. same-noise GT (dB)","SSIM vs. same-noise GT"};
-colors=lines(numel(defs)); labels=string({defs.GroupName});
-for panel=1:4
- ax=nexttile(layout); hold(ax,"on"); grid(ax,"on"); box(ax,"on"); handles=gobjects(numel(defs),1);
- for g=1:numel(defs)
-  rows=summary.GroupName==defs(g).GroupName; y=summary.(specs{panel})(rows);
-  handles(g)=plot(ax,snr_list,y,"-o","Color",colors(g,:),"LineWidth",1.3,"MarkerSize",3);
-  if contains(specs{panel},"PSNR"), base=baseline.PSNR_Mean(g); else, base=baseline.SSIM_Mean(g); end
-  baseline_color=0.55*colors(g,:)+0.45*[1 1 1];
-  yline(ax,base,"--","Color",baseline_color,"HandleVisibility","off");
- end
- xlabel(ax,"Input SNR (dB)"); ylabel(ax,ylabels{panel}); set(ax,"FontName","Times New Roman","FontSize",8);
- if panel==1, legend(ax,handles,labels,"Location","best"); end
+function exportCurves(defs,snr_list,summary,baseline,output_dir)
+% clean GT与同噪声GT分别绘制，统一坐标范围便于直接比较。
+colors=lines(numel(defs));
+exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
+    ["PSNR_CleanGT_Mean","SSIM_CleanGT_Mean"], ...
+    "Noise Robustness of 1-Bit SAR Reconstruction (Clean-GT Reference)", ...
+    fullfile(output_dir,"V5_Noise_CleanGT_Curves.png"), ...
+    fullfile(output_dir,"V5_Noise_CleanGT_Curves.pdf"));
+exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
+    ["PSNR_NoisyGT_Mean","SSIM_NoisyGT_Mean"], ...
+    "Noise Robustness of 1-Bit SAR Reconstruction (Same-Noise-GT Reference)", ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_Curves.png"), ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_Curves.pdf"));
 end
-exportgraphics(fig,png_path,"Resolution",300); exportgraphics(fig,pdf_path,"ContentType","vector"); close(fig);
+
+function exportReferenceFigure(defs,snr_list,summary,baseline,colors,specs, ...
+    title_text,png_path,pdf_path)
+% 最右侧独立端点表示无外加高斯噪声，不与有限SNR曲线连接。
+fig=figure("Visible","on","Color","w","Units","centimeters", ...
+    "Position",[2 2 20 8]);
+layout=tiledlayout(fig,1,2,"Padding","compact","TileSpacing","compact");
+title(layout,title_text,"FontName","Times New Roman","FontSize",11, ...
+    "FontWeight","bold");
+labels=string({defs.GroupName});
+clean_x=max(snr_list)+2;
+finite_ticks=min(snr_list):2:max(snr_list);
+tick_labels=[compose("%g",finite_ticks),"\infty"];
+ylabels=["PSNR (dB)","SSIM"];
+ylimits={[20 26.5],[0.45 0.85]};
+for panel=1:2
+    ax=nexttile(layout); hold(ax,"on"); grid(ax,"on"); box(ax,"on");
+    handles=gobjects(numel(defs),1);
+    for g=1:numel(defs)
+        rows=summary.GroupName==defs(g).GroupName;
+        y=summary.(specs(panel))(rows);
+        handles(g)=plot(ax,snr_list,y,"-o","Color",colors(g,:), ...
+            "LineWidth",1.3,"MarkerSize",3);
+        if panel==1
+            base=baseline.PSNR_Mean(g);
+        else
+            base=baseline.SSIM_Mean(g);
+        end
+        plot(ax,clean_x,base,"d","Color",colors(g,:), ...
+            "MarkerFaceColor",colors(g,:),"MarkerSize",5, ...
+            "HandleVisibility","off");
+    end
+    xlim(ax,[min(snr_list),clean_x+0.3]); ylim(ax,ylimits{panel});
+    xticks(ax,[finite_ticks,clean_x]); xticklabels(ax,tick_labels);
+    xlabel(ax,"Added Gaussian-Noise SNR (dB; \infty = no added noise)");
+    ylabel(ax,ylabels(panel));
+    set(ax,"FontName","Times New Roman","FontSize",8, ...
+        "TickLabelInterpreter","tex");
+    legend(ax,handles,labels,"Location","best");
+end
+exportgraphics(fig,png_path,"Resolution",300);
+exportgraphics(fig,pdf_path,"ContentType","vector");
 end
 
 function writeMetadata(cfg,defs,n_samples,output_dir)
