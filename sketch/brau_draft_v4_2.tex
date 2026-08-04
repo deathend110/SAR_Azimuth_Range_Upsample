@@ -212,7 +212,7 @@ Fig.~\ref{fig:scene_examples} shows a representative scene using a common normal
 \label{fig:scene_examples}
 \end{figure}
 
-\begin{table*}[t]
+\begin{table}[t]
 \caption{Fixed-budget evaluation metrics under separable RT with $A_s=0.6$.}
 \label{tab:evaluation_indexes}
 \centering
@@ -262,8 +262,8 @@ R10A1 & 26.4630 & 0.8206 & 1.0171 \\
 \end{tabular}
 \vspace{2pt}
 
-\parbox{0.96\textwidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
-\end{table*}
+\parbox{0.96\linewidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
+\end{table}
 
 Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 gives the highest PSNR of 26.5585~dB, while R3A2 gives the highest SSIM of 0.8246. At $Q_{\mathrm{up}}=8$, R2A4 reaches 26.8194~dB and 0.8363. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400, and R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427.
 
