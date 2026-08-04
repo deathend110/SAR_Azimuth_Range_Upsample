@@ -1,32 +1,22 @@
-function Noise = gaussian(signal, factor)
-    % 假设 Echo_Sim 是你的模拟回波数据 (复数矩阵)
-    % 1. 获取信号幅度的标准差 sigma
-    % 如果你已经知道 sigma 的具体数值，直接赋值即可；
-    % 如果不知道，可以用下面这行统计出来：
-    sigma = std(abs(signal(:))); 
-    
-    % 2. 设定目标噪声的标准差
-    target_noise_std = factor * sigma;
-    
-    % 3. 生成复高斯白噪声
+function Noise = gaussian(signal, SNR_dB)
+    % 以1-bit量化前原始复回波的平均功率定义输入信噪比
+    signal_power = mean(abs(signal(:)) .^ 2);
+    target_noise_power = signal_power / (10 ^ (SNR_dB / 10));
+    target_noise_std = sqrt(target_noise_power);
+
+    % 生成与原流程一致的零均值复高斯白噪声
     [rows, cols] = size(signal);
-    
-    % 这里的关键是除以 sqrt(2)
-    % 因为 randn 生成的数据标准差是 1，方差是 1
-    % 我们需要让 实部方差 + 虚部方差 = target_noise_std^2
     scale_factor = target_noise_std / sqrt(2);
-    
-    % 4.生成噪声：均值为0，总标准差为 factor*sigma
+
     Noise = scale_factor * (randn(rows, cols) + 1j * randn(rows, cols));
     Noise = Noise - mean(Noise, "all");
-    
-    % --- 验证环节 (可选) ---
-    % 验证噪声的均值是否接近 0
-    disp(['噪声均值: ', num2str(mean(Noise(:)))]); 
-    % 验证噪声的标准差是否接近 1.4*sigma
+
+    % 输出有限样本下的实际噪声统计量，便于核验实验配置
+    actual_noise_power = mean(abs(Noise(:)) .^ 2);
+    actual_SNR_dB = 10 * log10(signal_power / actual_noise_power);
+    disp(['目标SNR(dB): ', num2str(SNR_dB)]);
+    disp(['实际SNR(dB): ', num2str(actual_SNR_dB)]);
+    disp(['噪声均值: ', num2str(mean(Noise(:)))]);
     disp(['噪声目标标准差: ', num2str(target_noise_std)]);
     disp(['噪声实际标准差: ', num2str(std(Noise(:)))]);
-    disp(['噪声实际标准差倍数: ', num2str(std(Noise(:)) / sigma)]);
-    % 验证噪声信噪比
-    
 end

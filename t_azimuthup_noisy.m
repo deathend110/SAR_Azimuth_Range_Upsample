@@ -11,7 +11,7 @@ Range_q_m       = 2;       % 与R2A2实验保持一致的距离向倍率
 q               = Azimuth_q_m * Range_q_m;
 Azimuth_q       = q;       % R1A4：全部预算用于方位向上采样
 As_rt           = 0.6;     % RT阈值系数
-As_gaussian     = 1.4;     % 高斯噪声系数
+SNR_dB          = 2.59;    % 1-bit量化前原始复回波的高斯噪声信噪比
 
 %% 加载回波数据和成像参数
 data_figure = "SAR_Dataset_city2_histeq";
@@ -60,7 +60,7 @@ subplot(223);imagesc(Azimuth_Upsample);axis image;colorbar;title(Azimuth_title);
 
 %% Azimuth Upsample noisy
 % 同一份带噪回波同时用于1-bit成像和带噪GT成像
-noisy = gaussian(signal60_input, As_gaussian);
+noisy = gaussian(signal60_input, SNR_dB);
 signal60_input_noisy = signal60_input + noisy;
 
 % 先加噪、再上采样，并在带噪上采样信号上重新计算RT阈值

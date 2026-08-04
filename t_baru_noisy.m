@@ -13,7 +13,7 @@ q               = Azimuth_q_m*Range_q_m; % 整体的上采样倍率
 Azimuth_q       = q;       % 方位向上采样倍率
 Range_q         = q;       % 方位向上采样倍率
 As_rt           = 0.6;     % RT 阈值系数
-As_gaussian     = 1.4;     % gaussian噪声系数
+SNR_dB          = 2.59;    % 1-bit量化前原始复回波的高斯噪声信噪比
 
 %% 加载回波数据和成像参数
 data_figure = "SAR_Dataset_city2_histeq";
@@ -72,7 +72,7 @@ subplot(223);imagesc(Azimuth_Range_Upsample);axis image;colorbar;title(Azimuth_R
 
 %% Azimuth-Range MixUpsample noisy
 % 生成高斯噪声
-noisy = gaussian(signal60_input, As_gaussian);
+noisy = gaussian(signal60_input, SNR_dB);
 signal60_input_noisy = signal60_input + noisy;
 
 % 上采样
