@@ -249,6 +249,9 @@ exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
     "Noise Robustness of 1-Bit SAR Reconstruction (Same-Noise-GT, Auto-Scaled)", ...
     fullfile(output_dir,"V5_Noise_NoisyGT_AutoScale_Curves.png"), ...
     fullfile(output_dir,"V5_Noise_NoisyGT_AutoScale_Curves.pdf"),[]);
+exportFocusedNoisyGTFigure(defs,snr_list,summary,baseline,colors, ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_FocusCurves.png"), ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_FocusCurves.pdf"));
 end
 
 function exportReferenceFigure(defs,snr_list,summary,baseline,colors,specs, ...
@@ -294,6 +297,53 @@ for panel=1:2
 end
 exportgraphics(fig,png_path,"Resolution",300);
 exportgraphics(fig,pdf_path,"ContentType","vector");
+end
+
+function exportFocusedNoisyGTFigure(defs,snr_list,summary,baseline,colors, ...
+    png_path,pdf_path)
+% 面向论文单栏排版：自动纵轴、共享横轴标题，并仅保留一次图例。
+fig=figure("Visible","on","Color","w","Units","centimeters", ...
+    "Position",[2 2 9 5.6]);
+layout=tiledlayout(fig,1,2,"Padding","compact","TileSpacing","compact");
+labels=string({defs.GroupName});
+clean_x=max(snr_list)+2;
+finite_ticks=unique([min(snr_list):4:max(snr_list),max(snr_list)]);
+tick_labels=[compose("%g",finite_ticks),"\infty"];
+specs=["PSNR_NoisyGT_Mean","SSIM_NoisyGT_Mean"];
+ylabels=["PSNR (dB)","SSIM"];
+for panel=1:2
+    ax=nexttile(layout); hold(ax,"on"); grid(ax,"on"); box(ax,"on");
+    handles=gobjects(numel(defs),1);
+    for g=1:numel(defs)
+        rows=summary.GroupName==defs(g).GroupName;
+        handles(g)=plot(ax,snr_list,summary.(specs(panel))(rows),"-o", ...
+            "Color",colors(g,:),"LineWidth",1.3,"MarkerSize",2.8);
+        if panel==1
+            base=baseline.PSNR_Mean(g);
+        else
+            base=baseline.SSIM_Mean(g);
+        end
+        plot(ax,clean_x,base,"d","Color",colors(g,:), ...
+            "MarkerFaceColor",colors(g,:),"MarkerSize",4, ...
+            "HandleVisibility","off");
+    end
+    xlim(ax,[min(snr_list),clean_x+0.3]);
+    xticks(ax,[finite_ticks,clean_x]); xticklabels(ax,tick_labels);
+    ylabel(ax,ylabels(panel));
+    set(ax,"FontName","Times New Roman","FontSize",7, ...
+        "TickLabelInterpreter","tex");
+    if panel==2
+        legend(ax,handles,labels,"Location","best","FontSize",6);
+    end
+end
+xlabel(layout,"Added Gaussian-Noise SNR (dB)", ...
+    "FontName","Times New Roman","FontSize",7);
+set(findall(fig,"-property","FontName"),"FontName","Times New Roman");
+exportgraphics(fig,png_path,"Resolution",300);
+% 固定论文单栏物理尺寸，并保持PDF为矢量输出。
+set(fig,"PaperUnits","centimeters","PaperPosition",[0 0 9 5.6], ...
+    "PaperSize",[9 5.6]);
+print(fig,pdf_path,"-dpdf","-vector");
 end
 
 function writeMetadata(cfg,defs,n_samples,output_dir)

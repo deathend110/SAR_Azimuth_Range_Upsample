@@ -4,6 +4,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
+\usepackage{capt-of}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{url}
@@ -271,19 +272,11 @@ Across the five budgets, the PSNR-selected bidirectional allocations outperform 
 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
-\subsection{Noisy Ablation}
-
-To evaluate robustness to additive noise, zero-mean complex Gaussian noise is added to the raw complex echo before upsampling and one-bit quantization:
-\begin{equation}
-    \begin{aligned}
-        \widetilde{s} &= s+n,\qquad n\sim\mathcal{CN}(0,\sigma_n^2), \\
-        \mathrm{SNR}_{n} &= 10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
-    \end{aligned}
-\end{equation}
-The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Although both clean-GT and same-noise-GT protocols are computed, Table~\ref{tab:noise_ablation} reports same-noise-GT results at four representative finite SNRs and the no-added-noise baseline.
-
-\begin{table}[t]
-\caption{Same-noise-GT reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
+\begin{figure*}[!t]
+\centering
+\begin{minipage}[t]{0.485\textwidth}
+\vspace{0pt}
+\captionof{table}{Same-noise-GT reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
 \label{tab:noise_ablation}
 \centering
 \scriptsize
@@ -317,7 +310,26 @@ $\infty$ & R4A1 & 25.7621 & 0.7854 \\
 
 \vspace{2pt}
 \parbox{0.96\linewidth}{\footnotesize All values are averaged over 70 samples. Finite-SNR results average three noise realizations within each sample; $\infty$ denotes no added Gaussian noise and uses one run per sample.}
-\end{table}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\vspace{0pt}
+\centering
+\includegraphics[width=\linewidth]{../assert/Noise_NoisyGT_FocusCurves.pdf}
+\captionof{figure}{Same-noise-GT PSNR and SSIM over the complete added-noise SNR sweep with automatically scaled vertical axes. The $\infty$ markers denote no added Gaussian noise.}
+\label{fig:noise_noisygt_focus}
+\end{minipage}
+\end{figure*}
+
+\subsection{Noisy Ablation}
+
+To evaluate robustness to additive noise, zero-mean complex Gaussian noise is added to the raw complex echo before upsampling and one-bit quantization:
+\begin{equation}
+    \begin{aligned}
+        \widetilde{s} &= s+n,\qquad n\sim\mathcal{CN}(0,\sigma_n^2), \\
+        \mathrm{SNR}_{n} &= 10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
+    \end{aligned}
+\end{equation}
+The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Although both clean-GT and same-noise-GT protocols are computed, Table~\ref{tab:noise_ablation} reports same-noise-GT results at four representative finite SNRs and the no-added-noise baseline, while Fig.~\ref{fig:noise_noisygt_focus} shows the complete SNR sweep.
 
 Under same-noise-GT evaluation, R2A2 achieves the highest PSNR and SSIM under every condition reported in Table~\ref{tab:noise_ablation}, retaining the advantage of bidirectional allocation in the presence of additive complex Gaussian noise.
 
