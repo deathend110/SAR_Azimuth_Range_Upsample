@@ -232,20 +232,27 @@ end
 function exportCurves(defs,snr_list,summary,baseline,output_dir)
 % clean GT与同噪声GT分别绘制，统一坐标范围便于直接比较。
 colors=lines(numel(defs));
+common_ylimits={[20 26.5],[0.45 0.85]};
 exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
     ["PSNR_CleanGT_Mean","SSIM_CleanGT_Mean"], ...
     "Noise Robustness of 1-Bit SAR Reconstruction (Clean-GT Reference)", ...
     fullfile(output_dir,"V5_Noise_CleanGT_Curves.png"), ...
-    fullfile(output_dir,"V5_Noise_CleanGT_Curves.pdf"));
+    fullfile(output_dir,"V5_Noise_CleanGT_Curves.pdf"),common_ylimits);
 exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
     ["PSNR_NoisyGT_Mean","SSIM_NoisyGT_Mean"], ...
     "Noise Robustness of 1-Bit SAR Reconstruction (Same-Noise-GT Reference)", ...
     fullfile(output_dir,"V5_Noise_NoisyGT_Curves.png"), ...
-    fullfile(output_dir,"V5_Noise_NoisyGT_Curves.pdf"));
+    fullfile(output_dir,"V5_Noise_NoisyGT_Curves.pdf"),common_ylimits);
+% 自动纵轴版本用于突出同噪声GT曲线的细微非单调变化。
+exportReferenceFigure(defs,snr_list,summary,baseline,colors, ...
+    ["PSNR_NoisyGT_Mean","SSIM_NoisyGT_Mean"], ...
+    "Noise Robustness of 1-Bit SAR Reconstruction (Same-Noise-GT, Auto-Scaled)", ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_AutoScale_Curves.png"), ...
+    fullfile(output_dir,"V5_Noise_NoisyGT_AutoScale_Curves.pdf"),[]);
 end
 
 function exportReferenceFigure(defs,snr_list,summary,baseline,colors,specs, ...
-    title_text,png_path,pdf_path)
+    title_text,png_path,pdf_path,ylimits)
 % 最右侧独立端点表示无外加高斯噪声，不与有限SNR曲线连接。
 fig=figure("Visible","on","Color","w","Units","centimeters", ...
     "Position",[2 2 20 8]);
@@ -257,7 +264,6 @@ clean_x=max(snr_list)+2;
 finite_ticks=min(snr_list):2:max(snr_list);
 tick_labels=[compose("%g",finite_ticks),"\infty"];
 ylabels=["PSNR (dB)","SSIM"];
-ylimits={[20 26.5],[0.45 0.85]};
 for panel=1:2
     ax=nexttile(layout); hold(ax,"on"); grid(ax,"on"); box(ax,"on");
     handles=gobjects(numel(defs),1);
@@ -275,7 +281,10 @@ for panel=1:2
             "MarkerFaceColor",colors(g,:),"MarkerSize",5, ...
             "HandleVisibility","off");
     end
-    xlim(ax,[min(snr_list),clean_x+0.3]); ylim(ax,ylimits{panel});
+    xlim(ax,[min(snr_list),clean_x+0.3]);
+    if ~isempty(ylimits)
+        ylim(ax,ylimits{panel});
+    end
     xticks(ax,[finite_ticks,clean_x]); xticklabels(ax,tick_labels);
     xlabel(ax,"Added Gaussian-Noise SNR (dB; \infty = no added noise)");
     ylabel(ax,ylabels(panel));
