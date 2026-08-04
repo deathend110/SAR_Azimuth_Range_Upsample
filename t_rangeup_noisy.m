@@ -99,7 +99,7 @@ roi_crop = abs(IMG_high(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.n
 Range_Upsample_noisy = normalize_image(roi_crop);
 
 %% GT noisy
-RC_gt   = Range_Compress(signal60_input, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
+RC_gt   = Range_Compress(signal60_input_noisy, S60.fc, S60.tnrn, S60.gama, S60.R0, S60.C, S60.Fs, S60.Tp);
 RCMC_gt = RCMC(RC_gt, S60.lambda, S60.fnrn, S60.fnan, S60.R0, S60.C, S60.v);
 IMG_gt  = SAR_Imaging(RCMC_gt, S60.lambda, S60.Fs, S60.R0, S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
 roi_gt = abs(IMG_gt(S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2, S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1));
