@@ -275,11 +275,12 @@ ENL varies less across allocations and is reported as a descriptive speckle stat
 
 To evaluate robustness to additive noise, zero-mean complex Gaussian noise is added to the raw complex echo before upsampling and one-bit quantization:
 \begin{equation}
-    \widetilde{s}=s+n,\qquad
-    n\sim\mathcal{CN}(0,\sigma_n^2),\qquad
-    \mathrm{SNR}_{n}=10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
+    \begin{aligned}
+        \widetilde{s} &= s+n,\qquad n\sim\mathcal{CN}(0,\sigma_n^2), \\
+        \mathrm{SNR}_{n} &= 10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
+    \end{aligned}
 \end{equation}
-The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. For each SNR and sample, all allocations share the same noisy echo. Three noise realizations are averaged within each sample before dataset-level averaging. Both clean-GT and same-noise-GT protocols are computed. The main paper reports the latter because it directly measures one-bit reconstruction fidelity relative to the noisy observation while factoring out the degradation already present in the input echo. Table~\ref{tab:noise_ablation} reports four representative levels from the full $-2$ to 12~dB sweep with 0.5~dB spacing.
+The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Although both clean-GT and same-noise-GT protocols are computed, Table~\ref{tab:noise_ablation} reports same-noise-GT results at four representative finite SNRs and the no-added-noise baseline.
 
 \begin{table}[t]
 \caption{Same-noise-GT reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
@@ -308,19 +309,22 @@ $-2$ & R4A1 & 24.8742 & 0.8030 \\
    & R1A4 & 25.8392 & 0.7927 \\
    & R2A2 & \textbf{26.2557} & \textbf{0.8117} \\
 \hline
+$\infty$ & R4A1 & 25.7621 & 0.7854 \\
+         & R1A4 & 25.7108 & 0.7840 \\
+         & R2A2 & \textbf{26.0808} & \textbf{0.8029} \\
+\hline
 \end{tabular}
 
 \vspace{2pt}
-\parbox{0.96\linewidth}{\footnotesize Values are averaged over 70 samples after averaging three repetitions within each sample.}
+\parbox{0.96\linewidth}{\footnotesize All values are averaged over 70 samples. Finite-SNR results average three noise realizations within each sample; $\infty$ denotes no added Gaussian noise and uses one run per sample.}
 \end{table}
 
-Under same-noise-GT evaluation, R2A2 achieves the highest PSNR and SSIM at every reported SNR. The consistent ordering from $-2$ to 10~dB shows that the advantage of bidirectional allocation is retained when additive complex Gaussian noise is introduced before one-bit quantization. Over the full 29-point sweep, R2A2 exhibits a shallow non-monotonic mean trend: PSNR peaks at 26.3585~dB at 4.5~dB input SNR, whereas SSIM peaks at 0.8254 at 0.5~dB; by 12~dB, they decrease to 26.2160~dB and 0.8093, respectively. This descriptive trend is not interpreted as a statistically established optimal noise level.
+Under same-noise-GT evaluation, R2A2 achieves the highest PSNR and SSIM under every condition reported in Table~\ref{tab:noise_ablation}, retaining the advantage of bidirectional allocation in the presence of additive complex Gaussian noise.
 
 \section{Conclusion}
 
 This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained in the same-noise-GT evaluation under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
 
-\IEEEtriggeratref{19}
 \begin{thebibliography}{00}
 
 \bibitem{cumming2005sar}
