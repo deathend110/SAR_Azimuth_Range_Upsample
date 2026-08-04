@@ -279,40 +279,15 @@ To evaluate robustness to additive noise, zero-mean complex Gaussian noise is ad
     n\sim\mathcal{CN}(0,\sigma_n^2),\qquad
     \mathrm{SNR}_{n}=10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
 \end{equation}
-The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. For each SNR and sample, all allocations share the same noisy echo. Three noise realizations are averaged within each sample before dataset-level averaging. Reconstruction is evaluated against both the clean unquantized GT and the unquantized GT formed from the same noisy echo; the latter separates one-bit reconstruction fidelity from the degradation caused directly by the added noise. Table~\ref{tab:noise_ablation} reports four representative levels from the full $-2$ to 12~dB sweep with 0.5~dB spacing.
+The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. For each SNR and sample, all allocations share the same noisy echo. Three noise realizations are averaged within each sample before dataset-level averaging. Both clean-GT and same-noise-GT protocols are computed. The main paper reports the latter because it directly measures one-bit reconstruction fidelity relative to the noisy observation while factoring out the degradation already present in the input echo. Table~\ref{tab:noise_ablation} reports four representative levels from the full $-2$ to 12~dB sweep with 0.5~dB spacing.
 
 \begin{table}[t]
-\caption{Noise robustness at selected input SNRs. The best PSNR and SSIM within each SNR block are bold.}
+\caption{Same-noise-GT reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
 \label{tab:noise_ablation}
 \centering
 \scriptsize
 \renewcommand{\arraystretch}{0.84}
 \setlength{\tabcolsep}{5pt}
-\textbf{(a) Clean-GT reference}\\[2pt]
-\begin{tabular}{c c c c}
-\hline
-SNR (dB) & Allocation & PSNR & SSIM \\
-\hline
-$-2$ & R4A1 & 20.2581 & 0.4639 \\
-     & R1A4 & 20.2338 & 0.4630 \\
-     & R2A2 & \textbf{20.4013} & \textbf{0.4733} \\
-\hline
-2 & R4A1 & 22.6661 & 0.6126 \\
-  & R1A4 & 22.6235 & 0.6110 \\
-  & R2A2 & \textbf{22.8628} & \textbf{0.6244} \\
-\hline
-6 & R4A1 & 24.3446 & 0.7068 \\
-  & R1A4 & 24.2957 & 0.7048 \\
-  & R2A2 & \textbf{24.6340} & \textbf{0.7216} \\
-\hline
-10 & R4A1 & 25.1894 & 0.7525 \\
-   & R1A4 & 25.1505 & 0.7512 \\
-   & R2A2 & \textbf{25.5066} & \textbf{0.7688} \\
-\hline
-\end{tabular}
-
-\vspace{4pt}
-\textbf{(b) Same-noise-GT reference}\\[2pt]
 \begin{tabular}{c c c c}
 \hline
 SNR (dB) & Allocation & PSNR & SSIM \\
@@ -339,11 +314,11 @@ $-2$ & R4A1 & 24.8742 & 0.8030 \\
 \parbox{0.96\linewidth}{\footnotesize Values are averaged over 70 samples after averaging three repetitions within each sample.}
 \end{table}
 
-Under both reference protocols, R2A2 achieves the highest PSNR and SSIM at every reported SNR. The consistent ordering from $-2$ to 10~dB shows that the advantage of bidirectional allocation is retained when additive complex Gaussian noise is introduced before one-bit quantization.
+Under same-noise-GT evaluation, R2A2 achieves the highest PSNR and SSIM at every reported SNR. The consistent ordering from $-2$ to 10~dB shows that the advantage of bidirectional allocation is retained when additive complex Gaussian noise is introduced before one-bit quantization. Over the full 29-point sweep, R2A2 exhibits a shallow non-monotonic mean trend: PSNR peaks at 26.3585~dB at 4.5~dB input SNR, whereas SSIM peaks at 0.8254 at 0.5~dB; by 12~dB, they decrease to 26.2160~dB and 0.8093, respectively. This descriptive trend is not interpreted as a statistically established optimal noise level.
 
 \section{Conclusion}
 
-This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained under additive complex Gaussian noise with either clean-GT or same-noise-GT evaluation. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
+This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained in the same-noise-GT evaluation under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
 
 \IEEEtriggeratref{19}
 \begin{thebibliography}{00}
