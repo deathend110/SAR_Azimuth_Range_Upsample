@@ -272,7 +272,7 @@ Across the five budgets, the PSNR-selected bidirectional allocations outperform 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
 \begin{table}[!t]
-\caption{Same-noise-GT reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
+\caption{Reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
 \label{tab:noise_ablation}
 \centering
 \scriptsize
@@ -282,21 +282,21 @@ ENL varies less across allocations and is reported as a descriptive speckle stat
 \hline
 SNR (dB) & Allocation & PSNR & SSIM \\
 \hline
-$-2$ & R4A1 & 24.8742 & 0.8030 \\
-     & R1A4 & 24.8534 & 0.8022 \\
-     & R2A2 & \textbf{25.3665} & \textbf{0.8222} \\
+$-2$ & R4A1 & 20.2581 & 0.4639 \\
+     & R1A4 & 20.2338 & 0.4630 \\
+     & R2A2 & \textbf{20.4013} & \textbf{0.4733} \\
 \hline
-2.5 & R4A1 & 25.7515 & 0.8066 \\
-    & R1A4 & 25.7534 & 0.8057 \\
-    & R2A2 & \textbf{26.1825} & \textbf{0.8242} \\
+2.5 & R4A1 & 22.8908 & 0.6268 \\
+    & R1A4 & 22.8998 & 0.6264 \\
+    & R2A2 & \textbf{23.1022} & \textbf{0.6392} \\
 \hline
-7 & R4A1 & 25.9317 & 0.7998 \\
-  & R1A4 & 25.9209 & 0.7985 \\
-  & R2A2 & \textbf{26.3252} & \textbf{0.8170} \\
+7 & R4A1 & 24.6365 & 0.7221 \\
+  & R1A4 & 24.6290 & 0.7210 \\
+  & R2A2 & \textbf{24.9158} & \textbf{0.7368} \\
 \hline
-11.5 & R4A1 & 25.8546 & 0.7920 \\
-     & R1A4 & 25.8153 & 0.7908 \\
-     & R2A2 & \textbf{26.2268} & \textbf{0.8099} \\
+11.5 & R4A1 & 25.3560 & 0.7619 \\
+     & R1A4 & 25.3278 & 0.7609 \\
+     & R2A2 & \textbf{25.6860} & \textbf{0.7789} \\
 \hline
 $\infty$ & R4A1 & 25.7621 & 0.7854 \\
          & R1A4 & 25.7108 & 0.7840 \\
@@ -317,13 +317,13 @@ To evaluate robustness to additive noise, zero-mean complex Gaussian noise is ad
         \mathrm{SNR}_{n} &= 10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
     \end{aligned}
 \end{equation}
-The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Although both clean-GT and same-noise-GT protocols are computed, Table~\ref{tab:noise_ablation} reports the same-noise-GT results at four representative finite SNRs and the no-added-noise baseline.
+The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Table~\ref{tab:noise_ablation} reports the reconstruction results at four representative finite SNRs and the no-added-noise baseline.
 
-Under same-noise-GT evaluation, R2A2 achieves the highest PSNR and SSIM under every condition reported in Table~\ref{tab:noise_ablation}, retaining the advantage of bidirectional allocation in the presence of additive complex Gaussian noise. Under clean-GT evaluation, R2A2 remains the best allocation, with its PSNR/SSIM increasing from 20.4013~dB/0.4733 at $-2$~dB SNR to 25.7322~dB/0.7815 at 12~dB.
+R2A2 achieves the highest PSNR and SSIM under every condition in Table~\ref{tab:noise_ablation}, with its PSNR/SSIM increasing from 20.4013~dB/0.4733 at $-2$~dB to 26.0808~dB/0.8029 without added noise.
 
 \section{Conclusion}
 
-This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained in the same-noise-GT evaluation under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
+This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
 
 \begin{thebibliography}{00}
 
