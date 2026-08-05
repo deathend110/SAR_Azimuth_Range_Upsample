@@ -8,6 +8,7 @@
 \usepackage{xcolor}
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
+\setlength{\textfloatsep}{1.0\baselineskip plus 0.1\baselineskip minus 0.2\baselineskip}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
@@ -140,7 +141,7 @@ One-bit quantization is known to generate nonlinear harmonic distortion \cite{fr
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{../assert/Mechanism_Common4x4.png}
+\includegraphics[width=0.90\linewidth]{../assert/Mechanism_Common4x4.png}
 \caption{Range-compressed spectra for representative $Q_{\mathrm{up}}=4$ allocations over a common $4\times4$ normalized-frequency window. All panels use the same color scale. R4A1 and R1A4 extend one spectral dimension, whereas R2A2 distributes the extension over both dimensions.}
 \label{fig:mechanism}
 \end{figure}
@@ -196,7 +197,7 @@ Prior one-bit SAR studies show that threshold amplitude influences reconstructio
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.98\linewidth]{../assert/RT_SSIM_bestAs_curve.png}
+\includegraphics[width=0.90\linewidth]{../assert/RT_SSIM_bestAs_curve.png}
 \caption{Mean SSIM of RT versus $A_s$ for representative bidirectional allocations.}
 \label{fig:threshold_design}
 \end{figure}
@@ -207,7 +208,7 @@ Fig.~\ref{fig:scene_examples} shows a representative scene using a common normal
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{../assert/Scene_SharedColorbar.png}
+\includegraphics[width=0.90\linewidth]{../assert/Scene_SharedColorbar.png}
 \caption{Representative normalized-amplitude SAR images for $Q_{\mathrm{up}}=4$. Metrics are computed relative to GT, with GT self-referenced; all panels share the same $[0,1]$ color scale.}
 \label{fig:scene_examples}
 \end{figure}
@@ -310,14 +311,21 @@ $\infty$ & R4A1 & 25.7621 & 0.7854 \\
 
 \subsection{Noisy Ablation}
 
-To evaluate robustness to additive noise, zero-mean complex Gaussian noise is added to the raw complex echo before upsampling and one-bit quantization:
+For a raw echo containing $N$ complex samples, additive noise is scaled from the pre-quantization echo power as
+\begin{equation}
+    P_s=\frac{1}{N}\sum_{i=1}^{N}|s_i|^2,\qquad
+    P_n=P_s10^{-\mathrm{SNR}_{n}/10}.
+\end{equation}
+Each complex Gaussian realization is then generated, centered, and added according to
 \begin{equation}
     \begin{aligned}
-        \widetilde{s} &= s+n,\qquad n\sim\mathcal{CN}(0,\sigma_n^2), \\
-        \mathrm{SNR}_{n} &= 10\log_{10}\frac{\mathbb{E}|s|^2}{\mathbb{E}|n|^2}.
+        n_i^{(0)}&=\sqrt{\frac{P_n}{2}}\left(\xi_i^{(R)}+j\xi_i^{(I)}\right),\quad
+        n_i=n_i^{(0)}-\frac{1}{N}\sum_{\ell=1}^{N}n_\ell^{(0)},\\
+        \widetilde{s}_i&=s_i+n_i,\qquad
+        \xi_i^{(R)},\xi_i^{(I)}\overset{\mathrm{i.i.d.}}{\sim}\mathcal{N}(0,1).
     \end{aligned}
 \end{equation}
-The experiment compares R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ with $A_s=0.6$ over the same 70 samples. Noise is added before upsampling and one-bit quantization, with all allocations sharing the same noisy echo for each sample and SNR. Table~\ref{tab:noise_ablation} reports the reconstruction results at four representative finite SNRs and the no-added-noise baseline.
+Before upsampling and one-bit quantization, three seeded Gaussian draws per sample are power-scaled across SNRs, with each resulting noisy echo shared by all allocations. R4A1, R1A4, and R2A2 are evaluated at $Q_{\mathrm{up}}=4$ and $A_s=0.6$ over 70 samples; Table~\ref{tab:noise_ablation} reports four representative finite SNRs and the no-added-noise baseline.
 
 R2A2 achieves the highest PSNR and SSIM under every condition in Table~\ref{tab:noise_ablation}, with its PSNR/SSIM increasing from 20.4013~dB/0.4733 at $-2$~dB to 26.0808~dB/0.8029 without added noise.
 
@@ -325,6 +333,7 @@ R2A2 achieves the highest PSNR and SSIM under every condition in Table~\ref{tab:
 
 This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
 
+{\renewcommand{\footnotesize}{\fontsize{7.2pt}{8.1pt}\selectfont}
 \begin{thebibliography}{00}
 
 \bibitem{cumming2005sar}
@@ -409,5 +418,6 @@ W. Feng, H. Lei, and H. Qiao, ``Synthetic aperture radar image despeckling via t
 F. Wilcoxon, ``Individual comparisons by ranking methods,'' \textit{Biometrics Bull.}, vol. 1, no. 6, pp. 80--83, Dec. 1945, doi: 10.2307/3001968.
 
 \end{thebibliography}
+}
 
 \end{document}
