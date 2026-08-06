@@ -11,21 +11,8 @@ group_defs = V5Core.buildGroupDefinitions(cfg.Q_list);
 num_groups = numel(group_defs);
 num_samples = numel(sample_cache);
 
-is_enl = ismember(string({sample_cache.dataset_name}), cfg.enl_dataset_names).';
-enl_top = zeros(num_samples, 1);
-enl_left = zeros(num_samples, 1);
-enl_score = nan(num_samples, 1);
-for sample_idx = find(is_enl).'
-    [enl_top(sample_idx), enl_left(sample_idx), enl_score(sample_idx)] = ...
-        V5Core.selectUniformROI(sample_cache(sample_idx).img_gt, ...
-        cfg.enl_window_size, cfg.enl_stride);
-end
-roi_manifest = sample_manifest(is_enl, :);
-roi_manifest.ROITop = enl_top(is_enl);
-roi_manifest.ROILeft = enl_left(is_enl);
-roi_manifest.ROIHeight = repmat(cfg.enl_window_size, height(roi_manifest), 1);
-roi_manifest.ROIWidth = repmat(cfg.enl_window_size, height(roi_manifest), 1);
-roi_manifest.UniformityScore = enl_score(is_enl);
+[is_enl, enl_top, enl_left, ~, roi_manifest] = ...
+    V5Core.buildENLRegions(sample_cache, sample_manifest, cfg);
 writetable(sample_manifest, fullfile(output_dir, "V5_SampleManifest.csv"));
 writetable(roi_manifest, fullfile(output_dir, "V5_ENL_ROI_Manifest.csv"));
 
@@ -175,7 +162,7 @@ end
 
 function writeMetadata(cfg, sample_count, enl_count, output_dir)
 fid=fopen(fullfile(output_dir,"V5_Main_Metadata.txt"),"w");
-cleanup=onCleanup(@() fclose(fid)); %#ok<NASGU>
+cleanup=onCleanup(@() fclose(fid));
 fprintf(fid,"Seed=%d\nAs=%.16g\nQList=%s\nSampleCount=%d\n", ...
     cfg.seed,cfg.As,mat2str(cfg.Q_list),sample_count);
 fprintf(fid,"ENLSampleCount=%d\nENLWindow=%d\nEntropyBins=%d\n", ...

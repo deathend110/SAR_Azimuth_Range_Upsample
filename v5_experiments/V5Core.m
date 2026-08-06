@@ -13,12 +13,13 @@ classdef V5Core
             cfg.parameter_file = fullfile(repo_root, "FS60_params.mat");
             cfg.seed = 2026;
             cfg.noise_seed = 20260804;
+            cfg.noise_seed_protocol = "decimal_v2_r100";
             cfg.As = 0.6;
             cfg.Q_list = [4, 6, 8, 9, 10];
             cfg.table_Q_list = cfg.Q_list;
             cfg.As_list = 0:0.1:1.5;
             cfg.SNR_dB_list = -2:0.5:12;
-            cfg.noise_repeats = 3;
+            cfg.noise_repeats = 100;
             cfg.num_samples_per_dataset = 10;
             cfg.dataset_names = { ...
                 "SAR_Dataset_Bangkok_1", ...
@@ -320,6 +321,30 @@ classdef V5Core
             else, value = mu^2 / variance; end
         end
 
+        function [is_enl, tops, lefts, scores, roi_manifest] = ...
+                buildENLRegions(cache, manifest, cfg)
+            % 统一在clean GT上选择ENL区域，后续所有实验分支固定复用。
+            n_samples = numel(cache);
+            is_enl = ismember(string({cache.dataset_name}), ...
+                cfg.enl_dataset_names).';
+            tops = zeros(n_samples, 1);
+            lefts = zeros(n_samples, 1);
+            scores = nan(n_samples, 1);
+            for sample_idx = find(is_enl).'
+                [tops(sample_idx), lefts(sample_idx), scores(sample_idx)] = ...
+                    V5Core.selectUniformROI(cache(sample_idx).img_gt, ...
+                    cfg.enl_window_size, cfg.enl_stride);
+            end
+            roi_manifest = manifest(is_enl, :);
+            roi_manifest.ROITop = tops(is_enl);
+            roi_manifest.ROILeft = lefts(is_enl);
+            roi_manifest.ROIHeight = repmat(cfg.enl_window_size, ...
+                height(roi_manifest), 1);
+            roi_manifest.ROIWidth = repmat(cfg.enl_window_size, ...
+                height(roi_manifest), 1);
+            roi_manifest.UniformityScore = scores(is_enl);
+        end
+
         function [top, left, score] = selectUniformROI(img_gt, window_size, stride)
             [height, width] = size(img_gt);
             if height < window_size || width < window_size
@@ -369,12 +394,12 @@ classdef V5Core
         end
 
         function seed = noiseSeed(cfg, sample_id, repeat_idx)
-            seed = cfg.noise_seed + sample_id * 100 + repeat_idx;
+            seed = cfg.noise_seed + sample_id * 1000 + repeat_idx;
         end
 
         function seed = rtSeed(cfg, snr_idx, group_idx, sample_id, repeat_idx)
-            seed = cfg.seed + snr_idx * 1000000 + group_idx * 10000 + ...
-                sample_id * 10 + repeat_idx;
+            seed = cfg.seed + snr_idx * 10000000 + group_idx * 100000 + ...
+                sample_id * 1000 + repeat_idx;
         end
     end
 end
