@@ -263,7 +263,7 @@ R10A1 & 26.4630 & 0.8206 & 1.0171 \\
 \end{tabular}
 \vspace{2pt}
 
-\parbox{0.96\linewidth}{\footnotesize PSNR and SSIM are averaged over 70 paired samples; ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
+\parbox{0.96\linewidth}{\footnotesize   ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
 \end{table}
 
 Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 gives the highest PSNR of 26.5585~dB, while R3A2 gives the highest SSIM of 0.8246. At $Q_{\mathrm{up}}=8$, R2A4 reaches 26.8194~dB and 0.8363. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400, and R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427.
@@ -273,7 +273,7 @@ Across the five budgets, the PSNR-selected bidirectional allocations outperform 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
 \begin{table}[!t]
-\caption{Reconstruction quality under additive complex Gaussian noise. The best PSNR and SSIM within each SNR block are bold.}
+\caption{Reconstruction quality under additive complex Gaussian noise.}
 \label{tab:noise_ablation}
 \centering
 \scriptsize
@@ -306,7 +306,7 @@ $\infty$ & R4A1 & 25.7621 & 0.7854 \\
 \end{tabular}
 
 \vspace{2pt}
-\parbox{0.96\linewidth}{\footnotesize All values are averaged over 70 samples. Finite-SNR results average three noise realizations within each sample; $\infty$ denotes no added Gaussian noise and uses one run per sample.}
+\parbox{0.96\linewidth}{\footnotesize  $\infty$ refers to the noise free casel.}
 \end{table}
 
 \subsection{Noisy Ablation}
