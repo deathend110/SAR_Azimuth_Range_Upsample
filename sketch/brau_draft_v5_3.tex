@@ -137,38 +137,17 @@ The main allocation experiment uses a separable random threshold (RT) based on a
     u_{\mathrm{RT}}(m,n)
     =A_s\hat{\sigma}\exp\!\left[j\bigl(\phi_r(m)+\phi_a(n)\bigr)\right],
 \end{equation}
-where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scale estimated from the upsampled echo, and $A_s$ controls the threshold amplitude. The fixed-budget results use $A_s=0.6$ as a common comparison setting.
+where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scale estimated from the upsampled echo, and $A_s$ controls the threshold amplitude.
 
-\subsection{Evaluation Protocol}
+\subsection{Spectral Leakage Metrics}
 
-The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. All RT experiments use seed 2026 and $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
-
-Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Equivalent number of looks (ENL) is computed from intensity images obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
-\begin{equation}
-    \mathrm{ENL}=\frac{\mu_I^2}{\sigma_I^2},
-\end{equation}
-where $\mu_I$ and $\sigma_I^2$ are the mean and variance within a homogeneous ROI. ENL is calculated for 20 samples from the field and port datasets. A $64\times64$ ROI is selected on each GT image and then reused unchanged for every allocation. PSNR and SSIM use all paired samples.
-
-For each budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding paired sample vectors.
-
-\section{Experiments and Results}
-
-\subsection{Mechanism Analysis Through Spectral Leakage}
-
-Phase-quantized SAR processing produces nonlinear harmonic distortion \cite{franceschetti1999phase}. Single-frequency threshold analysis shows that threshold spectra can relocate dominant harmonics \cite{zhao2019onebit}. Learned de-quantization methods likewise target harmonic suppression in reconstructed one-bit SAR images \cite{si2023dequantization}. In the two-dimensional SAR data considered here, this distortion appears along both range and azimuth. The working interpretation of BRAU is that the effective SAR echo occupies a two-dimensional range-azimuth spectral support, whereas a unidirectional allocation enlarges only one spectral axis. In contrast, a bidirectional allocation supplies frequency-domain redundancy in both dimensions and can reduce the overlap between quantization distortion and the effective support. Fig.~\ref{fig:mechanism} compares representative allocations for $Q_{\mathrm{up}}=4$ over a common normalized-frequency window of $[-2,2]\times[-2,2]$.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.90\linewidth]{../assert/Mechanism_Common4x4.png}
-\caption{Range-compressed spectra for representative $Q_{\mathrm{up}}=4$ allocations over a common $4\times4$ normalized-frequency window. All panels use the same color scale. R4A1 and R1A4 extend one spectral dimension, whereas R2A2 distributes the extension over both dimensions.}
-\label{fig:mechanism}
-\end{figure}
+Phase-quantized SAR processing produces nonlinear harmonic distortion \cite{franceschetti1999phase}. Single-frequency thresholds can relocate dominant harmonics \cite{zhao2019onebit}, while learned de-quantization suppresses harmonics in reconstructed one-bit SAR images \cite{si2023dequantization}. For the two-dimensional echo considered here, the effective spectral support spans range and azimuth. A unidirectional allocation enlarges only one spectral axis, whereas a bidirectional allocation supplies redundancy along both axes and can reduce the overlap between quantization distortion and the effective support.
 
 For an intermediate matrix $X$, define the spectral energy
 \begin{equation}
     S_X(k_r,k_a)=|\mathcal{F}_2\{X\}(k_r,k_a)|^2.
 \end{equation}
-The support mask $M$ is obtained from a reference spectrum using a relative magnitude threshold $\tau=0.35$. The off-support energy ratio is
+Let $M$ be a support mask obtained by applying a relative magnitude threshold $\tau$ to a reference spectrum. The off-support energy ratio is
 \begin{equation}
     \rho_{\mathrm{off}}
     =\frac{\sum S_X(1-M)}{\sum S_X}.
@@ -183,11 +162,55 @@ and the projected masks
     M_r(k_r)=\max_{k_a}M(k_r,k_a),\quad
     M_a(k_a)=\max_{k_r}M(k_r,k_a).
 \end{equation}
-The resulting ratios are
+The resulting range- and azimuth-directional leakage ratios are
 \begin{equation}
     \rho_r=\frac{\sum P_r(1-M_r)}{\sum P_r},\qquad
     \rho_a=\frac{\sum P_a(1-M_a)}{\sum P_a}.
 \end{equation}
+
+\subsection{Additive Noise Model}
+
+For a raw echo containing $N$ complex samples, additive noise is scaled from the pre-quantization echo power as
+\begin{equation}
+    P_s=\frac{1}{N}\sum_{i=1}^{N}|s_i|^2,\qquad
+    P_n=P_s10^{-\mathrm{SNR}_{n}/10}.
+\end{equation}
+Each complex Gaussian realization is centered and added to the raw echo according to
+\begin{equation}
+    \begin{aligned}
+        n_i^{(0)}&=\sqrt{\frac{P_n}{2}}\left(\xi_i^{(R)}+j\xi_i^{(I)}\right),\quad
+        n_i=n_i^{(0)}-\frac{1}{N}\sum_{\ell=1}^{N}n_\ell^{(0)},\\
+        \widetilde{s}_i&=s_i+n_i,\qquad
+        \xi_i^{(R)},\xi_i^{(I)}\overset{\mathrm{i.i.d.}}{\sim}\mathcal{N}(0,1).
+    \end{aligned}
+\end{equation}
+
+\section{Experiments and Results}
+
+\subsection{Experimental Setup}
+
+The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. All RT experiments use seed 2026 and $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
+
+Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Equivalent number of looks (ENL) is computed from intensity images obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
+\begin{equation}
+    \mathrm{ENL}=\frac{\mu_I^2}{\sigma_I^2},
+\end{equation}
+where $\mu_I$ and $\sigma_I^2$ are the mean and variance within a homogeneous ROI. ENL is calculated for 20 samples from the field and port datasets. A $64\times64$ ROI is selected on each GT image and then reused unchanged for every allocation. PSNR and SSIM use all paired samples. For each budget, the best bidirectional and unidirectional groups are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding paired sample vectors.
+
+The mechanism experiment compares R1A1, R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ after range compression. Their spectra are evaluated over a common normalized-frequency window of $[-2,2]\times[-2,2]$, and the reference support mask uses $\tau=0.35$. The threshold-sensitivity experiment evaluates the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$ over the tested $A_s$ values.
+
+For the noisy experiment, three seeded Gaussian realizations per sample are power-scaled to $-2$, 2.5, 7, and 11.5~dB, with the no-added-noise case retained as a baseline. Each resulting noisy echo is shared by all allocations. R4A1, R1A4, and R2A2 are evaluated at $Q_{\mathrm{up}}=4$ and $A_s=0.6$.
+
+\subsection{Mechanism Analysis}
+
+Fig.~\ref{fig:mechanism} shows that R4A1 and R1A4 extend the spectrum along only one axis, whereas R2A2 distributes the extension across both spectral dimensions.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.90\linewidth]{../assert/Mechanism_Common4x4.png}
+\caption{Range-compressed spectra for representative $Q_{\mathrm{up}}=4$ allocations over a common $4\times4$ normalized-frequency window. All panels use the same color scale. R4A1 and R1A4 extend one spectral dimension, whereas R2A2 distributes the extension over both dimensions.}
+\label{fig:mechanism}
+\end{figure}
 
 \begin{table}[t]
 \caption{Spectral leakage after range compression for $Q_{\mathrm{up}}=4$. Lower is better.}
@@ -207,11 +230,11 @@ R2A2 & \textbf{0.892857} & \textbf{0.363750} & \textbf{0.066680} \\
 \end{tabular}
 \end{table}
 
-As shown in Table~\ref{tab:mechanism_metrics}, all upsampled groups reduce leakage relative to R1A1, and R2A2 obtains the lowest off-support, range-directional, and azimuth-directional leakage ratios. This representative result supports the interpretation that bidirectional allocation provides two-dimensional spectral redundancy and reduces the overlap between one-bit quantization distortion and the effective SAR support. The metrics are reported at the range-compression stage; no additional improvement is attributed to RCMC because it does not materially change these spectral-energy ratios.
+As shown in Table~\ref{tab:mechanism_metrics}, all upsampled groups reduce leakage relative to R1A1, and R2A2 obtains the lowest off-support, range-directional, and azimuth-directional leakage ratios. The agreement between the two-dimensional spectral expansion in Fig.~\ref{fig:mechanism} and the three leakage ratios supports the interpretation that bidirectional allocation reduces the overlap between one-bit quantization distortion and the effective SAR support.
 
 \subsection{Threshold Design}
 
-Time-varying threshold designs show that acquisition thresholds affect one-bit SAR reconstruction \cite{demir2018onebit}. Fixed thresholds with slow-time fluctuations also make the threshold scale an explicit design parameter \cite{nie2025fixed}. Fig.~\ref{fig:threshold_design} shows the RT amplitude sensitivity for the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$. SSIM initially increases and then decreases as $A_s$ increases. The best tested values shift from $A_s=0.7$ for $Q_{\mathrm{up}}=4$ to $0.8$ for $Q_{\mathrm{up}}=6$ and $1.0$ for $Q_{\mathrm{up}}=9$. The common $A_s=0.6$ used in the main experiment is therefore a controlled setting for allocation comparison rather than a global optimum for every budget.
+Time-varying threshold designs show that acquisition thresholds affect one-bit SAR reconstruction \cite{demir2018onebit}. Fixed thresholds with slow-time fluctuations also make the threshold scale an explicit design parameter \cite{nie2025fixed}. Fig.~\ref{fig:threshold_design} shows a nonmonotonic RT amplitude sensitivity: SSIM initially increases and then decreases as $A_s$ increases. The best tested values shift from $A_s=0.7$ for $Q_{\mathrm{up}}=4$ to $0.8$ for $Q_{\mathrm{up}}=6$ and $1.0$ for $Q_{\mathrm{up}}=9$. The common $A_s=0.6$ used in the main experiment is therefore a controlled setting for allocation comparison rather than a global optimum for every budget.
 
 \begin{figure}[t]
 \centering
@@ -220,9 +243,9 @@ Time-varying threshold designs show that acquisition thresholds affect one-bit S
 \label{fig:threshold_design}
 \end{figure}
 
-\subsection{Main Fixed-Budget Results}
+\subsection{Experimental Results}
 
-Fig.~\ref{fig:scene_examples} shows a representative scene using a common normalized-amplitude scale. Both unidirectional allocations improve over one-bit imaging without upsampling, while R2A2 more faithfully preserves extended target boundaries and local scattering textures. The shared $[0,1]$ color limit makes the four panels directly comparable.
+Fig.~\ref{fig:scene_examples} shows that both unidirectional allocations improve over one-bit imaging without upsampling, while R2A2 more faithfully preserves extended target boundaries and local scattering textures.
 
 \begin{figure}[t]
 \centering
@@ -284,11 +307,13 @@ R10A1 & 26.4630 & 0.8206 & 1.0171 \\
 \parbox{0.96\linewidth}{\footnotesize   ENL uses 20 fixed $64\times64$ homogeneous ROIs.}
 \end{table}
 
-Table~\ref{tab:evaluation_indexes} reports the RT results under the common $A_s=0.6$ setting. R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 gives the highest PSNR of 26.5585~dB, while R3A2 gives the highest SSIM of 0.8246. At $Q_{\mathrm{up}}=8$, R2A4 reaches 26.8194~dB and 0.8363. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400, and R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427.
+Table~\ref{tab:evaluation_indexes} shows that R1A1 gives the lowest reconstruction fidelity, whereas a bidirectional group reaches the highest PSNR and SSIM at every listed budget. At $Q_{\mathrm{up}}=4$, R2A2 obtains 26.0623~dB and 0.8026. At $Q_{\mathrm{up}}=6$, R2A3 gives the highest PSNR of 26.5585~dB, while R3A2 gives the highest SSIM of 0.8246. At $Q_{\mathrm{up}}=8$, R2A4 reaches 26.8194~dB and 0.8363. R3A3 is best at $Q_{\mathrm{up}}=9$ with 26.9167~dB and 0.8400, and R5A2 is best at $Q_{\mathrm{up}}=10$ with 26.9702~dB and 0.8427.
 
 Across the five budgets, the PSNR-selected bidirectional allocations outperform their unidirectional counterparts by 0.2856--0.5072~dB in PSNR and 0.0169--0.0221 in SSIM. Paired comparisons give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$. The similar performance of R2A3 and R3A2 at $Q_{\mathrm{up}}=6$, R2A4 and R4A2 at $Q_{\mathrm{up}}=8$, and R2A5 and R5A2 at $Q_{\mathrm{up}}=10$ further indicates a near-optimal region rather than a unique factor pair.
 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
+
+The noise robustness comparison is reported in Table~\ref{tab:noise_ablation}.
 
 \begin{table}[!t]
 \caption{Reconstruction quality under additive complex Gaussian noise.}
@@ -324,26 +349,8 @@ $\infty$ & R4A1 & 25.7621 & 0.7854 \\
 \end{tabular}
 
 \vspace{2pt}
-\parbox{0.96\linewidth}{\footnotesize  $\infty$ refers to the noise free casel.}
+\parbox{0.96\linewidth}{\footnotesize  $\infty$ refers to the noise-free case.}
 \end{table}
-
-\subsection{Noisy Ablation}
-
-For a raw echo containing $N$ complex samples, additive noise is scaled from the pre-quantization echo power as
-\begin{equation}
-    P_s=\frac{1}{N}\sum_{i=1}^{N}|s_i|^2,\qquad
-    P_n=P_s10^{-\mathrm{SNR}_{n}/10}.
-\end{equation}
-Each complex Gaussian realization is then generated, centered, and added according to
-\begin{equation}
-    \begin{aligned}
-        n_i^{(0)}&=\sqrt{\frac{P_n}{2}}\left(\xi_i^{(R)}+j\xi_i^{(I)}\right),\quad
-        n_i=n_i^{(0)}-\frac{1}{N}\sum_{\ell=1}^{N}n_\ell^{(0)},\\
-        \widetilde{s}_i&=s_i+n_i,\qquad
-        \xi_i^{(R)},\xi_i^{(I)}\overset{\mathrm{i.i.d.}}{\sim}\mathcal{N}(0,1).
-    \end{aligned}
-\end{equation}
-Before upsampling and one-bit quantization, three seeded Gaussian draws per sample are power-scaled across SNRs, with each resulting noisy echo shared by all allocations. R4A1, R1A4, and R2A2 are evaluated at $Q_{\mathrm{up}}=4$ and $A_s=0.6$; Table~\ref{tab:noise_ablation} reports four representative finite SNRs and the no-added-noise baseline.
 
 R2A2 achieves the highest PSNR and SSIM under every condition in Table~\ref{tab:noise_ablation}, with its PSNR/SSIM increasing from 20.4013~dB/0.4733 at $-2$~dB to 26.0808~dB/0.8029 without added noise.
 
