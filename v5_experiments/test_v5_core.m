@@ -11,8 +11,8 @@ end
 function testConfig(test_case)
 cfg = V5Core.config();
 verifyEqual(test_case, cfg.SNR_dB_list, -2:0.5:12);
-verifyEqual(test_case, cfg.noise_repeats, 10);
-verifyEqual(test_case, cfg.noise_seed_protocol, "decimal_v2_r10");
+verifyEqual(test_case, cfg.noise_repeats, 50);
+verifyEqual(test_case, cfg.noise_seed_protocol, "decimal_v2_r50");
 verifyEqual(test_case, cfg.noise_num_workers, 4);
 verifyEqual(test_case, cfg.noise_quant_block_cols, 256);
 verifyEqual(test_case, cfg.noise_compute_version, "fastcpu_v1");
