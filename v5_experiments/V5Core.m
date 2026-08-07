@@ -20,6 +20,10 @@ classdef V5Core
             cfg.As_list = 0:0.1:1.5;
             cfg.SNR_dB_list = -2:0.5:12;
             cfg.noise_repeats = 10;
+            % 以下参数只控制V5噪声实验的CPU执行方式，不属于实验变量。
+            cfg.noise_num_workers = 4;
+            cfg.noise_quant_block_cols = 256;
+            cfg.noise_compute_version = "fastcpu_v1";
             cfg.num_samples_per_dataset = 10;
             cfg.dataset_names = { ...
                 "SAR_Dataset_Bangkok_1", ...
@@ -93,6 +97,85 @@ classdef V5Core
                 string({sample_cache.filename}).', [sample_cache.c_start].', ...
                 'VariableNames', {'SampleID', 'DatasetIdx', 'LocalSampleIdx', ...
                 'Dataset', 'File', 'CStart'});
+        end
+
+        function [sample_cache, sample_manifest] = buildNoiseSampleCache(cfg, S60)
+            % 构建噪声实验的轻量样本缓存，仅保留GT ROI而不常驻完整复回波。
+            total_samples = numel(cfg.dataset_names) * cfg.num_samples_per_dataset;
+            sample_cache = repmat(struct( ...
+                "sample_id", 0, "dataset_idx", 0, "sample_idx", 0, ...
+                "dataset_name", "", "filename", "", "filepath", "", ...
+                "c_start", 0, "signal60_input", [], "img_gt", [], ...
+                "complex_gt_roi", []), total_samples, 1);
+            fprintf("=== V5噪声实验轻量样本清单：%d个样本 ===\n", total_samples);
+            sample_id = 0;
+            for ds_idx = 1:numel(cfg.dataset_names)
+                ds_name = cfg.dataset_names{ds_idx};
+                mat_files = dir(fullfile(cfg.data_root, ds_name, "rstart*.mat"));
+                mat_names = sort({mat_files.name});
+                if isempty(mat_names)
+                    error("数据集 %s 中未找到 rstart*.mat。", ds_name);
+                end
+                pick_idx = mod(cfg.seed, numel(mat_names)) + 1;
+                picked_name = mat_names{pick_idx};
+                mat_path = fullfile(cfg.data_root, ds_name, picked_name);
+                loaded = load(mat_path);
+                names = fieldnames(loaded);
+                raw = loaded.(names{1});
+                starts = V5Core.stratifiedStarts( ...
+                    size(raw, 2), S60.nrn, cfg.num_samples_per_dataset);
+                for local_idx = 1:cfg.num_samples_per_dataset
+                    sample_id = sample_id + 1;
+                    c_start = starts(local_idx);
+                    block = raw(:, c_start:c_start + S60.nrn - 1);
+                    signal60 = block(1:3:end, :);
+                    assert(isequal(size(signal60), [S60.nrn, S60.nan]), ...
+                        "样本尺寸与FS60参数不一致。");
+                    complex_gt_roi = V5Core.buildGTComplexROI(signal60, S60);
+                    sample_cache(sample_id).sample_id = sample_id;
+                    sample_cache(sample_id).dataset_idx = ds_idx;
+                    sample_cache(sample_id).sample_idx = local_idx;
+                    sample_cache(sample_id).dataset_name = string(ds_name);
+                    sample_cache(sample_id).filename = string(picked_name);
+                    sample_cache(sample_id).filepath = string(mat_path);
+                    sample_cache(sample_id).c_start = c_start;
+                    sample_cache(sample_id).img_gt = ...
+                        normalize_image(abs(complex_gt_roi));
+                    sample_cache(sample_id).complex_gt_roi = complex_gt_roi;
+                end
+                clear raw loaded;
+            end
+            sample_manifest = table( ...
+                [sample_cache.sample_id].', [sample_cache.dataset_idx].', ...
+                [sample_cache.sample_idx].', string({sample_cache.dataset_name}).', ...
+                string({sample_cache.filename}).', [sample_cache.c_start].', ...
+                'VariableNames', {'SampleID', 'DatasetIdx', 'LocalSampleIdx', ...
+                'Dataset', 'File', 'CStart'});
+        end
+
+        function [sample_ids, signals] = loadNoiseDatasetSignals( ...
+                sample_cache, dataset_idx, S60)
+            % 每次只加载一个数据集的10个样本，避免70个完整回波长期占用内存。
+            mask = [sample_cache.dataset_idx] == dataset_idx;
+            entries = sample_cache(mask);
+            if isempty(entries)
+                sample_ids = zeros(0, 1);
+                signals = cell(0, 1);
+                return;
+            end
+            loaded = load(char(entries(1).filepath));
+            names = fieldnames(loaded);
+            raw = loaded.(names{1});
+            sample_ids = [entries.sample_id].';
+            signals = cell(numel(entries), 1);
+            for idx = 1:numel(entries)
+                c_start = entries(idx).c_start;
+                block = raw(:, c_start:c_start + S60.nrn - 1);
+                signal60 = block(1:3:end, :);
+                assert(isequal(size(signal60), [S60.nrn, S60.nan]), ...
+                    "样本尺寸与FS60参数不一致。");
+                signals{idx} = signal60;
+            end
         end
 
         function starts = stratifiedStarts(raw_width, window_width, num_samples)
@@ -177,6 +260,19 @@ classdef V5Core
             IMG = SAR_Imaging(RCMC_out, S60.lambda, S60.Fs, S60.R0, ...
                 S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
             img_gt = normalize_image(V5Core.extractROI(IMG, S60));
+        end
+
+        function complex_roi = buildGTComplexROI(signal60, S60)
+            % 保留传统全精度成像链的舍入路径，并在取幅度前返回复数ROI。
+            RC = Range_Compress(signal60, S60.fc, S60.tnrn, S60.gama, ...
+                S60.R0, S60.C, S60.Fs, S60.Tp);
+            RCMC_out = RCMC(RC, S60.lambda, S60.fnrn, S60.fnan, ...
+                S60.R0, S60.C, S60.v);
+            IMG = SAR_Imaging(RCMC_out, S60.lambda, S60.Fs, S60.R0, ...
+                S60.C, S60.v, S60.tnan, S60.Ta, S60.prf);
+            rows = S60.nrn/2-S60.R_total/2+1:S60.nrn/2+S60.R_total/2;
+            cols = S60.nan/2-S60.A_num/2:S60.nan/2+S60.A_num/2-1;
+            complex_roi = IMG(rows, cols);
         end
 
         function img_out = buildSplitRTImage(signal60, S60, range_q, azimuth_q, As)
@@ -303,6 +399,165 @@ classdef V5Core
             if mod(target_width, 2) == 0, idx = c-h:c+h-1;
             else, idx = c-h:c+h; end
             X_crop = ifft(ifftshift(Xf(:, idx), 2), [], 2);
+        end
+
+        function context = buildNoiseFastContext(S60, defs)
+            % 预计算噪声实验中与样本和随机阈值无关的成像核。
+            context = struct();
+            context.nrn = S60.nrn;
+            context.nan = S60.nan;
+            context.range_kernels = cell(1, max([1, [defs.Range_q]]));
+            context.range_crop_indices = cell(size(context.range_kernels));
+            context.azimuth_crop_indices = cell(1, max([1, [defs.Azimuth_q]]));
+
+            range_factors = unique([1, [defs.Range_q]]);
+            for range_q = range_factors
+                nrn_up = round(range_q * S60.nrn);
+                [tnrn_up, Fs_up] = V5Core.rangeAxis(nrn_up, range_q, S60);
+                pulse_sample_count = fix(S60.Tp * Fs_up);
+                center_idx = floor(nrn_up / 2) + 1;
+                start_idx = center_idx - floor(pulse_sample_count / 2);
+                end_idx = start_idx + pulse_sample_count - 1;
+                assert(pulse_sample_count >= 1 && start_idx >= 1 && ...
+                    end_idx <= nrn_up, "距离压缩脉冲窗口超出回波范围。");
+                range_filter = zeros(nrn_up, 1);
+                pulse_time = tnrn_up(start_idx:end_idx);
+                range_filter(start_idx:end_idx) = exp(1i * pi * S60.gama * ...
+                    (pulse_time(:) - 2 * S60.R0 / S60.C) .^ 2);
+                context.range_kernels{range_q} = conj( ...
+                    V5Core.centeredFFT(range_filter, 1));
+                context.range_crop_indices{range_q} = ...
+                    V5Core.centeredIndices(nrn_up, S60.nrn);
+            end
+
+            azimuth_factors = unique([1, [defs.Azimuth_q]]);
+            for azimuth_q = azimuth_factors
+                nan_up = round(azimuth_q * S60.nan);
+                context.azimuth_crop_indices{azimuth_q} = ...
+                    V5Core.centeredIndices(nan_up, S60.nan);
+            end
+
+            fnan_row = S60.fnan(:).';
+            migration = S60.lambda ^ 2 * S60.R0 * fnan_row .^ 2 / ...
+                (8 * S60.v ^ 2);
+            context.rcmc_kernel = exp(1i * 2 * pi * ...
+                (S60.fnrn(:) * (2 * migration / S60.C)));
+
+            delta_range = S60.C / (2 * S60.Fs);
+            range_scale = (-S60.nrn / 2:S60.nrn / 2 - 1).' * delta_range;
+            azimuth_rate = -2 * S60.v ^ 2 ./ ...
+                (S60.lambda * (range_scale + S60.R0));
+            azimuth_filter = zeros(S60.nrn, S60.nan);
+            aperture_samples = fix(S60.Ta * S60.prf);
+            start_idx = -aperture_samples / 2 + S60.nan / 2 + 1;
+            end_idx = aperture_samples / 2 + S60.nan / 2;
+            assert(start_idx == round(start_idx) && end_idx == round(end_idx), ...
+                "方位压缩窗口索引不是整数。");
+            aperture_idx = round(start_idx):round(end_idx);
+            azimuth_filter(:, aperture_idx) = exp(-1i * pi * azimuth_rate * ...
+                (S60.tnan(aperture_idx) .^ 2));
+            context.azimuth_kernel = V5Core.centeredFFT(azimuth_filter, 2);
+
+            context.roi_rows = S60.nrn / 2 - S60.R_total / 2 + 1: ...
+                S60.nrn / 2 + S60.R_total / 2;
+            context.roi_cols = S60.nan / 2 - S60.A_num / 2: ...
+                S60.nan / 2 + S60.A_num / 2 - 1;
+        end
+
+        function complex_roi = fastFocusComplexROI( ...
+                channel, context, range_q, azimuth_q)
+            % 在中心频谱上直接完成裁剪、RCMC和方位压缩，消除成对FFT/IFFT。
+            expected_size = [round(range_q * context.nrn), ...
+                round(azimuth_q * context.nan)];
+            assert(isequal(size(channel), expected_size), ...
+                "快路径输入尺寸与距离/方位倍率不一致。");
+            range_spectrum = V5Core.centeredFFT(channel, 1) .* ...
+                context.range_kernels{range_q};
+            if range_q > 1
+                range_spectrum = range_spectrum( ...
+                    context.range_crop_indices{range_q}, :);
+            end
+            range_doppler = V5Core.centeredFFT(range_spectrum, 2);
+            if azimuth_q > 1
+                range_doppler = range_doppler(:, ...
+                    context.azimuth_crop_indices{azimuth_q});
+            end
+            assert(isequal(size(range_doppler), [context.nrn, context.nan]), ...
+                "频域裁剪后的尺寸与基础成像网格不一致。");
+            range_azimuth = V5Core.centeredIFFT( ...
+                range_doppler .* context.rcmc_kernel, 1);
+            image = V5Core.centeredIFFT( ...
+                range_azimuth .* context.azimuth_kernel, 2);
+            complex_roi = image(context.roi_rows, context.roi_cols);
+        end
+
+        function [img_out, channel_1bit] = buildNoiseFastImageFromUpsampled( ...
+                signal_up, context, range_q, azimuth_q, As, seed, block_cols)
+            % 使用局部随机流和分块阈值量化，避免全尺寸阈值与相位矩阵常驻。
+            stream = RandStream('mt19937ar', 'Seed', seed);
+            channel_1bit = V5Core.quantizeSplitRTBlocked( ...
+                signal_up, As, stream, block_cols);
+            complex_roi = V5Core.fastFocusComplexROI( ...
+                channel_1bit, context, range_q, azimuth_q);
+            img_out = normalize_image(abs(complex_roi));
+        end
+
+        function S1 = quantizeSplitRTBlocked(S, As, stream, block_cols)
+            [num_rows, num_cols] = size(S);
+            phase_range = exp(1i * 2 * pi * rand(stream, num_rows, 1));
+            phase_azimuth = exp(1i * 2 * pi * rand(stream, 1, num_cols));
+            sigma = sqrt(2 / pi) * mean(abs(S(:)));
+            amplitude = As * sigma;
+            S1 = zeros(size(S), "like", S);
+            for first_col = 1:block_cols:num_cols
+                columns = first_col:min(first_col + block_cols - 1, num_cols);
+                signal_block = S(:, columns);
+                threshold = amplitude * ...
+                    (phase_range * phase_azimuth(columns));
+                real_values = ones(size(signal_block), "like", real(signal_block));
+                imag_values = ones(size(signal_block), "like", real(signal_block));
+                real_values(real(signal_block) + real(threshold) < 0) = -1;
+                imag_values(imag(signal_block) + imag(threshold) < 0) = -1;
+                S1(:, columns) = complex(real_values, imag_values);
+            end
+        end
+
+        function [base_noise, stats] = buildSharedNoiseBase(signal, seed)
+            % 每个样本/重复只生成一次零均值标准复高斯噪声，供全部SNR缩放。
+            stream = RandStream('mt19937ar', 'Seed', seed);
+            [num_rows, num_cols] = size(signal);
+            base_noise = complex(randn(stream, num_rows, num_cols), ...
+                randn(stream, num_rows, num_cols));
+            base_noise = base_noise - mean(base_noise, "all");
+            base_noise_power = mean(abs(base_noise(:)) .^ 2);
+            if isa(signal, "single")
+                % 原始SAR回波为single时及时回收double随机矩阵，降低FFT内存和耗时。
+                base_noise = single(base_noise);
+            end
+            stats = struct( ...
+                "SignalPower", mean(abs(signal(:)) .^ 2), ...
+                "BaseNoisePower", base_noise_power);
+        end
+
+        function Xf = centeredFFT(X, dimension)
+            Xf = fftshift(fft(fftshift(X, dimension), [], dimension), dimension);
+        end
+
+        function X = centeredIFFT(Xf, dimension)
+            X = fftshift(ifft(fftshift(Xf, dimension), [], dimension), dimension);
+        end
+
+        function indices = centeredIndices(current_size, target_size)
+            if target_size > current_size
+                error("目标频谱尺寸大于当前尺寸。");
+            end
+            center = floor(current_size / 2) + 1;
+            half_size = floor(target_size / 2);
+            if mod(target_size, 2) == 0
+                indices = center - half_size:center + half_size - 1;
+            else
+                indices = center - half_size:center + half_size;
+            end
         end
 
         function value = imageEntropy(img, num_bins)

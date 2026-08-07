@@ -4,8 +4,9 @@ function V5_NoiseEvaluation()
 cfg=V5Core.config(); addpath(cfg.repo_root,cfg.experiment_dir);
 output_dir=fullfile(cfg.output_root,"NoiseEvaluation"); V5Core.ensureDir(output_dir);
 S60=load(cfg.parameter_file);
-[cache,manifest]=V5Core.buildSampleCache(cfg,S60);
 defs=V5Core.noiseGroupDefinitions();
+fast_context=V5Core.buildNoiseFastContext(S60,defs);
+[cache,manifest]=V5Core.buildNoiseSampleCache(cfg,S60);
 n_groups=numel(defs); n_snr=numel(cfg.SNR_dB_list);
 n_samples=numel(cache); n_repeats=cfg.noise_repeats;
 [is_enl,enl_top,enl_left,~,roi_manifest]= ...
@@ -18,10 +19,12 @@ psnr_noisy=nan(n_groups,n_snr,n_samples,n_repeats);
 ssim_noisy=nan(n_groups,n_snr,n_samples,n_repeats);
 enl_all=nan(n_groups,n_snr,n_samples,n_repeats);
 actual_snr=nan(n_snr,n_samples,n_repeats);
-completed=false(n_snr,n_samples);
+clean_psnr=nan(n_groups,n_samples); clean_ssim=nan(n_groups,n_samples);
+clean_enl=nan(n_groups,n_samples); baseline_completed=false(n_samples,1);
+completed=false(n_samples,n_repeats);
 signature=buildSignature(cfg,defs,manifest,roi_manifest);
-checkpoint_name=sprintf("V5_Noise_Checkpoint_R%d_%s.mat", ...
-    n_repeats,cfg.noise_seed_protocol);
+checkpoint_name=sprintf("V5_Noise_Checkpoint_R%d_%s_%s.mat", ...
+    n_repeats,cfg.noise_seed_protocol,cfg.noise_compute_version);
 checkpoint_path=fullfile(output_dir,checkpoint_name);
 if isfile(checkpoint_path)
     cp=load(checkpoint_path);
@@ -31,67 +34,101 @@ if isfile(checkpoint_path)
     psnr_clean=cp.psnr_clean; ssim_clean=cp.ssim_clean;
     psnr_noisy=cp.psnr_noisy; ssim_noisy=cp.ssim_noisy;
     enl_all=cp.enl_all; actual_snr=cp.actual_snr; completed=cp.completed;
-    fprintf("恢复V5噪声checkpoint：%d/%d个SNR-样本单元已完成。\n", ...
+    clean_psnr=cp.clean_psnr; clean_ssim=cp.clean_ssim;
+    clean_enl=cp.clean_enl; baseline_completed=cp.baseline_completed;
+    fprintf("恢复V5噪声checkpoint：%d/%d个样本-重复单元已完成。\n", ...
         nnz(completed),numel(completed));
 else
     save(checkpoint_path,"signature","psnr_clean","ssim_clean", ...
         "psnr_noisy","ssim_noisy","enl_all","actual_snr", ...
+        "clean_psnr","clean_ssim","clean_enl","baseline_completed", ...
         "completed","-v7.3");
 end
 checkpoint=matfile(checkpoint_path,"Writable",true);
-
-fprintf("=== V5噪声实验：%d SNR × %d样本 × %d重复 × %d分配 ===\n", ...
-    n_snr,n_samples,n_repeats,n_groups);
-for snr_idx=1:n_snr
-    target_snr=cfg.SNR_dB_list(snr_idx);
-    for sample_idx=1:n_samples
-        if completed(snr_idx,sample_idx), continue; end
-        clean_signal=cache(sample_idx).signal60_input;
-        clean_gt=cache(sample_idx).img_gt;
-        for repeat_idx=1:n_repeats
-            % 同一样本/重复跨SNR复用相同标准噪声形状，三种分配共享同一带噪回波。
-            rng(V5Core.noiseSeed(cfg,sample_idx,repeat_idx));
-            [noise,noise_stats]=gaussian(clean_signal,target_snr,false);
-            noisy_signal=clean_signal+noise;
-            noisy_gt=V5Core.buildGTImage(noisy_signal,S60);
-            actual_snr(snr_idx,sample_idx,repeat_idx)=noise_stats.ActualSNRdB;
-            for group_idx=1:n_groups
-                rng(V5Core.rtSeed(cfg,snr_idx,group_idx,sample_idx,repeat_idx));
-                img=V5Core.buildSplitRTImage(noisy_signal,S60, ...
-                    defs(group_idx).Range_q,defs(group_idx).Azimuth_q,cfg.As);
-                psnr_clean(group_idx,snr_idx,sample_idx,repeat_idx)=psnr(img,clean_gt);
-                ssim_clean(group_idx,snr_idx,sample_idx,repeat_idx)=ssim(img,clean_gt);
-                psnr_noisy(group_idx,snr_idx,sample_idx,repeat_idx)=psnr(img,noisy_gt);
-                ssim_noisy(group_idx,snr_idx,sample_idx,repeat_idx)=ssim(img,noisy_gt);
-                if is_enl(sample_idx)
-                    enl_all(group_idx,snr_idx,sample_idx,repeat_idx)= ...
-                        V5Core.enl(img,enl_top(sample_idx), ...
-                        enl_left(sample_idx),cfg.enl_window_size);
-                end
-            end
-        end
-        % 先写完整结果切片，最后更新完成标记，避免中断后跳过半成品样本。
-        checkpoint.psnr_clean(:,snr_idx,sample_idx,:)= ...
-            psnr_clean(:,snr_idx,sample_idx,:);
-        checkpoint.ssim_clean(:,snr_idx,sample_idx,:)= ...
-            ssim_clean(:,snr_idx,sample_idx,:);
-        checkpoint.psnr_noisy(:,snr_idx,sample_idx,:)= ...
-            psnr_noisy(:,snr_idx,sample_idx,:);
-        checkpoint.ssim_noisy(:,snr_idx,sample_idx,:)= ...
-            ssim_noisy(:,snr_idx,sample_idx,:);
-        checkpoint.enl_all(:,snr_idx,sample_idx,:)= ...
-            enl_all(:,snr_idx,sample_idx,:);
-        checkpoint.actual_snr(snr_idx,sample_idx,:)= ...
-            actual_snr(snr_idx,sample_idx,:);
-        completed(snr_idx,sample_idx)=true;
-        checkpoint.completed(snr_idx,sample_idx)=true;
-    end
-    fprintf("SNR %.1f dB完成。\n",target_snr);
+[use_parallel,max_workers,created_pool,parallel_mode]=configureParallel(cfg);
+if ~isempty(created_pool)
+    pool_cleanup=onCleanup(@() closeCreatedPool(created_pool));
 end
 
-% clean baseline只需每组每样本运行一次，两种GT参考在此完全相同。
-[clean_psnr,clean_ssim,clean_enl]=buildCleanBaseline(cfg,defs,cache,S60, ...
-    is_enl,enl_top,enl_left);
+fprintf(["=== V5噪声实验CPU快路径：%d SNR × %d样本 × %d重复 × " ...
+    "%d分配；%s，最多%d worker ===\n"],n_snr,n_samples,n_repeats, ...
+    n_groups,parallel_mode,max_workers);
+for dataset_idx=1:numel(cfg.dataset_names)
+    [sample_ids,signals]=V5Core.loadNoiseDatasetSignals(cache,dataset_idx,S60);
+    for local_idx=1:numel(sample_ids)
+        sample_idx=sample_ids(local_idx);
+        pending_repeats=find(~completed(sample_idx,:));
+        if isempty(pending_repeats) && baseline_completed(sample_idx)
+            continue;
+        end
+        clean_signal=signals{local_idx};
+        clean_gt=cache(sample_idx).img_gt;
+        clean_complex_roi=cache(sample_idx).complex_gt_roi;
+        sample_is_enl=is_enl(sample_idx);
+        sample_enl_top=enl_top(sample_idx);
+        sample_enl_left=enl_left(sample_idx);
+        clean_up=cell(n_groups,1);
+        for group_idx=1:n_groups
+            clean_up{group_idx}=V5Core.twoDimUpsample(clean_signal, ...
+                defs(group_idx).Azimuth_q,defs(group_idx).Range_q);
+        end
+
+        if ~baseline_completed(sample_idx)
+            [clean_psnr(:,sample_idx),clean_ssim(:,sample_idx), ...
+                clean_enl(:,sample_idx)]=evaluateCleanBaseline( ...
+                clean_up,clean_gt,defs,cfg,fast_context,sample_is_enl, ...
+                sample_enl_top,sample_enl_left,sample_idx);
+            checkpoint.clean_psnr(:,sample_idx)=clean_psnr(:,sample_idx);
+            checkpoint.clean_ssim(:,sample_idx)=clean_ssim(:,sample_idx);
+            checkpoint.clean_enl(:,sample_idx)=clean_enl(:,sample_idx);
+            baseline_completed(sample_idx)=true;
+            checkpoint.baseline_completed(sample_idx,1)=true;
+        end
+
+        for batch_start=1:max_workers:numel(pending_repeats)
+            batch_repeats=pending_repeats(batch_start: ...
+                min(batch_start+max_workers-1,numel(pending_repeats)));
+            batch_results=cell(numel(batch_repeats),1);
+            if use_parallel && numel(batch_repeats)>1
+                parfor (task_idx=1:numel(batch_repeats),max_workers)
+                    batch_results{task_idx}=evaluateNoiseRepeat( ...
+                        batch_repeats(task_idx),sample_idx,clean_signal, ...
+                        clean_complex_roi,clean_gt,clean_up,fast_context, ...
+                        defs,cfg,sample_is_enl,sample_enl_top,sample_enl_left);
+                end
+            else
+                for task_idx=1:numel(batch_repeats)
+                    batch_results{task_idx}=evaluateNoiseRepeat( ...
+                        batch_repeats(task_idx),sample_idx,clean_signal, ...
+                        clean_complex_roi,clean_gt,clean_up,fast_context, ...
+                        defs,cfg,sample_is_enl,sample_enl_top,sample_enl_left);
+                end
+            end
+            for task_idx=1:numel(batch_repeats)
+                repeat_idx=batch_repeats(task_idx); result=batch_results{task_idx};
+                psnr_clean(:,:,sample_idx,repeat_idx)=result.psnr_clean;
+                ssim_clean(:,:,sample_idx,repeat_idx)=result.ssim_clean;
+                psnr_noisy(:,:,sample_idx,repeat_idx)=result.psnr_noisy;
+                ssim_noisy(:,:,sample_idx,repeat_idx)=result.ssim_noisy;
+                enl_all(:,:,sample_idx,repeat_idx)=result.enl;
+                actual_snr(:,sample_idx,repeat_idx)=result.actual_snr;
+                % 先写完整切片，最后更新完成标记，避免恢复半成品任务。
+                checkpoint.psnr_clean(:,:,sample_idx,repeat_idx)=result.psnr_clean;
+                checkpoint.ssim_clean(:,:,sample_idx,repeat_idx)=result.ssim_clean;
+                checkpoint.psnr_noisy(:,:,sample_idx,repeat_idx)=result.psnr_noisy;
+                checkpoint.ssim_noisy(:,:,sample_idx,repeat_idx)=result.ssim_noisy;
+                checkpoint.enl_all(:,:,sample_idx,repeat_idx)=result.enl;
+                checkpoint.actual_snr(:,sample_idx,repeat_idx)=result.actual_snr;
+                completed(sample_idx,repeat_idx)=true;
+                checkpoint.completed(sample_idx,repeat_idx)=true;
+            end
+        end
+        fprintf("样本%d/%d完成。\n",sample_idx,n_samples);
+        clear clean_up clean_signal;
+    end
+    clear signals;
+end
+
 psnr_clean_sample=mean(psnr_clean,4); ssim_clean_sample=mean(ssim_clean,4);
 psnr_noisy_sample=mean(psnr_noisy,4); ssim_noisy_sample=mean(ssim_noisy,4);
 enl_sample=mean(enl_all,4,"omitnan");
@@ -119,12 +156,14 @@ save(fullfile(output_dir,"V5_Noise_Data.mat"),"cfg","defs","manifest", ...
     "enl_all","actual_snr","clean_psnr","clean_ssim","clean_enl", ...
     "summary","paired_tests","-v7.3");
 exportCurves(defs,cfg.SNR_dB_list,summary,clean_baseline,output_dir);
-writeMetadata(cfg,defs,n_samples,sum(is_enl),checkpoint_name,output_dir);
+writeMetadata(cfg,defs,n_samples,sum(is_enl),checkpoint_name,parallel_mode, ...
+    max_workers,output_dir);
 fprintf("V5噪声实验完成：%s\n",output_dir);
 end
 
 function signature=buildSignature(cfg,defs,manifest,roi_manifest)
 signature=struct("Experiment","V5_NoiseEvaluation", ...
+    "ComputeVersion",cfg.noise_compute_version, ...
     "SNRdBList",cfg.SNR_dB_list,"Repeats",cfg.noise_repeats, ...
     "As",cfg.As,"NoiseSeed",cfg.noise_seed,"RTSeed",cfg.seed, ...
     "SeedProtocol",cfg.noise_seed_protocol, ...
@@ -136,27 +175,93 @@ signature=struct("Experiment","V5_NoiseEvaluation", ...
     "ENLROIWidth",roi_manifest.ROIWidth,"ENLStride",cfg.enl_stride, ...
     "ENLDatasets",cfg.enl_dataset_names, ...
     "ENLProtocol","clean GT fixed ROI; intensity=normalized amplitude squared", ...
-    "NoiseProtocol","shared echo; same base Gaussian across SNR by scaling", ...
+    "NoiseProtocol","shared centered base Gaussian; linear scaling across SNR", ...
     "GTProtocols",["clean_gt","same_noise_gt"]);
 end
 
-function [clean_psnr,clean_ssim,clean_enl]=buildCleanBaseline( ...
-        cfg,defs,cache,S60,is_enl,enl_top,enl_left)
-n_groups=numel(defs); n_samples=numel(cache);
-clean_psnr=nan(n_groups,n_samples); clean_ssim=nan(n_groups,n_samples);
-clean_enl=nan(n_groups,n_samples);
+function [clean_psnr,clean_ssim,clean_enl]=evaluateCleanBaseline( ...
+        clean_up,clean_gt,defs,cfg,context,is_enl,enl_top,enl_left,sample_idx)
+n_groups=numel(defs); clean_psnr=nan(n_groups,1);
+clean_ssim=nan(n_groups,1); clean_enl=nan(n_groups,1);
 for group_idx=1:n_groups
-    for sample_idx=1:n_samples
-        rng(V5Core.rtSeed(cfg,0,group_idx,sample_idx,1));
-        img=V5Core.buildSplitRTImage(cache(sample_idx).signal60_input,S60, ...
-            defs(group_idx).Range_q,defs(group_idx).Azimuth_q,cfg.As);
-        clean_psnr(group_idx,sample_idx)=psnr(img,cache(sample_idx).img_gt);
-        clean_ssim(group_idx,sample_idx)=ssim(img,cache(sample_idx).img_gt);
-        if is_enl(sample_idx)
-            clean_enl(group_idx,sample_idx)=V5Core.enl(img, ...
-                enl_top(sample_idx),enl_left(sample_idx),cfg.enl_window_size);
+    img=V5Core.buildNoiseFastImageFromUpsampled(clean_up{group_idx},context, ...
+        defs(group_idx).Range_q,defs(group_idx).Azimuth_q,cfg.As, ...
+        V5Core.rtSeed(cfg,0,group_idx,sample_idx,1), ...
+        cfg.noise_quant_block_cols);
+    clean_psnr(group_idx)=psnr(img,clean_gt);
+    clean_ssim(group_idx)=ssim(img,clean_gt);
+    if is_enl
+        clean_enl(group_idx)=V5Core.enl(img,enl_top,enl_left, ...
+            cfg.enl_window_size);
+    end
+end
+end
+
+function result=evaluateNoiseRepeat(repeat_idx,sample_idx,clean_signal, ...
+        clean_complex_roi,clean_gt,clean_up,context,defs,cfg,is_enl, ...
+        enl_top,enl_left)
+% 单个重复内部共享基础噪声、noisy GT和三组上采样结果。
+n_groups=numel(defs); n_snr=numel(cfg.SNR_dB_list);
+[base_noise,noise_stats]=V5Core.buildSharedNoiseBase(clean_signal, ...
+    V5Core.noiseSeed(cfg,sample_idx,repeat_idx));
+noise_complex_roi=V5Core.fastFocusComplexROI(base_noise,context,1,1);
+scales=sqrt(noise_stats.SignalPower ./ ...
+    (10 .^ (cfg.SNR_dB_list / 10))) / sqrt(2);
+actual_snr=10*log10(noise_stats.SignalPower ./ ...
+    (scales.^2*noise_stats.BaseNoisePower));
+noisy_gt=cell(n_snr,1);
+for snr_idx=1:n_snr
+    noisy_gt{snr_idx}=normalize_image(abs( ...
+        clean_complex_roi+scales(snr_idx)*noise_complex_roi));
+end
+result=struct("psnr_clean",nan(n_groups,n_snr), ...
+    "ssim_clean",nan(n_groups,n_snr),"psnr_noisy",nan(n_groups,n_snr), ...
+    "ssim_noisy",nan(n_groups,n_snr),"enl",nan(n_groups,n_snr), ...
+    "actual_snr",actual_snr(:));
+for group_idx=1:n_groups
+    noise_up=V5Core.twoDimUpsample(base_noise, ...
+        defs(group_idx).Azimuth_q,defs(group_idx).Range_q);
+    for snr_idx=1:n_snr
+        signal_up=clean_up{group_idx}+scales(snr_idx)*noise_up;
+        img=V5Core.buildNoiseFastImageFromUpsampled(signal_up,context, ...
+            defs(group_idx).Range_q,defs(group_idx).Azimuth_q,cfg.As, ...
+            V5Core.rtSeed(cfg,snr_idx,group_idx,sample_idx,repeat_idx), ...
+            cfg.noise_quant_block_cols);
+        result.psnr_clean(group_idx,snr_idx)=psnr(img,clean_gt);
+        result.ssim_clean(group_idx,snr_idx)=ssim(img,clean_gt);
+        result.psnr_noisy(group_idx,snr_idx)=psnr(img,noisy_gt{snr_idx});
+        result.ssim_noisy(group_idx,snr_idx)=ssim(img,noisy_gt{snr_idx});
+        if is_enl
+            result.enl(group_idx,snr_idx)=V5Core.enl(img,enl_top,enl_left, ...
+                cfg.enl_window_size);
         end
     end
+end
+end
+
+function [use_parallel,max_workers,created_pool,parallel_mode]=configureParallel(cfg)
+use_parallel=false; max_workers=1; created_pool=[]; parallel_mode="serial";
+if ~license("test","Distrib_Computing_Toolbox") || cfg.noise_num_workers<=1
+    return;
+end
+try
+    pool=gcp("nocreate");
+    if isempty(pool)
+        pool=parpool("Threads",cfg.noise_num_workers);
+        created_pool=pool;
+    end
+    max_workers=min(cfg.noise_num_workers,pool.NumWorkers);
+    use_parallel=max_workers>1;
+    parallel_mode=string(class(pool));
+catch exception
+    warning("V5:NoiseParallelFallback", ...
+        "CPU并行池不可用，将串行运行：%s",exception.message);
+end
+end
+
+function closeCreatedPool(pool)
+if ~isempty(pool) && isvalid(pool)
+    delete(pool);
 end
 end
 
@@ -403,7 +508,8 @@ set(fig,"PaperUnits","centimeters","PaperPosition",[0 0 9 5.6], ...
 print(fig,pdf_path,"-dpdf","-vector");
 end
 
-function writeMetadata(cfg,defs,n_samples,n_enl,checkpoint_name,output_dir)
+function writeMetadata(cfg,defs,n_samples,n_enl,checkpoint_name,parallel_mode, ...
+        max_workers,output_dir)
 fid=fopen(fullfile(output_dir,"V5_Noise_Metadata.txt"),"w");
 cleanup=onCleanup(@() fclose(fid));
 fprintf(fid,"SNRdBList=%s\nRepeats=%d\nAs=%.16g\n", ...
@@ -412,6 +518,10 @@ fprintf(fid,"Groups=%s\nSampleCount=%d\nNoiseSeed=%d\nRTSeed=%d\n", ...
     strjoin(string({defs.GroupName}),","),n_samples,cfg.noise_seed,cfg.seed);
 fprintf(fid,"SeedProtocol=%s\nCheckpoint=%s\n", ...
     cfg.noise_seed_protocol,checkpoint_name);
+fprintf(fid,"ComputeVersion=%s\nParallelMode=%s\nMaxWorkers=%d\n", ...
+    cfg.noise_compute_version,parallel_mode,max_workers);
+fprintf(fid,"QuantizationBlockColumns=%d\nGPU=false\n", ...
+    cfg.noise_quant_block_cols);
 fprintf(fid,"References=clean_gt,same_noise_gt\nRepeatAggregation=mean within sample\n");
 fprintf(fid,"NoiseSharedAcrossGroups=true\nBaseNoiseSharedAcrossSNR=true\n");
 fprintf(fid,"ENLSampleCount=%d\nENLDatasets=%s\nENLWindow=%d\nENLStride=%d\n", ...
