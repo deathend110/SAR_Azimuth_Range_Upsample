@@ -189,7 +189,7 @@ Each complex Gaussian realization is centered and added to the raw echo accordin
 
 \subsection{Experimental Setup}
 
-The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. All RT experiments use seed 2026 and $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
+The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. Unless otherwise specified, all RT experiments use seed 2026 and $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
 
 Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Equivalent number of looks (ENL) is computed from intensity images obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
 \begin{equation}
@@ -250,7 +250,7 @@ Fig.~\ref{fig:scene_examples} shows that both unidirectional allocations improve
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.90\linewidth]{../assert/Scene_SharedColorbar.png}
-\caption{Representative normalized-amplitude SAR images for $Q_{\mathrm{up}}=4$. Metrics are computed relative to GT, the GT panel is self-referenced; all panels share the same $[0,1]$ color scale.}
+\caption{Representative normalized-amplitude SAR images for $Q_{\mathrm{up}}=4$. Metrics are computed relative to GT; The GT panel is self-referenced; All panels share the same $[0,1]$ color scale.}
 \label{fig:scene_examples}
 \end{figure}
 
@@ -311,7 +311,7 @@ Table~\ref{tab:evaluation_indexes} shows that R1A1 gives the lowest reconstructi
 
 Across the five budgets, the PSNR-selected bidirectional allocations outperform their unidirectional counterparts by 0.2856--0.5072~dB in PSNR and 0.0169--0.0221 in SSIM. Paired comparisons give $p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$. The similar performance of R2A3 and R3A2 at $Q_{\mathrm{up}}=6$, R2A4 and R4A2 at $Q_{\mathrm{up}}=8$, and R2A5 and R5A2 at $Q_{\mathrm{up}}=10$ further indicates a near-optimal region rather than a unique factor pair.
 
-ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal group at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
+ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal allocation at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
 The noise robustness comparison is reported in Table~\ref{tab:noise_ablation}.
 
