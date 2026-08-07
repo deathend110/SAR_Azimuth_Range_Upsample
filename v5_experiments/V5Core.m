@@ -13,13 +13,13 @@ classdef V5Core
             cfg.parameter_file = fullfile(repo_root, "FS60_params.mat");
             cfg.seed = 2026;
             cfg.noise_seed = 20260804;
-            cfg.noise_seed_protocol = "decimal_v2_r100";
+            cfg.noise_seed_protocol = "decimal_v2_r10";
             cfg.As = 0.6;
             cfg.Q_list = [4, 6, 8, 9, 10];
             cfg.table_Q_list = cfg.Q_list;
             cfg.As_list = 0:0.1:1.5;
             cfg.SNR_dB_list = -2:0.5:12;
-            cfg.noise_repeats = 100;
+            cfg.noise_repeats = 10;
             cfg.num_samples_per_dataset = 10;
             cfg.dataset_names = { ...
                 "SAR_Dataset_Bangkok_1", ...

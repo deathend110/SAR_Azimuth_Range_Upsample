@@ -11,8 +11,8 @@ end
 function testConfig(test_case)
 cfg = V5Core.config();
 verifyEqual(test_case, cfg.SNR_dB_list, -2:0.5:12);
-verifyEqual(test_case, cfg.noise_repeats, 100);
-verifyEqual(test_case, cfg.noise_seed_protocol, "decimal_v2_r100");
+verifyEqual(test_case, cfg.noise_repeats, 10);
+verifyEqual(test_case, cfg.noise_seed_protocol, "decimal_v2_r10");
 verifyEqual(test_case, cfg.table_Q_list, cfg.Q_list);
 end
 
