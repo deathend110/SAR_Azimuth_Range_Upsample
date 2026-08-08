@@ -189,17 +189,11 @@ where SNR$_{dB}$ denotes the target input SNR in decibels. Each complex Gaussian
 
 \subsection{Experimental Setup}
 
-The experiments use seven SAR datasets representing different land-cover and structural patterns. Ten stratified windows are selected from each dataset, giving 70 paired samples. The ground truth (GT) is reconstructed from the unquantized complex echo using the same range compression, RCMC, image formation, ROI, and normalization as the one-bit results. Unless otherwise specified, all RT experiments use seed 2026 and $A_s=0.6$ for $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
+Seven SAR datasets provide ten stratified windows each, giving 70 paired samples across different land-cover and structural patterns. Ground truth (GT) is reconstructed from the unquantized complex echo with the same range compression, RCMC, image formation, ROI, and normalization used for the one-bit results. Unless stated otherwise, RT experiments use seed 2026, $A_s=0.6$, and $Q_{\mathrm{up}}\in\{4,6,8,9,10\}$.
 
-Reconstruction fidelity is evaluated using peak signal-to-noise ratio (PSNR) and structural similarity (SSIM) \cite{wang2004ssim}. Equivalent number of looks (ENL) is computed from intensity images obtained by squaring the normalized amplitude. For a homogeneous intensity region, ENL is defined as \cite{feng2015tgv}
-\begin{equation}
-    \mathrm{ENL}=\frac{\mu_I^2}{\sigma_I^2},
-\end{equation}
-where $\mu_I$ and $\sigma_I^2$ are the mean and variance within a homogeneous ROI. ENL is calculated for 20 samples from the field and port datasets. A $64\times64$ ROI is selected on each GT image and then reused unchanged for every allocation. PSNR and SSIM use all paired samples. For each budget, the best bidirectional and unidirectional allocations are selected by mean PSNR. Paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking} are applied to the corresponding paired sample vectors.
+PSNR and SSIM assess all paired samples \cite{wang2004ssim}. ENL, defined on normalized-amplitude-squared intensity as $\mathrm{ENL}=\mu_I^2/\sigma_I^2$ \cite{feng2015tgv}, uses 20 field and port samples with one fixed $64\times64$ GT-selected ROI per sample. For each budget, the best bidirectional and unidirectional allocations are selected by mean PSNR and compared using paired Wilcoxon signed-rank tests \cite{wilcoxon1945ranking}.
 
-The mechanism experiment compares R1A1, R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ after range compression. Their spectra are evaluated over a common normalized-frequency window of $[-2,2]\times[-2,2]$, and the reference support mask uses $\tau=0.35$. The threshold-sensitivity experiment evaluates the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$ over the tested $A_s$ values.
-
-For the noisy experiment, 50 Gaussian noise realizations generated with different random seeds are added to each sample at SNR levels of $-2$, $2.5$, $7$, and $11.5$~dB, with the noise-free case retained as a baseline. Each resulting noisy echo is shared by all allocations. R4A1, R1A4, and R2A2 are evaluated at $Q_{\mathrm{up}}=4$ and $A_s=0.6$.
+The mechanism experiment compares R1A1, R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ over a common $[-2,2]\times[-2,2]$ normalized-frequency window with support threshold $\tau=0.35$; threshold sensitivity evaluates the best bidirectional allocations at $Q_{\mathrm{up}}=4,6,9$. The noise experiment shares each of 50 seeded complex Gaussian realizations across R4A1, R1A4, and R2A2 at $Q_{\mathrm{up}}=4$ and $A_s=0.6$, using SNRs of $-2$, $2.5$, $7$, and $11.5$~dB plus a noise-free baseline.
 
 \subsection{Mechanism Analysis}
 
@@ -356,6 +350,7 @@ $\infty$ & R4A1 & 25.7767 & 0.7856 & 1.0188 \\
 
 This paper studied how a fixed pre-quantization digital upsampling budget should be divided between range and azimuth in one-bit SAR imaging. Under a common separable random threshold, bidirectional allocations consistently achieved higher reconstruction fidelity than concentrating the same budget in one dimension, while neighboring bidirectional factor pairs formed a near-optimal plateau. Range-compressed spectral measurements further showed that bidirectional processing reduced off-support and directional leakage. The same allocation advantage was retained under additive complex Gaussian noise. BRAU therefore provides a fixed-budget allocation principle that exploits the two-dimensional spectral redundancy of SAR echoes before one-bit quantization.
 
+\newpage
 \begin{thebibliography}{00}
 
 \bibitem{cumming2005sar}
