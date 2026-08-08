@@ -313,7 +313,7 @@ Across the five budgets, the PSNR-selected bidirectional allocations outperform 
 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal allocation at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
-The noise robustness comparison is reported in Table~\ref{tab:noise_ablation}.
+The noise robustness comparison is reported in Table~\ref{tab:noise_ablation}. R2A2 achieves the highest PSNR and SSIM under every condition, with PSNR increasing from $20.3748$ to $26.1085$~dB and SSIM from $0.4728$ to $0.8037$ as the noise level decreases from $-2$~dB to the noise-free case. ENL remains within a narrow range of $1.0091$--$1.0210$ across the displayed allocations and noise levels.
 
 \begin{table}[!t]
 \caption{Reconstruction quality under additive complex Gaussian noise.}
@@ -322,37 +322,35 @@ The noise robustness comparison is reported in Table~\ref{tab:noise_ablation}.
 \scriptsize
 \renewcommand{\arraystretch}{0.84}
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{c c c c}
+\begin{tabular}{c c c c c}
 \hline
-SNR (dB) & Allocation & PSNR & SSIM \\
+SNR (dB) & Allocation & PSNR & SSIM & ENL \\
 \hline
-$-2$ & R4A1 & 20.2581 & 0.4639 \\
-     & R1A4 & 20.2338 & 0.4630 \\
-     & R2A2 & \textbf{20.4013} & \textbf{0.4733} \\
+$-2$ & R4A1 & 20.2121 & 0.4628 & 1.0099 \\
+     & R1A4 & 20.2082 & 0.4624 & \textbf{1.0106} \\
+     & R2A2 & \textbf{20.3748} & \textbf{0.4728} & 1.0091 \\
 \hline
-2.5 & R4A1 & 22.8908 & 0.6268 \\
-    & R1A4 & 22.8998 & 0.6264 \\
-    & R2A2 & \textbf{23.1022} & \textbf{0.6392} \\
+2.5 & R4A1 & 22.8958 & 0.6269 & 1.0143 \\
+    & R1A4 & 22.8692 & 0.6256 & \textbf{1.0158} \\
+    & R2A2 & \textbf{23.1313} & \textbf{0.6398} & 1.0151 \\
 \hline
-7 & R4A1 & 24.6365 & 0.7221 \\
-  & R1A4 & 24.6290 & 0.7210 \\
-  & R2A2 & \textbf{24.9158} & \textbf{0.7368} \\
+7 & R4A1 & 24.6194 & 0.7217 & 1.0168 \\
+  & R1A4 & 24.5885 & 0.7203 & \textbf{1.0176} \\
+  & R2A2 & \textbf{24.9112} & \textbf{0.7369} & 1.0176 \\
 \hline
-11.5 & R4A1 & 25.3560 & 0.7619 \\
-     & R1A4 & 25.3278 & 0.7609 \\
-     & R2A2 & \textbf{25.6860} & \textbf{0.7789} \\
+11.5 & R4A1 & 25.3575 & 0.7621 & 1.0165 \\
+     & R1A4 & 25.3189 & 0.7607 & \textbf{1.0185} \\
+     & R2A2 & \textbf{25.6856} & \textbf{0.7788} & 1.0183 \\
 \hline
-$\infty$ & R4A1 & 25.7621 & 0.7854 \\
-         & R1A4 & 25.7108 & 0.7840 \\
-         & R2A2 & \textbf{26.0808} & \textbf{0.8029} \\
+$\infty$ & R4A1 & 25.7767 & 0.7856 & 1.0188 \\
+         & R1A4 & 25.7508 & 0.7844 & \textbf{1.0210} \\
+         & R2A2 & \textbf{26.1085} & \textbf{0.8037} & 1.0151 \\
 \hline
 \end{tabular}
 
 \vspace{2pt}
 \parbox{0.96\linewidth}{\footnotesize  $\infty$ refers to the noise-free case.}
 \end{table}
-
-R2A2 achieves the highest PSNR and SSIM under every condition in Table~\ref{tab:noise_ablation}, with PSNR increasing from $20.4013$ to $26.0808$~dB and SSIM from $0.4733$ to $0.8029$ as the noise level decreases from $-2$~dB to the noise-free case.
 
 \section{Conclusion}
 
