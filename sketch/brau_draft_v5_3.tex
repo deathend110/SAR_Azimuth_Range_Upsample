@@ -62,7 +62,7 @@ author5@example.com}
 \maketitle
 
 \begin{abstract}
-High-resolution synthetic aperture radar (SAR) produces large raw-data volumes, motivating one-bit acquisition for onboard data reduction. Existing studies mainly optimize thresholds or reconstruction, while the allocation of a fixed upsampling budget between range and azimuth remains underexplored. This paper proposes bidirectional range-azimuth upsampling (BRAU), which distributes pre-quantization upsampling across both echo dimensions instead of concentrating the entire budget on one axis. Under a common separable random threshold and five integer budgets, bidirectional allocations consistently outperform unidirectional allocations and form a near-optimal plateau among neighboring factor pairs. Range-compressed spectra show lower off-support and directional leakage for a representative bidirectional allocation. These results link the gain to two-dimensional spectral redundancy and provide a practical allocation principle for one-bit SAR imaging.
+One-bit acquisition reduces the raw-data burden of high-resolution synthetic aperture radar (SAR), but how a fixed pre-quantization upsampling budget should be allocated between range and azimuth remains unclear. We propose bidirectional range-azimuth upsampling (BRAU), which distributes this budget across both echo dimensions rather than concentrating it on one axis. Under a common separable random threshold and five integer budgets, bidirectional allocations consistently outperform unidirectional ones and form a near-optimal plateau. Range-compressed spectra further show reduced off-support and directional leakage, linking the gain to two-dimensional spectral redundancy.
 \end{abstract}
 
 \begin{IEEEkeywords}
