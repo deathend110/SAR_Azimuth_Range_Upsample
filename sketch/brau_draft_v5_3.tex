@@ -83,7 +83,7 @@ Because range and azimuth contribute differently to SAR focusing, equal sampling
 
 \subsection{Fixed-Budget Range-Azimuth Upsampling}
 
-Let $s[n,m]\in\mathbb{C}^{N_r\times N_a}$ denote the sampled complex SAR echo, where $n$ and $m$ index range and azimuth, respectively. For range and azimuth factors $R$ and $A$, define
+Let $s\in\mathbb{C}^{N_r\times N_a}$ denote the sampled complex SAR echo, where $s[n,m]$ denotes its sample at range index $n$ and azimuth index $m$. For range and azimuth factors $R$ and $A$, define
 \begin{equation}
     Q_{\mathrm{up}}=RA,\qquad
     N_r^{\uparrow}=RN_r,\qquad N_a^{\uparrow}=AN_a.
@@ -135,7 +135,7 @@ Step & Operation \\
 The main allocation experiment uses a separable random threshold (RT) based on a fluctuating-threshold design in \cite{nie2025fixed}. Its phase is the sum of independent range and azimuth phase vectors:
 \begin{equation}
     u_{\mathrm{RT}}(m,n)
-    =A_s\hat{\sigma}\exp\!\left[j\bigl(\phi_r(m)+\phi_a(n)\bigr)\right],
+    =A_s\hat{\sigma}\exp\!\left[j\bigl(\phi_r(n)+\phi_a(m)\bigr)\right],
 \end{equation}
 where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scale estimated from the upsampled echo, and $A_s$ controls the threshold amplitude.
 
@@ -143,9 +143,9 @@ where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scal
 
 Phase-quantized SAR processing produces nonlinear harmonic distortion \cite{franceschetti1999phase}. Single-frequency thresholds can relocate dominant harmonics \cite{zhao2019onebit}, while learned de-quantization suppresses harmonics in reconstructed one-bit SAR images \cite{si2023dequantization}. For the two-dimensional echo considered here, the effective spectral support spans range and azimuth. A unidirectional allocation enlarges only one spectral axis, whereas a bidirectional allocation supplies redundancy along both axes and can reduce the overlap between quantization distortion and the effective support.
 
-For an intermediate matrix $X$, define the spectral energy
+Let $X\in\mathbb{C}^{N_r\times N_a}$ denote the range-compressed echo after projection onto the original processing grid. Using the centered two-dimensional discrete Fourier transform defined above, its spectral energy is
 \begin{equation}
-    S_X(k_r,k_a)=|\mathcal{F}_2\{X\}(k_r,k_a)|^2.
+    S_X(k_r,k_a)=|\mathcal{F}_{N_r,N_a}\{X\}(k_r,k_a)|^2.
 \end{equation}
 Let $M$ be a support mask obtained by applying a relative magnitude threshold $\tau$ to a reference spectrum. The off-support energy ratio is
 \begin{equation}
@@ -173,9 +173,9 @@ The resulting range- and azimuth-directional leakage ratios are
 For a raw echo containing $N$ complex samples, additive noise is scaled from the pre-quantization echo power as
 \begin{equation}
     P_s=\frac{1}{N}\sum_{i=1}^{N}|s_i|^2,\qquad
-    P_n=P_s10^{-\mathrm{SNR}_{n}/10}.
+    P_n=P_s10^{-\mathrm{SNR}_{dB}/10}.
 \end{equation}
-Each complex Gaussian realization is centered and added to the raw echo according to
+where SNR$_{dB}$ denotes the target input SNR in decibels. Each complex Gaussian realization is centered and added to the raw echo according to
 \begin{equation}
     \begin{aligned}
         n_i^{(0)}&=\sqrt{\frac{P_n}{2}}\left(\xi_i^{(R)}+j\xi_i^{(I)}\right),\quad
