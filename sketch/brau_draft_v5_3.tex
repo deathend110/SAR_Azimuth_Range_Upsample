@@ -97,7 +97,7 @@ Let $\mathcal{F}_{N_r,N_a}$ be the centered two-dimensional discrete Fourier tra
     \!\left\{\mathcal{E}_{R,A}
     \!\left(\mathcal{F}_{N_r,N_a}\{s\}\right)\right\}.
 \end{equation}
-The factor $RA$ preserves the complex-echo scale after spectral embedding. The range sampling frequency becomes $F_s^{\uparrow}=RF_s$, while the azimuth sampling grid is enlarged by $A$. Given a threshold $u[n,m]\in\mathbb{C}^{N_r^{\uparrow}\times N_a^{\uparrow}}$, one-bit quantization is applied separately to both components:
+The factor $RA$ preserves the complex-echo scale after spectral embedding. The range sampling frequency becomes $F_s^{\uparrow}=RF_s$, while the azimuth sampling grid is enlarged by $A$. Given a threshold $u\in\mathbb{C}^{N_r^{\uparrow}\times N_a^{\uparrow}}$, one-bit quantization is applied separately to both components:
 
 \begin{equation}
     \begin{aligned}
@@ -134,7 +134,7 @@ Step & Operation \\
 
 The main allocation experiment uses a separable random threshold (RT) based on a fluctuating-threshold design in \cite{nie2025fixed}. Its phase is the sum of independent range and azimuth phase vectors:
 \begin{equation}
-    u_{\mathrm{RT}}(m,n)
+    u_{\mathrm{RT}}(n,m)
     =A_s\hat{\sigma}\exp\!\left[j\bigl(\phi_r(n)+\phi_a(m)\bigr)\right],
 \end{equation}
 where $\hat{\sigma}=\sqrt{2/\pi}\operatorname{mean}(|s_{\uparrow}|)$ is the scale estimated from the upsampled echo, and $A_s$ controls the threshold amplitude.
