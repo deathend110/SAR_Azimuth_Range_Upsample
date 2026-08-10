@@ -51,7 +51,7 @@ S1 = complex(re, im);
 
 ## 3. 公共幅度尺度
 
-RT、SFT 和 RSFT 都先根据当前上采样复回波估计尺度
+RT 和 SFT 都可以先根据当前上采样复回波估计尺度
 
 $$
 \hat{\sigma}=\sqrt{\frac{2}{\pi}}\operatorname{mean}(|S|).
@@ -63,7 +63,7 @@ $$
 A_{\mathrm{RT}}=A_s\hat{\sigma},
 $$
 
-RSFT 使用信号阈值比 STR 控制幅度：
+SFT 及其各方向子类可以使用信号阈值比 STR 控制幅度：
 
 $$
 A_u=\frac{\hat{\sigma}}{10^{\mathrm{STR}_{dB}/20}}.
@@ -81,9 +81,10 @@ $$
 | 方位向 RT | 每个方位采样一个随机相位 | `Na_up` | 沿距离方向保持不变 |
 | FullRT | 每个二维采样点独立随机相位 | `Nr_up*Na_up` | 二维逐点独立随机 |
 | SplitRT | 距离相位与方位相位相加 | `Nr_up+Na_up` | 可分离二维随机相位 |
-| SingleSFT | 快时间上的确定性线性相位 | 0 | 单方向线性相位 |
-| 一维 RSFT | 距离单频相位，沿方位复制 | 0 | 单方向可调频率 |
-| 二维 RSFT | 距离与方位单频相位相加 | 0 | 两方向频率可独立设置 |
+| SFT | 确定性的单频线性相位 | 0 | 单频阈值的总类 |
+| RSFT | 仅含距离快时间单频相位 | 0 | 沿方位方向保持不变 |
+| ASFT | 仅含方位慢时间单频相位 | 0 | 沿距离方向保持不变 |
+| 2D-SFT | 距离与方位单频相位相加 | 0 | 两方向频率可独立设置 |
 
 ## 5. ZT：零阈值
 
@@ -235,55 +236,99 @@ $$
 
 - 必须先将两个方向的**相位相加**再取复指数，不能把两个复阈值直接相加。
 
-## 10. SingleSFT：固定线性相位阈值
+## 10. SFT：Single Frequency Threshold
 
-### 函数实现
+SFT（Single Frequency Threshold，单频阈值）是确定性线性相位阈值的总类。对二维 SAR 复回波，其一般形式为
+
+$$
+U_{n,m}=A_u\exp\!\left[j\left(
+2\pi f_r\tau_n+2\pi f_a\eta_m+\phi_0
+\right)\right],
+$$
+
+其中：
+
+- $f_r$ 是距离向单频阈值频率，作用于快时间 $\tau_n$；
+- $f_a$ 是方位向单频阈值频率，作用于慢时间 $\eta_m$；
+- $A_u$ 是恒定阈值幅度；
+- $\phi_0$ 是初始相位。
+
+三种常用形式是同一个 SFT 模型的不同参数情况：
+
+| 类型 | 频率条件 | 阈值变化方向 |
+|---|---|---|
+| RSFT | $f_r\ne0,\ f_a=0$ | 仅随距离快时间变化 |
+| ASFT | $f_r=0,\ f_a\ne0$ | 仅随方位慢时间变化 |
+| 2D-SFT | $f_r\ne0,\ f_a\ne0$ | 同时随距离和方位变化 |
+
+当 $f_r=f_a=0$ 时，SFT 退化为相位固定的复常数阈值。
+
+## 11. RSFT：Range Single Frequency Threshold
+
+RSFT（Range Single Frequency Threshold，距离向单频阈值）只在距离快时间上引入线性相位，即令 SFT 一般式中的 $f_a=0$：
+
+$$
+U_{n,m}=A_u\exp\!\left[j(2\pi f_r\tau_n+\phi_0)\right].
+$$
+
+同一距离阈值列向量复制到全部方位脉冲，因此阈值沿方位方向保持不变。
 
 ```matlab
-fast_time_rel = ((0:nrn_up - 1).' - floor(nrn_up / 2)) / Fs_up;
-phi = 2 * pi * fast_time_rel;
-U = A_rt * exp(1i * phi);
+function U = buildRSFTThreshold( ...
+        signal_up, Fs_range_up, fr_Hz, amplitude, initial_phase)
+    [Nr_up, Na_up] = size(signal_up);
+    fast_time = ((0:Nr_up - 1).' - floor(Nr_up / 2)) ...
+        / Fs_range_up;
+    phase_range = 2 * pi * fr_Hz * fast_time + initial_phase;
+    U_column = amplitude * exp(1i * phase_range);
+    U = repmat(U_column, 1, Na_up);
+end
 ```
 
-对应
+若使用相对距离带宽的归一化频率，则
 
 $$
-U_n=A_{\mathrm{RT}}e^{j2\pi t_n}.
+f_r=\left(f_r/B_r\right)B_r,
+\qquad
+F_{s,r}^{\uparrow}=R F_s.
 $$
 
-由于该接口没有显式频率参数 `f0_Hz`，量纲上相当于固定使用 `1 Hz`。如需通用单频阈值，应使用下一节的一维 RSFT 形式，把频率作为显式输入。
+`fast_time` 必须是 `Nr_up×1` 列向量，最终输出 `U` 的尺寸为 `Nr_up×Na_up`。
 
-## 11. 一维 RSFT
+## 12. ASFT：Azimuth Single Frequency Threshold
 
-### 定义
-
-一维 RSFT 只在距离快时间上变化：
+ASFT（Azimuth Single Frequency Threshold，方位向单频阈值）只在方位慢时间上引入线性相位，即令 2D-SFT 中的距离频率 $f_r=0$：
 
 $$
-U_{n,m}=A_u\exp\!\left[j(2\pi f_0\tau_n+\phi_0)\right].
+U_{n,m}=A_u\exp\!\left[j(2\pi f_a\eta_m+\phi_0)\right].
 $$
 
-同一距离阈值列向量复制到全部方位脉冲。
+Nie 等提出的慢时间阈值属于 ASFT。其阈值随方位脉冲变化，并在每个方位时刻沿全部距离单元保持一致。
 
 ```matlab
-fast_time_rel = ((0:Nr_up - 1).' - floor(Nr_up / 2)) / Fs_up;
-phase = 2 * pi * f0_Hz * fast_time_rel + initial_phase;
-U_column = threshold_amplitude * exp(1i * phase);
-U = repmat(U_column, 1, size(signal_up, 2));
+function U = buildASFTThreshold( ...
+        signal_up, PRF_up, fa_Hz, amplitude, initial_phase)
+    [Nr_up, Na_up] = size(signal_up);
+    slow_time = ((0:Na_up - 1) - floor(Na_up / 2)) / PRF_up;
+    phase_azimuth = 2 * pi * fa_Hz * slow_time + initial_phase;
+    U_row = amplitude * exp(1i * phase_azimuth);
+    U = repmat(U_row, Nr_up, 1);
+end
 ```
 
-归一化频率参数可按下式换算：
+若使用相对方位带宽的归一化频率，则
 
 $$
-f_0=\left(f_0/B_r\right)B_r,
-\qquad F_s^\uparrow=R F_s.
+f_a=\left(f_a/B_a\right)B_a,
+\qquad
+\mathrm{PRF}^{\uparrow}=A\,\mathrm{PRF}.
 $$
 
-调用前应保证 `fast_time_rel` 是列向量，最终阈值通过 `repmat` 扩展为与 `signal_up` 完全相同的尺寸。
+`slow_time` 必须是 `1×Na_up` 行向量，最终输出 `U` 的尺寸为 `Nr_up×Na_up`。
 
-## 12. 二维 RSFT
+## 13. 2D-SFT：Two-Dimensional Single Frequency Threshold
 
-### 定义
+2D-SFT 同时保留距离频率和方位频率：
 
 $$
 U_{n,m}=A_u\exp\!\left[j\left(
@@ -291,37 +336,58 @@ U_{n,m}=A_u\exp\!\left[j\left(
 \right)\right].
 $$
 
-其中
+上采样网格上的相对快时间和慢时间定义为
 
 $$
-f_r=(f_r/B_r)B_r,
+\tau_n=\frac{n-\lfloor N_r^\uparrow/2\rfloor}{F_{s,r}^{\uparrow}},
 \qquad
-f_a=(f_a/B_a)B_a,
+\eta_m=\frac{m-\lfloor N_a^\uparrow/2\rfloor}{\mathrm{PRF}^{\uparrow}}.
 $$
 
-$$
-\tau_n=\frac{n-\lfloor N_r^\uparrow/2\rfloor}{R F_s},
-\qquad
-\eta_m=\frac{m-\lfloor N_a^\uparrow/2\rfloor}{A\,\mathrm{PRF}}.
-$$
-
-### 精简实现
+### 完整实现
 
 ```matlab
-fast_time_rel = ((0:Nr_up - 1).' - floor(Nr_up / 2)) ...
-    / (range_q * S60.Fs);
-slow_time_rel = ((0:Na_up - 1) - floor(Na_up / 2)) ...
-    / (azimuth_q * S60.prf);
+function U = build2DSFTThreshold( ...
+        signal_up, Fs_range_up, PRF_up, ...
+        fr_Hz, fa_Hz, amplitude, initial_phase)
+    [Nr_up, Na_up] = size(signal_up);
 
-phase_range = 2 * pi * fr_Hz * fast_time_rel;
-phase_azimuth = 2 * pi * fa_Hz * slow_time_rel;
-U = threshold_amplitude * exp( ...
-    1i * (phase_range + phase_azimuth + initial_phase));
+    fast_time = ((0:Nr_up - 1).' - floor(Nr_up / 2)) ...
+        / Fs_range_up;
+    slow_time = ((0:Na_up - 1) - floor(Na_up / 2)) ...
+        / PRF_up;
+
+    phase_range = 2 * pi * fr_Hz * fast_time;
+    phase_azimuth = 2 * pi * fa_Hz * slow_time;
+    U = amplitude * exp(1i * ...
+        (phase_range + phase_azimuth + initial_phase));
+end
 ```
 
-二维 RSFT 同样是先把距离相位和方位相位相加，再取一次复指数。调用者需要提供距离带宽 `B_r`、方位带宽 `B_a`、距离采样率 `F_s` 和方位脉冲重复频率 `PRF`。若不需要整体相位偏移，可令 `initial_phase=0`。
+`phase_range` 是 `Nr_up×1` 列向量，`phase_azimuth` 是 `1×Na_up` 行向量。MATLAB 隐式扩展将二者的**相位相加**为二维相位场，再统一取复指数。不能把距离复阈值和方位复阈值直接相加。
 
-## 13. 通用阈值矩阵量化器
+2D-SFT 的实现同时覆盖两个单轴特例：令 `fa_Hz=0` 得到 RSFT，令 `fr_Hz=0` 得到 ASFT。
+
+### 用同一函数生成三类 SFT
+
+```matlab
+% RSFT：只保留距离频率
+U_rsft = build2DSFTThreshold( ...
+    signal_up, Fs_range_up, PRF_up, ...
+    fr_Hz, 0, amplitude, initial_phase);
+
+% ASFT：只保留方位频率，即慢时间阈值
+U_asft = build2DSFTThreshold( ...
+    signal_up, Fs_range_up, PRF_up, ...
+    0, fa_Hz, amplitude, initial_phase);
+
+% 2D-SFT：同时保留距离频率和方位频率
+U_2d_sft = build2DSFTThreshold( ...
+    signal_up, Fs_range_up, PRF_up, ...
+    fr_Hz, fa_Hz, amplitude, initial_phase);
+```
+
+## 14. 通用阈值矩阵量化器
 
 ```matlab
 function S1 = quantizeWithThreshold(S, U)
@@ -342,7 +408,7 @@ end
 
 如果希望使用 `Nr×1` 或 `1×Na` 的方向阈值，应先通过隐式扩展构造完整矩阵，或者使用支持广播且带明确尺寸检查的量化器。
 
-## 14. 最小调用流程
+## 15. 最小调用流程
 
 以下示例以 SplitRT 为例，展示完整的工具调用顺序：
 
@@ -364,7 +430,7 @@ channel_1bit = quantizeWithThreshold(signal_up, U);
 
 若不希望修改 MATLAB 全局随机状态，可将阈值构造函数中的 `rand` 改为接收局部 `RandStream`，并使用 `rand(stream,...)`。
 
-## 15. 使用检查清单
+## 16. 使用检查清单
 
 1. 确认输入是复回波，而不是幅度图或强度图。
 2. 确认距离为行、方位为列，阈值相位方向没有交换。
