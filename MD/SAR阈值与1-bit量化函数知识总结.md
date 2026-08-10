@@ -2,7 +2,7 @@
 
 ## 1. 文档范围
 
-本文整理本仓库中实际用于 **1-bit SAR 采集仿真**的阈值构造与量化实现。正文按算法去重，附录再列出重复实现所在文件。
+本文整理可直接复用的 **1-bit SAR 复回波阈值构造与量化函数**，重点说明数学定义、输入输出、参数含义和调用方法。
 
 这里的输入通常是上采样后的复回波
 
@@ -10,11 +10,11 @@ $$
 S\in\mathbb{C}^{N_r^\uparrow\times N_a^\uparrow},
 $$
 
-其中行对应距离向（fast time），列对应方位向（slow time）。本文不把机制分析中的频谱支撑掩膜阈值当作 1-bit 采集阈值。
+其中行对应距离向（fast time），列对应方位向（slow time）。本文所说的阈值均指加到复回波上的采集阈值。
 
 ## 2. 统一的 1-bit 量化约定
 
-仓库中的主要量化器均遵循
+本文中的量化器统一遵循
 
 $$
 y=\operatorname{sgn}_{+}\!\left(\Re(S+U)\right)
@@ -47,7 +47,7 @@ im(imag(S) + imag(U) < 0) = -1;
 S1 = complex(re, im);
 ```
 
-仓库采用的是 **加阈值约定** `S + U`。如果其他论文写成 `S - \tau`，则其阈值变量与本仓库满足 `U=-\tau`，比较公式时必须先统一符号。
+函数采用 **加阈值约定** `S + U`。如果其他实现写成 $S-\tau$，则两者的阈值变量满足 $U=-\tau$，复用时必须先统一符号。
 
 ## 3. 公共幅度尺度
 
@@ -69,21 +69,21 @@ $$
 A_u=\frac{\hat{\sigma}}{10^{\mathrm{STR}_{dB}/20}}.
 $$
 
-这里使用 `/20` 是因为 STR 用于幅度比，而不是功率比。`\hat{\sigma}` 必须由与阈值尺寸一致的上采样回波计算。
+这里使用 `/20` 是因为 STR 用于幅度比，而不是功率比。$\hat{\sigma}$ 必须由与阈值尺寸一致的上采样回波计算。
 
 ## 4. 阈值类型总览
 
-| 类型 | 阈值结构 | 随机自由度 | 主要用途 |
+| 类型 | 阈值结构 | 随机自由度 | 结构特点 |
 |---|---|---:|---|
-| ZT | `U=0` | 0 | 无阈值基线 |
-| NCT | `U=A exp(j psi)` | 0 | 常数阈值对照 |
-| 距离向 RT | 每个距离采样一个随机相位 | `Nr_up` | 距离上采样早期实验 |
-| 方位向 RT | 每个方位采样一个随机相位 | `Na_up` | 方位上采样早期实验 |
-| FullRT | 每个二维采样点独立随机相位 | `Nr_up*Na_up` | FullRT 与 SplitRT 对照 |
-| SplitRT | 距离相位与方位相位相加 | `Nr_up+Na_up` | V5 当前论文主阈值 |
-| SingleSFT | 快时间上的确定性线性相位 | 0 | 未调频率参数的探索脚本 |
-| 一维 RSFT | 距离单频相位，沿方位复制 | 0 | V4/Exp5 的 range-only RSFT |
-| 二维 RSFT | 距离与方位单频相位相加 | 0 | V4 二维 RSFT 补充实验 |
+| ZT | `U=0` | 0 | 不引入额外阈值 |
+| NCT | `U=A exp(j psi)` | 0 | 全矩阵共享一个复常数 |
+| 距离向 RT | 每个距离采样一个随机相位 | `Nr_up` | 沿方位方向保持不变 |
+| 方位向 RT | 每个方位采样一个随机相位 | `Na_up` | 沿距离方向保持不变 |
+| FullRT | 每个二维采样点独立随机相位 | `Nr_up*Na_up` | 二维逐点独立随机 |
+| SplitRT | 距离相位与方位相位相加 | `Nr_up+Na_up` | 可分离二维随机相位 |
+| SingleSFT | 快时间上的确定性线性相位 | 0 | 单方向线性相位 |
+| 一维 RSFT | 距离单频相位，沿方位复制 | 0 | 单方向可调频率 |
+| 二维 RSFT | 距离与方位单频相位相加 | 0 | 两方向频率可独立设置 |
 
 ## 5. ZT：零阈值
 
@@ -110,7 +110,7 @@ end
 ### 说明
 
 - ZT 没有单独的阈值构造函数，阈值 `U=0` 隐含在量化器中。
-- 用于 `ZT/NCT/RT` 对比实验和无阈值基线。
+- 可作为不施加阈值时的基础量化器。
 - 输入输出尺寸完全相同。
 
 ## 6. NCT：非减法常数阈值
@@ -121,7 +121,7 @@ $$
 U=Ae^{j\psi}.
 $$
 
-整个回波矩阵共享同一个复数阈值。仓库实验通常取 `psi=0`，此时 `U=A` 为实数阈值。
+整个回波矩阵共享同一个复数阈值。取 `psi=0` 时，`U=A` 为纯实阈值；非零 `psi` 会同时改变实部和虚部判决边界。
 
 ### 精简实现
 
@@ -136,14 +136,9 @@ function S1 = quantize_1bit_nct(S, A, psi)
 end
 ```
 
-### 参数选择
+### 使用方法
 
-仓库中有两种 NCT 幅度策略：
-
-1. 从上采样回波幅度 `abs(S(:))` 的若干分位数中搜索 `A`。
-2. 在阈值敏感性实验中使用 `A=As*sigma`，其中 `sigma` 为公共尺度估计。
-
-NCT 的阈值构造与量化写在同一函数内，没有独立 `buildNCTThreshold`。
+`A` 控制阈值幅度，`psi` 控制复平面方向。若希望阈值随输入幅度尺度变化，可使用 `A=As*sigma`；若已有绝对幅度标定，也可以直接传入固定 `A`。该函数把常数阈值构造和量化合并在一起。
 
 ## 7. 一维随机 RT
 
@@ -175,7 +170,7 @@ phi = 2 * pi * rand(1, size(S, 2));
 U = A_rt * exp(1i * phi);  % 1 × Na_up，量化时沿行广播
 ```
 
-早期 `quantize_1bit_rt_random_phase` 把阈值生成和量化合并在一个函数中：距离上采样版本生成列向相位，方位上采样版本生成行向相位。
+也可以把阈值生成和量化合并在一个函数中：距离向版本生成列相位向量，方位向版本生成行相位向量。
 
 ## 8. FullRT：二维全随机阈值
 
@@ -195,7 +190,7 @@ phi = 2 * pi * rand(size(signal_up));
 U = A_rt * exp(1i * phi);
 ```
 
-FullRT 对每个二维采样点使用独立相位，随机自由度为 `Nr_up*Na_up`，主要用于和 SplitRT 比较。它不是当前 V5 论文的主阈值。
+FullRT 对每个二维采样点使用独立相位，随机自由度为 `Nr_up*Na_up`。其阈值矩阵与输入回波尺寸完全相同。
 
 ## 9. SplitRT：可分离二维随机阈值
 
@@ -232,48 +227,17 @@ end
 
 - 相位自由度从 FullRT 的 `Nr_up*Na_up` 降为 `Nr_up+Na_up`。
 - `phi_r + phi_a` 依靠 MATLAB 隐式扩展形成完整二维相位场。
-- 等价地，阈值相位因子可以写成外积：
+- 等价地，阈值相位因子可以写成外积。
 
-  \[
-  e^{j(\phi_r+\phi_a)}=e^{j\phi_r}e^{j\phi_a}.
-  \]
+$$
+e^{j(\phi_r+\phi_a)}=e^{j\phi_r}e^{j\phi_a}.
+$$
 
 - 必须先将两个方向的**相位相加**再取复指数，不能把两个复阈值直接相加。
-- SplitRT 是 V5 主实验、机制实验、阈值敏感性实验和噪声实验使用的阈值。
 
-## 10. V5 分块 SplitRT 量化
+## 10. SingleSFT：固定线性相位阈值
 
-V5 噪声实验不创建完整的阈值矩阵，而是保存距离、方位两个单位模相位向量，然后按列分块构造阈值。
-
-```matlab
-phase_range = exp(1i * 2 * pi * rand(stream, num_rows, 1));
-phase_azimuth = exp(1i * 2 * pi * rand(stream, 1, num_cols));
-amplitude = As * sqrt(2 / pi) * mean(abs(S(:)));
-
-for first_col = 1:block_cols:num_cols
-    columns = first_col:min(first_col + block_cols - 1, num_cols);
-    threshold = amplitude * ...
-        (phase_range * phase_azimuth(columns));
-    % 对当前分块执行实虚部分离的 1-bit 量化
-end
-```
-
-它与完整 SplitRT 数学等价，因为
-
-$$
-e^{j\phi_r}e^{j\phi_a}=e^{j(\phi_r+\phi_a)}.
-$$
-
-主要差异是工程实现：
-
-- 使用局部 `RandStream`，不污染 MATLAB 全局 RNG 状态。
-- 阈值分块生成，避免完整相位场和阈值矩阵常驻内存。
-- 相同 seed 和相同随机数消费顺序下，可与完整 SplitRT 路径对齐。
-- `block_cols` 只影响内存与速度，不应改变量化结果。
-
-## 11. SingleSFT：实验性单频阈值
-
-### 当前实现
+### 函数实现
 
 ```matlab
 fast_time_rel = ((0:nrn_up - 1).' - floor(nrn_up / 2)) / Fs_up;
@@ -287,9 +251,9 @@ $$
 U_n=A_{\mathrm{RT}}e^{j2\pi t_n}.
 $$
 
-由于公式中没有显式频率参数 `f0_Hz`，量纲上相当于固定使用 `1 Hz`。该函数是把 RT 随机相位替换为单调快时间相位的探索性实现，不是完成参数调优的标准 SFT，也没有进入当前 V5 主实验。
+由于该接口没有显式频率参数 `f0_Hz`，量纲上相当于固定使用 `1 Hz`。如需通用单频阈值，应使用下一节的一维 RSFT 形式，把频率作为显式输入。
 
-## 12. 一维 RSFT
+## 11. 一维 RSFT
 
 ### 定义
 
@@ -308,16 +272,16 @@ U_column = threshold_amplitude * exp(1i * phase);
 U = repmat(U_column, 1, size(signal_up, 2));
 ```
 
-V4Core 中参数换算为
+归一化频率参数可按下式换算：
 
 $$
 f_0=\left(f_0/B_r\right)B_r,
 \qquad F_s^\uparrow=R F_s.
 $$
 
-一维 RSFT 主要用于 V4 的统一校准与 RSFT 主实验，以及早期 `Exp5_RSFT_ParameterMap.m`。
+调用前应保证 `fast_time_rel` 是列向量，最终阈值通过 `repmat` 扩展为与 `signal_up` 完全相同的尺寸。
 
-## 13. 二维 RSFT
+## 12. 二维 RSFT
 
 ### 定义
 
@@ -355,11 +319,9 @@ U = threshold_amplitude * exp( ...
     1i * (phase_range + phase_azimuth + initial_phase));
 ```
 
-二维 RSFT 同样是先把距离相位和方位相位相加，再取一次复指数。方位带宽按 `Ba`、`Bd`、`2*v/Da` 的优先级解析。部分辅助实验固定 `initial_phase=0`，完整搜索函数则保留该参数。
+二维 RSFT 同样是先把距离相位和方位相位相加，再取一次复指数。调用者需要提供距离带宽 `B_r`、方位带宽 `B_a`、距离采样率 `F_s` 和方位脉冲重复频率 `PRF`。若不需要整体相位偏移，可令 `initial_phase=0`。
 
-## 14. 通用阈值矩阵量化器
-
-V4/V5 当前公共实现会先断言信号与阈值尺寸完全一致：
+## 13. 通用阈值矩阵量化器
 
 ```matlab
 function S1 = quantizeWithThreshold(S, U)
@@ -372,124 +334,44 @@ function S1 = quantizeWithThreshold(S, U)
 end
 ```
 
-早期 `quantize_1bit_with_U` 允许 `Nr×1` 或 `1×Na` 阈值通过隐式扩展参与运算；V4/V5 公共实现要求 `U` 已经是完整二维矩阵。这是接口约束差异，不是量化数学差异。
+### 输入输出
 
-## 15. 随机数与可重复性
+- `S`：待量化复回波，二维数值矩阵。
+- `U`：复阈值矩阵，尺寸必须与 `S` 完全一致。
+- `S1`：与 `S` 同尺寸的复数 1-bit 码字矩阵。
 
-### 早期实现
+如果希望使用 `Nr×1` 或 `1×Na` 的方向阈值，应先通过隐式扩展构造完整矩阵，或者使用支持广播且带明确尺寸检查的量化器。
 
-- 阈值函数直接调用 `rand`，使用 MATLAB 全局 RNG。
-- 可重复性依赖调用前执行的 `rng(seed)` 以及此前消耗过的随机数数量。
-- 调整循环顺序或插入其他随机操作可能改变阈值 realization。
+## 14. 最小调用流程
 
-### V5 噪声快路径
+以下示例以 SplitRT 为例，展示完整的工具调用顺序：
 
-- 每个量化任务使用 `RandStream('mt19937ar','Seed',seed)`。
-- seed 由 `V5Core.rtSeed` 根据 SNR、分配组、样本和重复编号确定。
-- 局部随机流将不同任务解耦，适合并行执行和 checkpoint 恢复。
+```matlab
+% 1. 输入必须是二维复回波
+assert(~isreal(signal_up), "输入应为复回波。");
 
-## 16. 非 1-bit 采集阈值
+% 2. 固定随机种子，保证随机阈值可复现
+rng(2026, "twister");
 
-`Exp2_Mechanism.m`、`Exp2_Mechanism_Supp.m` 和 V4/V5 机制代码中还有 `threshold_ratio` 或 `tau`，用于从参考频谱构造支撑掩膜：
+% 3. 构造与输入同尺寸的阈值场
+U = buildSplitRTThreshold(signal_up, As);
+assert(isequal(size(signal_up), size(U)), ...
+    "信号与阈值尺寸不一致。");
 
-$$
-M(k_r,k_a)=\mathbf{1}\{|X_{\mathrm{ref}}(k_r,k_a)|
-\ge \tau\max|X_{\mathrm{ref}}|\}.
-$$
+% 4. 实部、虚部分别执行二值判决
+channel_1bit = quantizeWithThreshold(signal_up, U);
+```
 
-它服务于 off-support、range leakage 和 azimuth leakage 指标，不会加到复回波上，也不参与 1-bit 量化。因此它与 ZT、NCT、RT、SFT、RSFT 属于不同概念。
+若不希望修改 MATLAB 全局随机状态，可将阈值构造函数中的 `rand` 改为接收局部 `RandStream`，并使用 `rand(stream,...)`。
 
-## 17. 实现来源索引
-
-### 当前 V5 实现
-
-| 文件 | 函数 | 作用 |
-|---|---|---|
-| `v5_experiments/V5Core.m` | `buildSplitRTThreshold` | 完整二维 SplitRT 阈值 |
-| `v5_experiments/V5Core.m` | `quantizeWithThreshold` | 带尺寸断言的通用量化器 |
-| `v5_experiments/V5Core.m` | `quantizeSplitRTBlocked` | 局部随机流、分块 SplitRT 量化 |
-
-### V4/RSFT 研究实现
-
-| 文件 | 函数 | 作用 |
-|---|---|---|
-| `v4_experiments/V4Core.m` | `buildSplitRTThreshold` | V4 SplitRT |
-| `v4_experiments/V4Core.m` | `buildRSFTThreshold` | 一维距离 RSFT |
-| `v4_experiments/V4Core.m` | `quantizeWithThreshold` | V4 通用量化器 |
-| `v4_experiments/V4_RSFT2DAllocationSearch.m` | `buildRSFT2DThreshold` | 整数倍率二维 RSFT 搜索 |
-| `v4_experiments/V4_RSFT2DFractionalPAllocationSearch.m` | `buildRSFT2DThreshold` | 小数倍率二维 RSFT 搜索 |
-| `v4_experiments/V4_RSFT2DThresholdTransfer.m` | `buildRSFT2DThreshold` | 阈值迁移实验 |
-| `v4_experiments/V4_RSFT2D_Q6DirectionalConstraintSearch.m` | `buildRSFT2DThreshold` | Q6 方向约束实验 |
-| `v4_experiments/V4_RSFT2D_R1A1ZeroFrequencyCompare.m` | `buildRSFT2DThreshold` | 零频率对照实验 |
-| `Exp5_RSFT_ParameterMap.m` | `build_rsft_threshold` | 早期一维 RSFT 参数图 |
-| `Exp5_RSFT_ParameterMap.m` | `quantize_1bit_with_U` | RSFT 通用量化 |
-
-### 主实验与机制实验中的 SplitRT 重复实现
-
-以下函数数学结构相同，仅命名、输入是否已上采样以及局部注释略有区别：
-
-- `Azimuth_Range_MixUpsample.m`
-  - `Build_2D_SplitRT`
-  - `Build_2D_RT`
-  - `Range_Build_RT`
-  - `Azimuth_Build_RT`
-  - `quantize_1bit_with_U`
-- `Compare_R2A2_FullRT_vs_SplitRT.m`
-  - `Build_2D_RT`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-- `Exp3A_SplitVsFull.m`
-  - `Build_2D_RT`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-- `Compare_RxAx_Groups_By_Q.m`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-- `Exp1_MainResult.m`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-- `Exp1_NonInteger.m`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-- `Exp2_Mechanism.m`
-  - `build_splitrt_threshold`
-  - `quantize_1bit_with_U`
-- `Exp2_Mechanism_Supp.m`
-  - `build_splitrt_threshold`
-  - `quantize_1bit_with_U`
-- `Exp3B_ZT_NCT_RT.m`
-  - `Build_2D_SplitRT`
-  - `quantize_1bit_with_U`
-  - `quantize_1bit_zero`
-  - `quantize_1bit_nct`
-- `Exp4A_ThresholdAs_SelectedQ.m`
-  - `Build_2D_SplitRT_from_up`
-  - `quantize_1bit_with_U`
-  - `quantize_1bit_nct`
-- `Exp4B_ThresholdAs_ByQ.m`
-  - `Build_2D_SplitRT_from_up`
-  - `quantize_1bit_with_U`
-  - `quantize_1bit_nct`
-
-### 早期单方向与噪声脚本
-
-| 文件 | 函数 |
-|---|---|
-| `UpSample_range_ZT_NCT_RT.m` | `quantize_1bit_zero`、`quantize_1bit_nct`、`quantize_1bit_rt_random_phase` |
-| `UpSample_azimuth_ZT_NCT_RT.m` | `quantize_1bit_zero`、`quantize_1bit_nct`、`quantize_1bit_rt_random_phase` |
-| `t_RT_SFT.m` | `Range_Build_RT`、`Build_2D_SingleSFT`、`quantize_1bit_with_U` |
-| `t_rangeup_noisy.m` | `Azimuth_Build_RT`、`Range_Build_RT`、`Build_2D_RT`、`Build_2D_SplitRT`、`quantize_1bit_with_U` |
-| `t_baru_noisy.m` | `Azimuth_Build_RT`、`Range_Build_RT`、`Build_2D_SplitRT`、`quantize_1bit_with_U` |
-| `t_azimuthup_noisy.m` | `Azimuth_Build_RT`、`quantize_1bit_with_U` |
-
-## 18. 使用检查清单
+## 15. 使用检查清单
 
 1. 确认输入是复回波，而不是幅度图或强度图。
 2. 确认距离为行、方位为列，阈值相位方向没有交换。
 3. 确认阈值使用 `S+U` 还是 `S-U` 的符号约定。
 4. 确认阈值与上采样回波尺寸一致，或广播方向符合设计。
 5. 确认实部和虚部采用完全相同的判负规则。
-6. 确认零值映射规则；本仓库将零映射为 `+1`。
+6. 确认零值映射规则；本文函数将零映射为 `+1`。
 7. 比较随机阈值时固定 seed，并记录全局 RNG 或局部流协议。
 8. 二维阈值应将两个方向的相位相加后取复指数。
-9. 比较不同上采样分配时，共享 GT、ROI、成像流程和归一化协议。
+9. 使用线性相位阈值时，检查时间轴、采样率和频率单位是否一致。
