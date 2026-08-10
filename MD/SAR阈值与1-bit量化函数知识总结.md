@@ -6,9 +6,9 @@
 
 这里的输入通常是上采样后的复回波
 
-\[
+$$
 S\in\mathbb{C}^{N_r^\uparrow\times N_a^\uparrow},
-\]
+$$
 
 其中行对应距离向（fast time），列对应方位向（slow time）。本文不把机制分析中的频谱支撑掩膜阈值当作 1-bit 采集阈值。
 
@@ -16,26 +16,26 @@ S\in\mathbb{C}^{N_r^\uparrow\times N_a^\uparrow},
 
 仓库中的主要量化器均遵循
 
-\[
+$$
 y=\operatorname{sgn}_{+}\!\left(\Re(S+U)\right)
 +j\operatorname{sgn}_{+}\!\left(\Im(S+U)\right),
-\]
+$$
 
 其中
 
-\[
+$$
 \operatorname{sgn}_{+}(x)=
 \begin{cases}
 -1,&x<0,\\
 +1,&x\ge 0.
 \end{cases}
-\]
+$$
 
 因此输出码字属于
 
-\[
+$$
 \{1+j,\ 1-j,\ -1+j,\ -1-j\}.
-\]
+$$
 
 需要特别注意：代码不是直接调用 MATLAB 的 `sign`，而是先初始化为 `+1`，再把严格小于零的位置改为 `-1`。所以输入恰好为零时输出 `+1`，不会产生零码字。
 
@@ -53,21 +53,21 @@ S1 = complex(re, im);
 
 RT、SFT 和 RSFT 都先根据当前上采样复回波估计尺度
 
-\[
+$$
 \hat{\sigma}=\sqrt{\frac{2}{\pi}}\operatorname{mean}(|S|).
-\]
+$$
 
 RT/SplitRT 使用
 
-\[
+$$
 A_{\mathrm{RT}}=A_s\hat{\sigma},
-\]
+$$
 
 RSFT 使用信号阈值比 STR 控制幅度：
 
-\[
+$$
 A_u=\frac{\hat{\sigma}}{10^{\mathrm{STR}_{dB}/20}}.
-\]
+$$
 
 这里使用 `/20` 是因为 STR 用于幅度比，而不是功率比。`\hat{\sigma}` 必须由与阈值尺寸一致的上采样回波计算。
 
@@ -89,11 +89,11 @@ A_u=\frac{\hat{\sigma}}{10^{\mathrm{STR}_{dB}/20}}.
 
 ### 定义
 
-\[
+$$
 U=0,
 \qquad
 y=\operatorname{sgn}_{+}(\Re S)+j\operatorname{sgn}_{+}(\Im S).
-\]
+$$
 
 ### 精简实现
 
@@ -117,9 +117,9 @@ end
 
 ### 定义
 
-\[
+$$
 U=Ae^{j\psi}.
-\]
+$$
 
 整个回波矩阵共享同一个复数阈值。仓库实验通常取 `psi=0`，此时 `U=A` 为实数阈值。
 
@@ -151,10 +151,10 @@ NCT 的阈值构造与量化写在同一函数内，没有独立 `buildNCTThresh
 
 为每个距离采样生成一个相位，并沿所有方位脉冲广播：
 
-\[
+$$
 U_{n,m}=A_{\mathrm{RT}}e^{j\phi_r(n)},
 \qquad \phi_r(n)\sim\mathcal U(0,2\pi).
-\]
+$$
 
 ```matlab
 phi = 2 * pi * rand(size(S, 1), 1);
@@ -165,10 +165,10 @@ U = A_rt * exp(1i * phi);  % Nr_up × 1，量化时沿列广播
 
 为每个方位采样生成一个相位，并沿所有距离单元广播：
 
-\[
+$$
 U_{n,m}=A_{\mathrm{RT}}e^{j\phi_a(m)},
 \qquad \phi_a(m)\sim\mathcal U(0,2\pi).
-\]
+$$
 
 ```matlab
 phi = 2 * pi * rand(1, size(S, 2));
@@ -181,10 +181,10 @@ U = A_rt * exp(1i * phi);  % 1 × Na_up，量化时沿行广播
 
 ### 定义
 
-\[
+$$
 U_{n,m}=A_{\mathrm{RT}}e^{j\phi_{n,m}},
 \qquad \phi_{n,m}\overset{\mathrm{i.i.d.}}{\sim}\mathcal U(0,2\pi).
-\]
+$$
 
 ### 精简实现
 
@@ -201,20 +201,20 @@ FullRT 对每个二维采样点使用独立相位，随机自由度为 `Nr_up*Na
 
 ### 定义
 
-\[
+$$
 \phi(n,m)=\phi_r(n)+\phi_a(m),
-\]
+$$
 
-\[
+$$
 U_{n,m}=A_{\mathrm{RT}}
 \exp\!\left[j\left(\phi_r(n)+\phi_a(m)\right)\right],
-\]
+$$
 
 其中
 
-\[
+$$
 \phi_r(n),\phi_a(m)\sim\mathcal U(0,2\pi).
-\]
+$$
 
 ### 精简实现
 
@@ -260,9 +260,9 @@ end
 
 它与完整 SplitRT 数学等价，因为
 
-\[
+$$
 e^{j\phi_r}e^{j\phi_a}=e^{j(\phi_r+\phi_a)}.
-\]
+$$
 
 主要差异是工程实现：
 
@@ -283,9 +283,9 @@ U = A_rt * exp(1i * phi);
 
 对应
 
-\[
+$$
 U_n=A_{\mathrm{RT}}e^{j2\pi t_n}.
-\]
+$$
 
 由于公式中没有显式频率参数 `f0_Hz`，量纲上相当于固定使用 `1 Hz`。该函数是把 RT 随机相位替换为单调快时间相位的探索性实现，不是完成参数调优的标准 SFT，也没有进入当前 V5 主实验。
 
@@ -295,9 +295,9 @@ U_n=A_{\mathrm{RT}}e^{j2\pi t_n}.
 
 一维 RSFT 只在距离快时间上变化：
 
-\[
+$$
 U_{n,m}=A_u\exp\!\left[j(2\pi f_0\tau_n+\phi_0)\right].
-\]
+$$
 
 同一距离阈值列向量复制到全部方位脉冲。
 
@@ -310,10 +310,10 @@ U = repmat(U_column, 1, size(signal_up, 2));
 
 V4Core 中参数换算为
 
-\[
+$$
 f_0=\left(f_0/B_r\right)B_r,
 \qquad F_s^\uparrow=R F_s.
-\]
+$$
 
 一维 RSFT 主要用于 V4 的统一校准与 RSFT 主实验，以及早期 `Exp5_RSFT_ParameterMap.m`。
 
@@ -321,25 +321,25 @@ f_0=\left(f_0/B_r\right)B_r,
 
 ### 定义
 
-\[
+$$
 U_{n,m}=A_u\exp\!\left[j\left(
 2\pi f_r\tau_n+2\pi f_a\eta_m+\phi_0
 \right)\right].
-\]
+$$
 
 其中
 
-\[
+$$
 f_r=(f_r/B_r)B_r,
 \qquad
 f_a=(f_a/B_a)B_a,
-\]
+$$
 
-\[
+$$
 \tau_n=\frac{n-\lfloor N_r^\uparrow/2\rfloor}{R F_s},
 \qquad
 \eta_m=\frac{m-\lfloor N_a^\uparrow/2\rfloor}{A\,\mathrm{PRF}}.
-\]
+$$
 
 ### 精简实现
 
@@ -392,10 +392,10 @@ end
 
 `Exp2_Mechanism.m`、`Exp2_Mechanism_Supp.m` 和 V4/V5 机制代码中还有 `threshold_ratio` 或 `tau`，用于从参考频谱构造支撑掩膜：
 
-\[
+$$
 M(k_r,k_a)=\mathbf{1}\{|X_{\mathrm{ref}}(k_r,k_a)|
 \ge \tau\max|X_{\mathrm{ref}}|\}.
-\]
+$$
 
 它服务于 off-support、range leakage 和 azimuth leakage 指标，不会加到复回波上，也不参与 1-bit 量化。因此它与 ZT、NCT、RT、SFT、RSFT 属于不同概念。
 

@@ -13,38 +13,38 @@
 
 设干净复回波为
 
-\[
+$$
 s\in\mathbb C^{N_r\times N_a},
-\]
+$$
 
 总样本数为 `N`，信号平均功率定义为
 
-\[
+$$
 P_s=\frac{1}{N}\sum_{i=1}^{N}|s_i|^2.
-\]
+$$
 
 目标输入信噪比为 `SNR_dB` 时，目标复噪声功率为
 
-\[
+$$
 P_n=P_s10^{-\mathrm{SNR}_{dB}/10}.
-\]
+$$
 
 复高斯噪声由相互独立的实部与虚部构成：
 
-\[
+$$
 n_i^{(0)}=\sqrt{\frac{P_n}{2}}
 \left(\xi_i^{(R)}+j\xi_i^{(I)}\right),
-\]
+$$
 
-\[
+$$
 \xi_i^{(R)},\xi_i^{(I)}\overset{\mathrm{i.i.d.}}{\sim}\mathcal N(0,1).
-\]
+$$
 
 因而每个实分量的方差为 `Pn/2`，复噪声总功率为 `Pn`。噪声加在量化前：
 
-\[
+$$
 \widetilde{s}=s+n.
-\]
+$$
 
 ## 3. `gaussian`：独立复高斯噪声函数
 
@@ -150,10 +150,10 @@ noise = scales(snr_idx) * base_noise;
 
 若基础噪声的有限样本功率恰好为 2，则缩放后的功率正好等于目标 `Pn`。实际 SNR 使用基础噪声的实测功率审计：
 
-\[
+$$
 \mathrm{SNR}_{\mathrm{actual}}
 =10\log_{10}\frac{P_s}{c^2P_{n,\mathrm{base}}},
-\]
+$$
 
 其中 `c` 是对应 SNR 的 `scale`。
 
@@ -217,9 +217,9 @@ V5 对同一个 noisy 1-bit 重建同时使用两类参考图。
 
 由无噪声、未量化的复回波成像得到：
 
-\[
+$$
 I_{\mathrm{GT,clean}}=\mathcal I(s).
-\]
+$$
 
 noisy 1-bit 结果与它比较，衡量噪声和量化共同造成的总体退化。
 
@@ -227,9 +227,9 @@ noisy 1-bit 结果与它比较，衡量噪声和量化共同造成的总体退�
 
 由加入同一噪声 realization、但未执行 1-bit 量化的复回波成像得到：
 
-\[
+$$
 I_{\mathrm{GT,noisy}}=\mathcal I(s+n).
-\]
+$$
 
 V5 利用成像快路径的线性部分先分别计算干净回波和基础噪声的复数 ROI：
 
@@ -275,15 +275,15 @@ V5 将噪声 seed 和 RT seed 分开：
 
 本文两套噪声实现都是复回波域的加性高斯白噪声：
 
-\[
+$$
 \widetilde{s}=s+n.
-\]
+$$
 
 它们不是图像域的乘性 speckle 模型，例如
 
-\[
+$$
 I_{\mathrm{obs}}=I_{\mathrm{clean}}\cdot L.
-\]
+$$
 
 SAR speckle 来源于相干散射叠加，不能简单等同于普通加性白噪声。若未来增加 speckle 仿真，需要明确操作对象是复回波、幅度图还是强度图。
 
@@ -291,9 +291,9 @@ SAR speckle 来源于相干散射叠加，不能简单等同于普通加性白�
 
 仓库在归一化幅度平方形成的强度图上计算
 
-\[
+$$
 \mathrm{ENL}=\frac{\mu_I^2}{\operatorname{var}(I)}.
-\]
+$$
 
 ENL 使用 GT 选择的固定均匀 ROI，描述局部强度波动。它没有生成或注入噪声，也不能单独替代 PSNR、SSIM 和结构检查。
 
