@@ -4,7 +4,7 @@ function Exp6_Runtime(mode)
 %   Exp6_Runtime("full") 执行19个组合、70个样本的正式实验；正式实验需单独授权。
 
 if nargin < 1
-    mode = "smoke";
+    mode = "full";
 end
 mode = string(validatestring(char(string(mode)), {'smoke', 'full'}));
 
