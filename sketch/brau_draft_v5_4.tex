@@ -303,7 +303,7 @@ R10A1 & 26.4630 & 0.8206 & 1.0171 \\
 
 Table~\ref{tab:evaluation_indexes} shows that a bidirectional allocation attains the highest PSNR and SSIM at every budget. Against unidirectional allocations, the gains are 0.2856--0.5072~dB in PSNR and 0.0169--0.0221 in SSIM ($p_{\mathrm{PSNR}}\leq4.34\times10^{-10}$ and $p_{\mathrm{SSIM}}\leq3.56\times10^{-13}$). Neighboring bidirectional factor pairs achieve similar performance, supporting a near-optimal region.
 
-The PSNR-selected bidirectional allocations required 550.6--1141.8 ms per sample and incurred 5.6--15.0\% (10.8\% on average) additional full-pipeline runtime relative to the fastest unidirectional allocation under the same budget.
+The PSNR-selected bidirectional allocations required 550.6--1141.8~ms per sample, remaining close to the azimuth-only runtime while incurring 5.6--15.0\% (10.8\% on average) overhead relative to the faster range-only allocation under the same budget.
 
 ENL varies less across allocations and is reported as a descriptive speckle statistic rather than a primary ranking criterion. Its maximum coincides with the fidelity-optimal allocation at $Q_{\mathrm{up}}=4$ and 9, while R1A10 has the largest ENL at $Q_{\mathrm{up}}=10$. Together, the PSNR and SSIM results indicate that bidirectionality, rather than exact balance, is the main allocation property under the separable RT.
 
